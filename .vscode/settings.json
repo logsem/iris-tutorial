@@ -1,0 +1,10 @@
+{
+    "files.exclude": {
+        "**/*.aux": true,
+        "**/*.glob": true,
+        "**/*.vo": true,
+        "**/*.vos": true,
+        "**/*.vok": true,
+    },
+    "editor.tabSize": 2
+}

@@ -2,39 +2,46 @@ From iris.base_logic Require Import iprop.
 From iris.proofmode Require Import proofmode.
 
 (*
-  All proofs in Iris are done in a context with a `Σ: gFunctors`. It is used as a parameter in `iProp Σ` the type of iris propositions.
-The details will come later.
+  All proofs in Iris are done in a context with a `Σ: gFunctors`. It is used as a parameter in `iProp Σ` the type of iris propositions to specify available resources.
+The details of Σ will come later. For now just remember to work inside a section with a Σ in it's context.
   Keep in mind that `Σ` has type `gFunctors` plural, not `gFunctor` singular.
+  There is a coersion from gFunctor to gFunctors, so everything will seem to work until Σ becomes important.
 *)
 Section proofs.
 Context {Σ: gFunctors}.
 
-(* Turnstyle `P ⊢ Q` is the coq proposition that Q follows from P in the Iris logic. *)
+(*
+  Iris propositions contain many of the usual logical connectives. Thus iris used a notation scope to overload the usual logical notation.
+  This scope is delimited by `I` and bound to `iProp Σ`. As such you may need to wrap your propositions in `(_)%I` to use the notations.
+
+  Iris defines two coq propositions for proving Iris propositions:
+  - `⊢ P` asks whether `P` holds with no assumptions
+  - `P ⊢ Q` asks whether `Q` holds assuming `P`
+
+  There is no explicit proposition allowing you to give multiple hypotheses.
+  This is partially because it's unesesary as assumptions can be curried or combined.
+  However, and more importantly, unlike in clasical logic, in seperation logic we have multiple sensible choices for combining propositions.
+  Iris is equiped with the usual and connective, however this is rarely used. Instead we use the seperating conjunction `P ∗ Q` stating that `P` and `Q` are satisfied using seperate resources.
+  In fact seperation is so prevalent that `P ⊢ Q` is more commonly written as `-∗` the seperating implication also known as magic wand.
+*)
 Lemma asm (P : iProp Σ) : P ⊢ P.
 Proof.
-  set (λ x : gFunctor, x : gFunctors).
-  Search gFunctors.singleton.
   (*
     To prove such a stament we use the Iris proofmode. This is done using the tactic `iStartProof`.
     This new proofmode has it's own list of hypotheses, much like coq's proofmode.
-    However, these hypotheses may only refer to iris propositions. All other hypotheses are kept in the coq context.
   *)
   iStartProof.
   (*
-    Notice that the turnstyle turns into a magic wand (-∗) instead of an implication.
-    The magic wand is the separation version of implication, and interacts with the Iris context, like implication would in coq.
-  *)
-  (*
-    In order to manipulate the Iris context, we use tactics with the same name as in coq, but with an 'i' for iris at the begining.
-    These tactics takes a string as input rather than a list identifiers or patterns.
+    In order to manipulate the Iris context, we use tactics with the same name as in coq, but prefixed with 'i' for iris.
+    These tactics use stings as identifies rather than coq identifiers.
   *)
   iIntros "HP".
   iApply "HP".
 Qed.
 
 (*
-  As turnstyle turns into a wand, you are allowed to write a wand instead.
-  This is usefull when describing multiple curried hypotheses.
+  Writing a wand instead of a turnstyle makes currying more natural.
+  Here is the iris version of modus ponens.
 *)
 Lemma modus_ponens (P Q : iProp Σ) : P -∗ (P -∗ Q) -∗ Q.
 Proof.
@@ -44,40 +51,32 @@ Proof.
 Abort.
 
 (*
-  Disjunctions `∨` are treated much like disjuctions in coq.
-  The introduction pattern `[ _ | _ ]` allows us to eliminate a disjunction,
-  while the tactics `iLeft` and `iRight` lets us introduce them.
+  Iris does have conjuction `∧` and `→`, but they are rarely used and interacts poorly with the iris proofmode.
+  Instead we use the separating disjunction `∗`, a sligtly stronger version of `∗`.
 *)
-Lemma or_comm (P Q : iProp Σ) : Q ∨ P ⊢ P ∨ Q.
+Lemma sep_and (P Q : iProp Σ) : P ∗ Q ⊢ P ∧ Q.
 Proof.
-  iStartProof.
-  iIntros "H".
-  (* Here I'm using an explicit destruct tactic. However `iIntros` accept the same introduction patterns. *)
-  iDestruct "H" as "[HQ|HP]".
-  - iRight.
-    iApply "HQ".
-  - (**)
-Abort.
+  (* `∗` is eleminated in the same way `∧` is in coq. *)
+  iIntros "[HP HQ]".
+  (* While `∧` is still introduced in the same way. *)
+  iSplit.
+  - iApply "HP".
+  - iApply "HQ".
+Qed.
 
-Lemma or_elem (P Q R : iProp Σ) : (P -∗ R) -∗ (Q -∗ R) -∗ P ∨ Q -∗ R.
-Proof.
-  iStartProof.
-  (**)
-Abort.
-
-(*
-  Iris does have conjuction `∧`, but it's rarely used and interacts poorly with the iris proofmode.
-  Instead we use the separating disjunction `∗`.
-  It can be eleminated using the introduction pattern "[ _ _ ]".
-  Iris does have the tactic `iSplit` that works on `∧`, but not on `∗`.
-  This is because we are not allowed to use the same resources to satisfy both sides of a `∗`.
-  Therefor we instead use `iSplitL` and `iSplitR` to specify which hypotheses we want on respectively the left or the right.
-*)
 Lemma sep_comm (P Q : iProp Σ) : P ∗ Q ⊢ Q ∗ P.
 Proof.
-  iStartProof.
   iIntros "[HP HQ]".
-  iSplitR "HP".
+  (*
+    Unlike `∧`, `∗` is not idempotent. Specificly there are propositions for which `¬(P ⊢ P ∗ P)`.
+    Because of this it is generally not possible to use `iSplit` to introduce `∗`.
+    Instead we have to use `iSplit` as it would duplicate all hypotheses.
+  *)
+  Fail iSplit.
+  (*
+    Instead Iris introduced the tactics `iSplitL` and `iSplitR`. These allows you to specify which hypotheses go to the left and right subproofs respectively.
+  *)
+  iSplitL "HQ".
   - iApply "HQ".
   - iApply "HP".
 Qed.
@@ -85,7 +84,7 @@ Qed.
 Lemma sep_assoc (P Q R : iProp Σ) : P ∗ Q ∗ R ⊢ (P ∗ Q) ∗ R.
 Proof.
   iStartProof.
-  (* Iris proofmode supports "( P & .. & Q & R )" patterns of the form "[P .. [Q R] ..]" *)
+  (* Iris proofmode supports "( P & .. & Q & R )" patterns as a shorthand for "[P .. [Q R] ..]" *)
   iIntros "(HP & HQ & HR)".
   (**)
 Abort.
@@ -111,6 +110,24 @@ Proof.
     + iApply "HP".
     + iApply "HQ".
   - (**)
+Abort.
+
+(*
+  Disjunctions `∨` are treated much like disjuctions in coq.
+  The introduction pattern `[ _ | _ ]` allows us to eliminate a disjunction,
+  while the tactics `iLeft` and `iRight` lets us introduce them.
+*)
+Lemma or_comm (P Q : iProp Σ) : Q ∨ P ⊢ P ∨ Q.
+Proof.
+  iIntros "[HQ|HP]".
+  - iRight.
+    iApply "HQ".
+  - (**)
+Abort.
+
+Lemma or_elem (P Q R : iProp Σ) : (P -∗ R) -∗ (Q -∗ R) -∗ P ∨ Q -∗ R.
+Proof.
+  (**)
 Abort.
 
 Lemma sep_or_distr (P Q R : iProp Σ) : P ∗ (Q ∨ R) ⊣⊢ P ∗ Q ∨ P ∗ R.

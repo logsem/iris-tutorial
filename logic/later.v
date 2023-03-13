@@ -27,4 +27,15 @@ Proof.
   iApply "IH".
 Qed.
 
+(*
+  A different time connective is except_0 writen `◇ P`. This is P, except true at time step 0.
+  It's main use is in defining timeless propositions, meaning propositions that don't varry over time.
+  It follows from the previous resoning that if `▷ P -∗ ◇ P` then all the timesteps of P are biimplicated.
+  The ◇ here makes sure `P 0` does not need to hold simply by replacing it with `True`.
+*)
+Lemma except0_later (P : iProp Σ) : ◇ P -∗ ▷ P.
+  iIntros "> H !>".
+  iApply "H".
+Qed.
+
 End proofs.

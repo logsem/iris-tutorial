@@ -260,7 +260,12 @@ End auth_nat.
 Section heap.
 Context `{!inG Σ (auth (gmap nat (dfrac * agree nat)))}.
 
-Definition 
+Definition heap_auth (γ : gname) (heap : gmap nat nat) : iProp Σ :=
+  own (inG0:=inG0) γ (● ((λ v, (DfracOwn 1, to_agree v)) <$> heap)). 
+
+Definition mapsto (γ : gname) (dq : dfrac) (l v : nat) :=
+  own γ (◯ ({[l:=(dq, to_agree v)]})).
+
 
 
 End heap.

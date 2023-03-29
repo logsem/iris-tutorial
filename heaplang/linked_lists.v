@@ -4,8 +4,8 @@ Section linked_lists.
 Context `{!heapGS Σ}.
 
 (*
-  Let's define what we mean by a linked list in heaplang.
-  We'll do this by relating a value to a list of values in coq.
+  Let's define what we mean by a linked list in heaplang. We'll do
+  this by relating a value to a list of values in coq.
 *)
 Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   match xs with
@@ -24,7 +24,10 @@ Definition append : val :=
         SOME "p"
     end.
 
-Lemma wp_append (l1 l2 : val) (xs ys : list val) : {{{isList l1 xs ∗ isList l2 ys}}} append l1 l2 {{{l, RET l; isList l (xs ++ ys)}}}.
+Lemma wp_append (l1 l2 : val) (xs ys : list val) :
+  {{{isList l1 xs ∗ isList l2 ys}}}
+    append l1 l2
+  {{{l, RET l; isList l (xs ++ ys)}}}.
 Proof.
   iLöb as "IH" forall (l1 xs).
   destruct xs as [|x xs] =>/=.
@@ -66,7 +69,10 @@ Definition inc : val :=
         "inc" "t"
     end.
 
-Lemma wp_inc (l : val) (xs : list Z) : {{{isList l ((λ x : Z, #x) <$> xs)}}} inc l {{{ RET #(); isList l ((λ x, #(x + 1)%Z) <$> xs)}}}.
+Lemma wp_inc (l : val) (xs : list Z) :
+  {{{isList l ((λ x : Z, #x) <$> xs)}}}
+    inc l
+  {{{ RET #(); isList l ((λ x, #(x + 1)%Z) <$> xs)}}}.
 Proof.
   iLöb as "IH" forall (l xs).
   destruct xs as [|x xs] =>/=.
@@ -103,7 +109,10 @@ Definition reverse_append : val :=
 Definition reverse : val :=
   rec: "reverse" "l" := reverse_append "l" NONE.
 
-Lemma wp_reverse_append (l acc : val) (xs ys : list val) : {{{isList l xs ∗ isList acc ys}}} reverse_append l acc {{{v, RET v; isList v (rev xs ++ ys)}}}.
+Lemma wp_reverse_append (l acc : val) (xs ys : list val) :
+  {{{isList l xs ∗ isList acc ys}}}
+    reverse_append l acc
+  {{{v, RET v; isList v (rev xs ++ ys)}}}.
 Proof.
   iLöb as "IH" forall (l acc xs ys).
   destruct xs as [|x xs] =>/=.
@@ -126,7 +135,10 @@ Proof.
     by iFrame.
 Qed.
 
-Lemma wp_reverse (l : val) (xs : list val) : {{{isList l xs}}} reverse l {{{v, RET v; isList v (rev xs)}}}.
+Lemma wp_reverse (l : val) (xs : list val) :
+  {{{isList l xs}}}
+    reverse l
+  {{{v, RET v; isList v (rev xs)}}}.
 Proof.
   iIntros (Φ) "Hl HΦ".
   wp_rec; wp_pures.
@@ -184,7 +196,10 @@ Definition sum_list : val :=
     let: "f" := (λ: "x" "y", "x" + "y") in
     fold_right "f" #0 "l".
 
-Lemma wp_sum_list l xs : {{{isList l ((λ x : Z, #x) <$> xs)}}} sum_list l {{{RET #(foldr Z.add 0%Z xs); isList l ((λ x : Z, #x) <$> xs)}}}.
+Lemma wp_sum_list l xs :
+  {{{isList l ((λ x : Z, #x) <$> xs)}}}
+    sum_list l
+  {{{RET #(foldr Z.add 0%Z xs); isList l ((λ x : Z, #x) <$> xs)}}}.
 Proof.
   iIntros (Φ) "Hl HΦ".
   wp_rec; wp_pures.

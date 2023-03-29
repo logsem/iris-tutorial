@@ -67,4 +67,19 @@ Proof.
   done.
 Qed.
 
+Lemma key_persist_cinv N γ P : key γ DfracDiscarded -∗ cinv N γ P ↔ inv N P.
+Proof.
+  iIntros "#Hγ".
+  iAssert (□ (gLock γ P ↔ P))%I as "H".
+  {
+    iModIntro.
+    iSplit; iIntros "HP".
+    - iPoseProof (gLock_unlock with "Hγ HP") as "[_ $]".
+    - by iApply gLock_intro.
+  }
+  iSplit; iIntros "HI"; iApply (inv_iff with "HI").
+  - done.
+  - by rewrite bi.iff_sym.
+Qed.
+
 End proofs.

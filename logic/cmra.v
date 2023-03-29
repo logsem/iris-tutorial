@@ -74,8 +74,7 @@ Proof. exact (own_op γ q1 q2). Qed.
 *)
 Lemma own_frac_1_exclusive γ q : own_frac γ 1 -∗ own_frac γ q -∗ False.
 Proof.
-  (**)
-Abort.
+  (* FILL IN HERE *) Admitted.
 
 End frac.
 
@@ -243,8 +242,7 @@ Qed.
 
 Lemma auth_nat_alloc_n n : ⊢ |==> ∃ γ, auth_nat_auth γ n.
 Proof.
-  (**)
-Abort.
+  (* FILL IN HERE *) Admitted.
 
 End auth_nat.
 

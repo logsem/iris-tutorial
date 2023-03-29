@@ -3,13 +3,17 @@ From iris.heap_lang Require Import lang proofmode notation.
 From iris_tutorial.logic Require Import key.
 
 (*
-  Heaplang has concurency in the form of a fork operation.
-  This operation takes an expresion and runs it in a seperate thread. Meanwhile, the initial thread continues execution with a unit value.
-  Fork does not have a reduction tactic. Instead we need to use it's specification explicitly via `wp_fork`.
-  This lemma is more general than we need for our current use cases, but it esentially states that:
+  Heaplang has concurency in the form of a fork operation. This
+  operation takes an expresion and runs it in a seperate thread.
+  Meanwhile, the initial thread continues execution with a unit value.
+  Fork does not have a reduction tactic. Instead we need to use it's
+  specification explicitly via `wp_fork`. This lemma is more general
+  than we need for our current use cases, but it esentially states
+  that:
   `WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}`
 
-  We can use fork to implement other common concurency operators such as `spawn` and `join`
+  We can use fork to implement other common concurency operators such
+  as `spawn` and `join`.
 *)
 Definition spawn: val :=
   λ: "f",
@@ -35,7 +39,10 @@ Definition par: val :=
 
 (* The notation for the par operator then hides the thunks *)
 Notation "e1 ||| e2" := (par (λ: <>, e1)%E (λ: <>, e2)%E) : expr_scope.
-(* Lambda expresion actually canonicalize as lambda values. Thus we need to refer to this canonical form when proving our specifications *)
+(*
+  Lambda expresion actually canonicalize as lambda values. Thus we
+  need to refer to this canonical form when proving our specifications
+*)
 Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
 Section threads.

@@ -1,1 +1,2 @@
--Q . logic iris_tutorial.logic
+-Q logic iris_tutorial.logic
+-Q heaplang iris_tutorial.heaplang

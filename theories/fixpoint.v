@@ -1,102 +1,109 @@
+From iris.bi Require Export fixpoint.
 From iris.heap_lang Require Import lang proofmode notation.
 
 Section proofs.
 Context `{!heapGS Σ}.
 
 (*
-  Like before, we can define linked lists recursively. However we can
-  notice that no program can access the pointer `l` without checking
-  whether the list is empty. As such the program must have taken at
-  least one step. It should therefor not change much to add a later to
-  the ownership of the tail of the list.
-
-  This proposistion is different from the one in linked_lists. This
-  difference however doesn't really matter from a program perspective.
-  Infact it works better when working with concurrent code.
+  As we have already seen, we can define a predicate for linked lists
+  representing a list of specific values.
 *)
 Fixpoint is_list_of (v : val) (xs : list val) : iProp Σ :=
   match xs with
   | [] => ⌜v = NONEV⌝
-  | x :: xs => ∃ l : loc, ⌜v = SOMEV #l⌝ ∗ ∃ t, l ↦ (x, t) ∗ ▷ is_list_of t xs
+  | x :: xs => ∃ l : loc, ⌜v = SOMEV #l⌝ ∗ ∃ t, l ↦ (x, t) ∗ is_list_of t xs
   end.
 
 (*
-  Sometimes we don't need to know the exact values of the list.
-  Instead we just want them to satisfy some predicate, such as being a
-  number. Let's define this in a similar weak sense, where the nth
-  value only has to satisfy the predicate after n steps.
+  However, sometimes we don't care about the exact list and instead
+  only want to know that each values of the list satisfy a predicate.
+  To do this we could define a predicate for when all elements of a
+  list. Then simply state that the value is represented by one such
+  list.
 *)
-Fixpoint list_all (xs : list val) (Φ : val → iProp Σ) : iProp Σ :=
+
+Fixpoint all (xs : list val) (Φ : val → iProp Σ) : iProp Σ :=
   match xs with
   | [] => True
-  | x :: xs => Φ x ∗ ▷ list_all xs Φ
+  | x :: xs => Φ x ∗ all xs Φ
   end.
 
-(*
-  With these we can define what it means for a value to be a linked
-  list where the elements satisfy a predicate.
-*)
 Definition is_list (v : val) (Φ : val → iProp Σ) : iProp Σ :=
-  ∃ xs, is_list_of v xs ∗ list_all xs Φ.
+  ∃ xs, is_list_of v xs ∗ all xs Φ.
 
 (*
-  This definition works, but is slightly anoying to work with. If we
-  could instead define the predicate recursively, without the nesesaty
-  for a decresing argument. Just like inductive propositions. Actually
-  we can. Iris has unique fixpoints for any contractive function.
-  Contractive intuitively means that recursive calls only matter
-  "later".
-
-  To do this we use the notation `-d>` to specify that the argument
-  does not depend on time. You can use `-n>` to specify that an
-  argument does depend on time. However that will add the criteria
-  that it's use is non-expansive (time preserving).
+  However this definition is rather anoying to work with, as it
+  requires explicitly finding the list of values. Alternatively we
+  could define the predicate as the solution to a recursive
+  definition. This means defining a function:
+  `F : (A → iProp Σ) → (A → iProp Σ)`
+  A solution is then a function `f` satisfying `f = F f`. Solutions to
+  such equations are called fixpoints as `f` doesn't change under `F`.
 *)
-
-Definition is_list_inner (is_list : val -d> (val → iProp Σ) -d> iProp Σ) : val -d> (val → iProp Σ) -d> iProp Σ :=
-  λ v Φ, (⌜v = NONEV⌝ ∨ ∃ l : loc, ⌜v = SOMEV #l⌝ ∗ ∃ x t, l ↦ (x, t) ∗ Φ x ∗ ▷ is_list t Φ)%I.
+Definition is_list_pre (Φ : val → iProp Σ) (f : val → iProp Σ) (v : val) : iProp Σ :=
+  ⌜v = NONEV⌝ ∨ ∃ l : loc, ⌜v = SOMEV #l⌝ ∗ ∃ x t, l ↦ (x, t) ∗ Φ x ∗ f t.
 
 (*
-  Iris has a tactic `solve_contractive` that can handle definitions
-  comprised of things that are known to be either non-expansive or
-  contractive.
+  Recursive definitions can have multiple fixpoints. Of these there
+  are two special fixpoints: The least fixpoint and the greatest fixpoint.
+  The least fixpoint coresponds to an inductively defined predicate,
+  while the greatest coresponds to coinductively defined predicates.
+
+  These solutions exists when F is monotone. This is handled by the
+  typeclass BiMonoPred.
 *)
-Global Instance is_list_inner_contract : Contractive is_list_inner.
-Proof. solve_contractive. Qed.
-
-Definition is_list_rec := fixpoint is_list_inner.
-
-Lemma is_list_rec_unfold v Φ : is_list_rec v Φ ≡ is_list_inner is_list_rec v Φ.
-Proof. apply (fixpoint_unfold is_list_inner). Qed.
-
-Lemma is_list_rec_correct : is_list_rec ≡ is_list.
+Global Instance is_list_pre_mono Φ : BiMonoPred (is_list_pre Φ).
 Proof.
-  intros v Φ.
+  split.
+  - intros Ψ1 Ψ2 H1 H2.
+    iIntros "#HΨ %v [->|(%l & -> & %x & %t & Hl & Hx & Ht)]".
+    + by iLeft.
+    + iRight.
+      iExists l.
+      iSplitR; first done.
+      iExists x, t.
+      iFrame.
+      iApply ("HΨ" with "Ht").
+  - (*
+      Additionally to monitonicity. We also need to prove that the
+      resulting predicate is time preserving. This is trivial in this
+      case as values are discrete.
+    *)
+    apply _.
+Qed.
+
+Definition is_list_rec (v : val) (Φ : val → iProp Σ) := bi_least_fixpoint (is_list_pre Φ) v.
+
+Lemma is_list_rec_unfold (v : val) (Φ : val → iProp Σ) : is_list_rec v Φ ⊣⊢ is_list_pre Φ (λ v, is_list_rec v Φ) v.
+Proof. apply least_fixpoint_unfold, _. Qed.
+
+Lemma is_list_rec_ind (Φ Ψ : val → iProp Σ) : □ (∀ v, is_list_pre Φ Ψ v -∗ Ψ v ) -∗ ∀ v, is_list_rec v Φ -∗ Ψ v.
+Proof. apply least_fixpoint_iter, _. Qed.
+
+Lemma is_list_rec_correct (v : val) (Φ : val → iProp Σ) : is_list v Φ ⊣⊢ is_list_rec v Φ.
+Proof.
   iSplit.
-  - iIntros "Hv".
-    iLöb as "IH" forall (v).
-    rewrite is_list_rec_unfold.
-    iDestruct "Hv" as "[-> | (%l & -> & %x & %t & Hl & Hx & Ht)]".
+  - iIntros "(%xs & Hv & HΦs)".
+    iInduction xs as [|x xs] "IH" forall (v) =>/=.
+    + rewrite is_list_rec_unfold.
+      by iLeft.
+    + rewrite is_list_rec_unfold.
+      iRight.
+      iDestruct "Hv" as "(%l & -> & %t & Hl & Ht)".
+      iDestruct "HΦs" as "[HΦ HΦs]".
+      iExists l.
+      iSplitR; first done.
+      iExists x, t.
+      iFrame.
+      iApply ("IH" with "Ht HΦs").
+  - iRevert (v).
+    iApply is_list_rec_ind.
+    iIntros "!> %v [->|(%l & -> & %x & %t & Hl & HΦ & %xs & Ht & Hxs)]".
     + by iExists [].
-    + iSpecialize ("IH" with "Ht").
-      iDestruct "IH" as "(%xs & Ht & Hxs)".
-      iExists (x :: xs) =>/=.
+    + iExists (x :: xs); cbn.
       iFrame.
       iExists l.
       iSplitR; first done.
       iExists t.
       iFrame.
-  - iIntros "(%xs & Hv & Hxs)".
-    iInduction xs as [| x xs] "IH" forall (v) =>/=.
-    + rewrite is_list_rec_unfold.
-      by iLeft.
-    + iDestruct "Hv" as "(%l & -> & %t & Hl & Ht)".
-      iDestruct "Hxs" as "[Hx Hxs]".
-      rewrite is_list_rec_unfold.
-      iRight.
-      iExists l.
-      iSplitR; first done.
-      iExists x, t.
-      iFrame.
-      iApply ("IH" with "Ht Hxs").
 Qed.

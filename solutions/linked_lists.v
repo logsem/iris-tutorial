@@ -39,7 +39,25 @@ Lemma append_spec (l1 l2 : val) (xs ys : list val) :
   {{{l, RET l; isList l (xs ++ ys)}}}.
 Proof.
   induction xs in ys, l1, l2 |- * =>/=.
-  (* FILL IN HERE *) Admitted.
+  - iIntros "%Φ [-> H2] HΦ".
+    wp_rec.
+    wp_pures.
+    by iApply "HΦ".
+  - iIntros "%Φ [(%hd & %l' & -> & Hhd & H1) H2] HΦ".
+    wp_rec.
+    wp_pures.
+    wp_load.
+    wp_load.
+    wp_pures.
+    wp_apply (IHxs with "[$H1 $H2]").
+    iIntros "%l Hl".
+    wp_store.
+    wp_pures.
+    iApply "HΦ".
+    iModIntro.
+    iExists hd, l.
+    by iFrame.
+Qed.
 
 (*
   Now let's define a program that increments all the values of a list.
@@ -67,7 +85,23 @@ Lemma inc_spec (l : val) (xs : list Z) :
   {{{ RET #(); isList l ((λ x, #(x + 1)%Z) <$> xs)}}}.
 Proof.
   induction xs in l |- * =>/=.
-  (* FILL IN HERE *) Admitted.
+  - iIntros "%Φ -> HΦ".
+    wp_rec.
+    wp_pures.
+    by iApply "HΦ".
+  - iIntros "%Φ (%hd & %l' & -> & Hhd & Hl) HΦ".
+    wp_rec.
+    wp_pures.
+    wp_load.
+    wp_load.
+    wp_pures.
+    wp_store.
+    wp_apply (IHxs with "Hl").
+    iIntros "Hl".
+    iApply "HΦ".
+    iExists hd, l'.
+    by iFrame.
+Qed.
 
 (*
   We will implement reverse using a helper function. This function
@@ -98,7 +132,24 @@ Lemma reverse_append_spec (l acc : val) (xs ys : list val) :
   {{{v, RET v; isList v (rev xs ++ ys)}}}.
 Proof.
   induction xs in l, acc, ys |- * =>/=.
-  (* FILL IN HERE *) Admitted.
+  - iIntros "%Φ [-> Hacc] HΦ".
+    wp_rec.
+    wp_pures.
+    by iApply "HΦ".
+  - iIntros "%Φ [(%hd & %l' & -> & Hhd & Hl) Hacc] HΦ".
+    wp_rec.
+    wp_pures.
+    wp_load.
+    wp_load.
+    wp_store.
+    wp_apply (IHxs _ _ (a :: ys) with "[$Hl Hhd Hacc]").
+    {
+      cbn.
+      iExists hd, acc.
+      by iFrame.
+    }
+    by rewrite -app_assoc.
+Qed.
 
 (*
   Use the specification of reverse_append to prove the specification
@@ -109,7 +160,13 @@ Lemma reverse_spec (l : val) (xs : list val) :
     reverse l
   {{{v, RET v; isList v (rev xs)}}}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  iIntros "%Φ Hl HΦ".
+  wp_lam.
+  wp_pures.
+  wp_apply (reverse_append_spec _ _ _ [] with "[$Hl]").
+  { done. }
+  by rewrite app_nil_r.
+Qed.
 
 (*
   The specifications thus far have been rather straight forward. So
@@ -154,7 +211,27 @@ Lemma fold_right_spec P I (f a l : val) xs :
   {{{ r, RET r; isList l xs ∗ I xs r}}}.
 Proof.
   induction xs in a, l |- * =>/=.
-  (* FILL IN HERE *) Admitted.
+  - iIntros "%Φ (-> & _ & I & #Hf) HΦ".
+    wp_rec.
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    by iFrame.
+  - iIntros "%Φ ((%hd & %l' & -> & Hhd & Hl) & [P0 Ps] & I & #Hf) HΦ".
+    wp_rec.
+    wp_pures.
+    wp_load.
+    wp_load.
+    wp_pures.
+    wp_apply (IHxs with "[$Hl $Ps $I $Hf]").
+    iIntros "%r [Hl I]".
+    wp_apply ("Hf" with "[$P0 $I]").
+    iIntros "%r' I".
+    iApply "HΦ".
+    iFrame.
+    iExists hd, l'.
+    by iFrame.
+Qed.
 
 (* We can now sum over a list simply by folding it using addition. *)
 Definition sum_list : val :=

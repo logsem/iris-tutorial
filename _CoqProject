@@ -1,3 +1,6 @@
 -Q logic iris_tutorial.logic
 -Q heaplang iris_tutorial.heaplang
 -Q theories iris_tutorial
+-Q solutions iris_tutorial_solutions
+
+logic/key.v

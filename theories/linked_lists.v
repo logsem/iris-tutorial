@@ -5,7 +5,7 @@ Context `{!heapGS Σ}.
 
 (*
   Let's define what we mean by a linked list in heaplang. We'll do
-  this by relating a value to a list of values in coq.
+  this by relating a value to a list of values.
 *)
 Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   match xs with
@@ -13,6 +13,11 @@ Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   | x :: xs => ∃ (hd : loc) l', ⌜l = SOMEV #hd⌝ ∗ hd ↦ (x, l') ∗ isList l' xs
   end.
 
+(*
+  Now we can define heaplang functions that act on lists, such as
+  append. This function recursively decents l1, updating the links.
+  Eventually it reaches the tail, where it will replace it with l2.
+*)
 Definition append : val :=
   rec: "append" "l1" "l2" :=
     match: "l1" with
@@ -24,38 +29,21 @@ Definition append : val :=
         SOME "p"
     end.
 
-Lemma wp_append (l1 l2 : val) (xs ys : list val) :
+(*
+  If l1 and l2 implements the lists xs and ys respectively, we expect
+  that append will return a list representing `xs ++ ys`.
+*)
+Lemma append_spec (l1 l2 : val) (xs ys : list val) :
   {{{isList l1 xs ∗ isList l2 ys}}}
     append l1 l2
   {{{l, RET l; isList l (xs ++ ys)}}}.
 Proof.
   induction xs in ys, l1, l2 |- * =>/=.
-  - iIntros "%Φ [-> H2] HΦ".
-    wp_rec.
-    wp_pures.
-    iModIntro.
-    by iApply "HΦ".
-  - iIntros "%Φ [(%hd & %l1' & -> & Hhd & H1) H2] HΦ".
-    wp_rec.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_apply (IHxs with "[$H1 $H2]").
-    iIntros "%l Hl".
-    wp_store.
-    wp_pures.
-    iModIntro.
-    iApply "HΦ".
-    iExists hd, l.
-    by iFrame.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
 (*
-  Let's define a program that increments all the values of a list.
+  Now let's define a program that increments all the values of a list.
 *)
-
 Definition inc : val :=
   rec: "inc" "l" :=
     match: "l" with
@@ -67,31 +55,25 @@ Definition inc : val :=
         "inc" "t"
     end.
 
+(*
+  Here we want the list to be a list of integers. To do this we take a
+  list of integers and map the elements to values using `# _`. When
+  the function is done, we expect all the elements in the list to have
+  incremented. So we again use a map to represent this.
+*)
 Lemma inc_spec (l : val) (xs : list Z) :
   {{{isList l ((λ x : Z, #x) <$> xs)}}}
     inc l
   {{{ RET #(); isList l ((λ x, #(x + 1)%Z) <$> xs)}}}.
 Proof.
   induction xs in l |- * =>/=.
-  - iIntros "%Φ -> HΦ".
-    wp_rec.
-    wp_pures.
-    by iApply "HΦ".
-  - iIntros "%Φ (%hd & %l' & -> & Hhd & Hl) HΦ".
-    wp_rec.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_store.
-    wp_apply (IHxs with "Hl").
-    iIntros "Hl".
-    iApply "HΦ".
-    iExists hd, l'.
-    by iFrame.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
+(*
+  We will implement reverse using a helper function. This function
+  takes two arguments, `l` and `acc`, and returns the list
+  `rev l ++ acc`.
+*)
 Definition reverse_append : val :=
   rec: "reverse_append" "l" "acc" :=
     match: "l" with
@@ -103,6 +85,10 @@ Definition reverse_append : val :=
         "reverse_append" "t" "l"
     end.
 
+(*
+  When acc is the empty list, it should thus simply return the reverse
+  of l.
+*)
 Definition reverse : val :=
   rec: "reverse" "l" := reverse_append "l" NONE.
 
@@ -112,37 +98,23 @@ Lemma reverse_append_spec (l acc : val) (xs ys : list val) :
   {{{v, RET v; isList v (rev xs ++ ys)}}}.
 Proof.
   induction xs in l, acc, ys |- * =>/=.
-  - iIntros "%Φ [-> Hacc] HΦ".
-    wp_rec.
-    wp_pures.
-    by iApply "HΦ".
-  - iIntros "%Φ [(%hd & %l' & -> & Hhd & Hl) Hacc] HΦ".
-    wp_rec.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_store.
-    rewrite -app_assoc /=.
-    wp_apply (IHxs with "[Hl Hhd Hacc] HΦ").
-    iFrame =>/=.
-    iExists hd, acc.
-    by iFrame.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
+(*
+  Use the specification of reverse_append to prove the specification
+  of reverse.
+*)
 Lemma reverse_spec (l : val) (xs : list val) :
   {{{isList l xs}}}
     reverse l
   {{{v, RET v; isList v (rev xs)}}}.
 Proof.
-  iIntros (Φ) "Hl HΦ".
-  wp_rec; wp_pures.
-  rewrite -(app_nil_r (rev xs)).
-  wp_apply (reverse_append_spec with "[Hl] HΦ").
-  by iFrame.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
+(*
+  The specifications thus far have been rather straight forward. So
+  now we will show a very general specification for `fold_right`.
+*)
 Definition fold_right : val :=
   rec: "fold_right" "f" "v" "l" :=
     match: "l" with
@@ -153,6 +125,26 @@ Definition fold_right : val :=
         "f" "h" ("fold_right" "f" "v" "t")
     end.
 
+(*
+  The following specification has a lot of moving parts, so lets go
+  through them one by one.
+  - `l` is a linked list implementing `xs`, as seen by `isList l xs`
+    in the precondition.
+  - `P` is a predicate that all the values in xs should satisfy.
+    This is written as `[∗ list] x ∈ xs, P x`. This is a recursively
+    defined predicate, defined as follows:
+    `[∗ list] x ∈ [], P x := True`
+    `[∗ list] x ∈ x0 :: xs, P x := P x0 ∗ [∗ list] x ∈ xs, P x`
+  - `I` is a predicate describing the relation between a list
+    and the result of the fold.
+  - `a` is the initial value, so the empty list should produce it.
+    This is captured by `I [] a`.
+  - `f` is the folding function. So it satisfies:
+    `{{{ P x ∗ I ys a'}}} f x a' {{{ r, RET; I (x :: ys) r }}}`.
+  - The result `r` must then satisfy `I xs r`.
+  - Importantly, we don't change the original list. So we put
+    `isList l xs` in the post condition.
+*)
 Lemma fold_right_spec P I (f a l : val) xs :
   {{{
     isList l xs ∗ ([∗ list] x ∈ xs, P x) ∗ I [] a ∗
@@ -162,30 +154,9 @@ Lemma fold_right_spec P I (f a l : val) xs :
   {{{ r, RET r; isList l xs ∗ I xs r}}}.
 Proof.
   induction xs in a, l |- * =>/=.
-  - iIntros "%Φ (-> & _ & Hi & _) HΦ".
-    wp_rec.
-    wp_pures.
-    iApply "HΦ".
-    by iFrame.
-  - iIntros "%Φ ((%hd & %l' & -> & Hhd & Hl) & [Hx Hxs] & HI & #Hf) HΦ".
-    wp_rec.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_load.
-    wp_pures.
-    wp_apply (IHxs with "[Hl Hxs HI]").
-    { by iFrame. }
-    iIntros (r) "[Hl HI]".
-    wp_apply ("Hf" with "[Hx HI]").
-    { by iFrame. }
-    iIntros (r') "HI".
-    iApply "HΦ".
-    iFrame.
-    iExists hd, l'.
-    by iFrame.
-Qed.
+  (* FILL IN HERE *) Admitted.
 
+(* We can now sum over a list simply by folding it using addition. *)
 Definition sum_list : val :=
   λ: "l",
     let: "f" := (λ: "x" "y", "x" + "y") in

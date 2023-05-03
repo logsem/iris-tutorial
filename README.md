@@ -25,9 +25,8 @@ This [cheatsheet](/cheatsheet.md) contains a table of the most importent tactics
 - [invariants](/theories/invariants.v) - Introduction to invariants
   - [threads](/theories/threads.v) - Construction of thread operations
   - [spin_lock](/theories/spin_lock.v) - Specification for a spin lock
+  - [counter](/theories/counter.v) - Introduction to the authoratative camera.
 
 # To be sorted
-- heaplang/threads.v
-- heaplang/invariant.v
 - logic/cmra.v
   - logic/key.v

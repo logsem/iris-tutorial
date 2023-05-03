@@ -1,7 +1,6 @@
-From iris.algebra Require Export auth frac numbers.
+From iris.algebra Require Export auth excl frac numbers.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation par.
-From iris_tutorial.logic Require Import key.
 
 (*
   Let us define a simple counter module. A counter has 3 functions, a
@@ -83,13 +82,73 @@ Definition is_counter (v : val) (γ : gname) (n : nat) : iProp Σ :=
 
 Global Instance is_counter_persistent v γ n : Persistent (is_counter v γ n) := _.
 
+(*
+  Before we start proving the specifications. Lets prove some useful
+  lemmas about our ghost state. For starters we need to know that we
+  can allocate the initial state we need.
+*)
+Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● MaxNat 0) ∗ own γ (◯ MaxNat 0).
+Proof.
+  (*
+    Ownership of multiple fragments of state compose into ownership of
+    thier composit. So we can simply the goal a little.
+  *)
+  setoid_rewrite <-own_op.
+  (* Now the goal is on the form expected by own_alloc. *)
+  apply own_alloc.
+  (*
+    However we are only allowed to allocate valid state. So we must
+    prove that our desired state is a valid one.
+
+    Validity of auth says that the fragment must be included in
+    the authoratative element, and the authoratative element must be
+    valid.
+  *)
+  apply auth_both_valid_discrete.
+  split.
+  - (* Inclusion for max_nat turns out to be the natural ordering. *)
+    apply max_nat_included =>/=.
+    reflexivity.
+  - (* All elements of max_nat are valid. *)
+    cbv.
+    done.
+Qed.
+
+Lemma state_valid γ n m : own γ (● MaxNat n) -∗ own γ (◯ MaxNat m) -∗ ⌜ m ≤ n ⌝.
+Proof.
+  iIntros "Hγ Hγ'".
+  iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
+  iPureIntro.
+  apply auth_both_valid_discrete in H.
+  destruct H as [H _].
+  apply max_nat_included in H; cbn in H.
+  done.
+Qed.
+
+Lemma update_state γ n : own γ (● MaxNat n) ==∗ own γ (● MaxNat (S n)) ∗ own γ (◯ MaxNat (S n)).
+Proof.
+  rewrite -own_op.
+  (*
+    `own` can be updated using frame preserving updates. These are
+    updates that will not invalidate any other own that could posibly
+    exist.
+  *)
+  apply own_update.
+  (*
+    `auth` has it's own special version of these called local updates,
+    as we actually know what the whole of the state is.
+  *)
+  apply auth_update_alloc.
+  apply max_nat_local_update; cbn.
+  by apply le_S.
+Qed.
+
 Lemma mk_counter_spec : {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0}}}.
 Proof.
   iIntros "%Φ _ HΦ".
   wp_lam.
   wp_alloc l as "Hl".
-  iMod (own_alloc (● MaxNat 0 ⋅ ◯ MaxNat 0)) as "(%γ & Hγ & Hγ')".
-  { by apply auth_both_valid. }
+  iMod alloc_initial_state as "(%γ & Hγ & Hγ')".
   iApply "HΦ".
   iExists l.
   iSplitR; first done.
@@ -106,10 +165,7 @@ Proof.
   wp_lam.
   iInv "HI" as "(%m & Hl & Hγ)".
   wp_load.
-  iCombine "Hγ Hγ'" gives "%H".
-  apply auth_both_valid_discrete in H.
-  destruct H as [H _].
-  rewrite max_nat_included /= in H.
+  iPoseProof (state_valid with "Hγ Hγ'") as "%H".
   iModIntro.
   iSplitL "Hl Hγ".
   {
@@ -139,17 +195,9 @@ Proof.
     apply (inj Z.of_nat) in e.
     subst m'.
     rewrite (comm Z.add m 1%Z) -(Nat2Z.inj_add 1) /=.
-    iCombine "Hγ Hγ'" gives "%H".
-    apply auth_both_valid_discrete in H.
-    destruct H as [H _].
-    rewrite max_nat_included /= in H.
+    iPoseProof (state_valid with "Hγ Hγ'") as "%H".
     iClear "Hγ'".
-    iMod (own_update _ _ (● MaxNat (S m) ⋅ ◯ MaxNat (S m)) with "Hγ") as "[Hγ Hγ']".
-    {
-      apply auth_update_alloc.
-      apply max_nat_local_update=>/=.
-      by apply le_S.
-    }
+    iMod (update_state with "Hγ") as "[Hγ #Hγ']".
     iModIntro.
     iSplitL "Hl Hγ".
     { iExists (S m). iFrame. }
@@ -236,19 +284,69 @@ Proof.
     iFrame.
 Qed.
 
+Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● Some (1%Qp, 0)) ∗ own γ (◯ Some (1%Qp, 0)).
+Proof.
+  setoid_rewrite <-own_op.
+  apply own_alloc.
+  apply auth_both_valid_discrete.
+  split.
+  - reflexivity.
+  - apply Some_valid.
+    apply pair_valid.
+    split.
+    + apply frac_valid.
+      reflexivity.
+    + cbv.
+      done.
+Qed.
+
+Lemma state_valid γ (n m : nat) (q : Qp) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (q, m)) -∗ ⌜m ≤ n⌝.
+Proof.
+  iIntros "Hγ Hγ'".
+  iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
+  iPureIntro.
+  apply auth_both_valid_discrete in H.
+  destruct H as [H _].
+  apply Some_pair_included in H.
+  destruct H as [_ H].
+  rewrite Some_included_total in H.
+  apply nat_included in H.
+  done.
+Qed.
+
+Lemma state_valid_full γ (n m : nat) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (1%Qp, m)) -∗ ⌜m = n⌝.
+Proof.
+  iIntros "Hγ Hγ'".
+  iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
+  iPureIntro.
+  apply auth_both_valid_discrete in H.
+  destruct H as [H _].
+  apply Some_included_exclusive in H.
+  - destruct H as [_ H]; cbn in H.
+    apply leibniz_equiv in H.
+    done.
+  - apply _.
+  - done.
+Qed.
+
+Lemma update_state γ n m (q : Qp) : own γ (● Some (1%Qp, n)) ∗ own γ (◯ Some (q, m)) ==∗ own γ (● Some (1%Qp, S n)) ∗ own γ (◯ Some (q, S m)).
+Proof.
+  rewrite -!own_op.
+  apply own_update.
+  apply auth_update.
+  apply option_local_update.
+  apply prod_local_update_2.
+  apply (op_local_update_discrete _ _ 1).
+  done.
+Qed.
+
 Lemma mk_counter_spec :
   {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0 1}}}.
 Proof.
   iIntros "%Φ _ HΦ".
   wp_lam.
   wp_alloc l as "Hl".
-  iMod (own_alloc (● (Some (1%Qp, 0)) ⋅ ◯ (Some (1%Qp, 0)))) as "(%γ & Hγ & Hγ')".
-  {
-    apply auth_both_valid_discrete.
-    split.
-    - reflexivity.
-    - done.
-  }
+  iMod alloc_initial_state as "(%γ & Hγ & Hγ')".
   iApply "HΦ".
   iExists l.
   iSplitR; first done.
@@ -265,20 +363,15 @@ Proof.
   wp_lam.
   iInv "I" as "(%m & Hl & Hγ)".
   wp_load.
-  iCombine "Hγ Hγ'" gives "%H".
+  iPoseProof (state_valid with "Hγ Hγ'") as "%H".
   iModIntro.
   iSplitL "Hl Hγ".
   { iExists m. iFrame. }
   iApply "HΦ".
   iSplitL.
-  { iExists l. by iFrame "Hγ' I". }
-  iPureIntro.
-  apply auth_both_valid_discrete in H.
-  destruct H as [H _].
-  apply Some_pair_included in H.
-  destruct H as [_ H].
-  rewrite Some_included_total in H.
-  by apply nat_included.
+  - iExists l.
+    by iFrame "Hγ' I".
+  - done.
 Qed.
 
 Lemma read_spec_full (c : val) (γ : gname) (n : nat) :
@@ -288,16 +381,10 @@ Proof.
   wp_lam.
   iInv "I" as "(%m & Hl & Hγ)".
   wp_load.
-  iCombine "Hγ Hγ'" gives "%H".
+  iPoseProof (state_valid_full with "Hγ Hγ'") as "<-".
   iModIntro.
   iSplitL "Hl Hγ".
-  { iExists m. iFrame. }
-  apply auth_both_valid_discrete in H.
-  destruct H as [H _].
-  apply (Some_included_exclusive _) in H; last done.
-  destruct H as [_ H]; cbn in H.
-  apply leibniz_equiv in H.
-  subst m.
+  { iExists n. iFrame. }
   iApply "HΦ".
   iExists l.
   iSplitR; first done.
@@ -325,20 +412,8 @@ Proof.
     subst m'.
     wp_cmpxchg_suc.
     rewrite (comm Z.add) -(Nat2Z.inj_add 1) /=.
-    iCombine "Hγ Hγ'" as "Hγ" gives "%H".
-    apply auth_both_valid_discrete in H.
-    destruct H as [H _].
-    apply Some_pair_included in H.
-    destruct H as [_ H].
-    rewrite Some_included_total in H.
-    apply nat_included in H.
-    iMod (own_update _ _ (● Some (1%Qp, S m) ⋅ ◯ Some (q, S n)) with "Hγ") as "[Hγ Hγ']".
-    {
-      apply auth_update.
-      apply option_local_update.
-      apply prod_local_update_2.
-      by apply (op_local_update_discrete _ _ 1).
-    }
+    iPoseProof (state_valid with "Hγ Hγ'") as "%H".
+    iMod (update_state with "[$Hγ $Hγ']") as "[Hγ Hγ']".
     iModIntro.
     iSplitL "Hl Hγ".
     { iExists (S m). iFrame. }

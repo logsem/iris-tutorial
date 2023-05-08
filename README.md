@@ -26,6 +26,7 @@ This [cheatsheet](/cheatsheet.md) contains a table of the most importent tactics
   - [threads](/theories/threads.v) - Construction of thread operations
   - [spin_lock](/theories/spin_lock.v) - Specification for a spin lock
   - [counter](/theories/counter.v) - Introduction to the authoratative camera.
+  - [ticket_lock](/theories/ticket_lock.v) - Specification for a ticket lock (TO BE DOCUMENTED)
 
 # To be sorted
 - logic/cmra.v

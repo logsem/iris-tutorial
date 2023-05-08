@@ -174,25 +174,11 @@ Proof.
   by rewrite key_op.
 Qed.
 
-(*
-  Combining keys also gives the knowledge that the fractions are
-  composable. This can be encoded using CombineSepGives and retrived
-  using `iCombine "_ _" give "_"`.
-*)
-Global Instance key_combine_gives γ dq1 dq2 :
-  CombineSepGives (key γ dq1) (key γ dq2) (⌜✓ (dq1 ⋅ dq2)⌝).
-Proof.
-  rewrite /CombineSepGives.
-  iIntros "[H1 H2]".
-  iCombine "H1 H2" as "H".
-  iPoseProof (key_valid with "H") as "%H".
-  by iModIntro.
-Qed.
-
 Lemma key_1_excl_l γ dq : key γ (DfracOwn 1) -∗ key γ dq -∗ False.
 Proof.
   iIntros "H1 Hdq".
-  iCombine "H1 Hdq" gives "%H".
+  iCombine "H1 Hdq" as "H".
+  iPoseProof (key_valid with "H") as "%H".
   by apply dfrac_valid_own_l in H.
 Qed.
 

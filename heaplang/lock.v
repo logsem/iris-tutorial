@@ -199,7 +199,7 @@ Global Instance is_lock_persistent γ l P : Persistent (is_lock γ l P) := _.
 Lemma locked_excl γ : locked γ -∗ locked γ -∗ False.
 Proof.
   iIntros "[%o1 H1] [%o2 H2]".
-  iCombine "H1 H2" gives "%H".
+  iPoseProof (own_valid_2 with "H1 H2") as "%H".
   rewrite auth_frag_valid /= in H.
   rewrite pair_valid /= in H.
   by destruct H as [H _].
@@ -248,7 +248,7 @@ Proof.
       iApply "HΦ".
       iFrame.
       by iExists o.
-    + iCombine "Hx Ho" gives "%H".
+    + iPoseProof (own_valid_2 with "Hx Ho") as "%H".
       rewrite auth_frag_valid /= in H.
       rewrite pair_valid /= in H.
       destruct H as [_ H].
@@ -321,13 +321,13 @@ Proof.
   wp_bind (! _)%E.
   iInv "I" as "(%o' & %n & Hlo & Hln & [Hγ [[>Hexcl' _]|Ho]])".
   {
-    iCombine "Hexcl Hexcl'" gives "%H".
+    iPoseProof (own_valid_2 with "Hexcl Hexcl'") as "%H".
     rewrite auth_frag_valid /= in H.
     rewrite pair_valid /= in H.
     by destruct H as [H _].
   }
   wp_load.
-  iCombine "Hγ Hexcl" gives "%H".
+  iPoseProof (own_valid_2 with "Hγ Hexcl") as "%H".
   rewrite auth_both_valid_discrete /= in H.
   destruct H as [H _].
   rewrite pair_included in H.
@@ -342,13 +342,13 @@ Proof.
   rewrite (comm Z.add) -(Nat2Z.inj_add 1) /=.
   iInv "I" as "(%o' & %n & Hlo & Hln & [Hγ [[>Hexcl' _]|Ho]])".
   {
-    iCombine "Hexcl Hexcl'" gives "%H".
+    iPoseProof (own_valid_2 with "Hexcl Hexcl'") as "%H".
     rewrite auth_frag_valid /= in H.
     rewrite pair_valid /= in H.
     by destruct H as [H _].
   }
   wp_store.
-  iCombine "Hγ Hexcl" gives "%H".
+  iPoseProof (own_valid_2 with "Hγ Hexcl") as "%H".
   rewrite auth_both_valid_discrete /= in H.
   destruct H as [H _].
   rewrite pair_included in H.

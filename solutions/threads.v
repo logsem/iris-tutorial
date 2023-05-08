@@ -127,7 +127,7 @@ Proof. by iApply own_alloc. Qed.
 Lemma token_excl γ : own γ (Excl ()) -∗ own γ (Excl ()) -∗ False.
 Proof.
   iIntros "H1 H2".
-  iCombine "H1 H2" gives "%H".
+  iPoseProof (own_valid_2 with "H1 H2") as "%H".
   cbv in H.
   done.
 Qed.

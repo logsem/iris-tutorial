@@ -3,4 +3,5 @@
 -Q theories iris_tutorial
 -Q solutions iris_tutorial_solutions
 
+theories/spin_lock.v
 logic/key.v

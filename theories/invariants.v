@@ -1,5 +1,6 @@
+From iris.algebra Require Export excl_auth frac_auth.
 From iris.base_logic.lib Require Export invariants.
-From iris.heap_lang Require Import lang proofmode notation.
+From iris.heap_lang Require Import lang proofmode notation par.
 
 (*
   Let's make a simple multi-threaded program. We can use `Fork e` to
@@ -109,7 +110,8 @@ End proofs.
   Let's look at another program. This program will create a thread to
   increment a counter. While the main thread will read the counter at
   some point. As such, this program should produce some none negative
-  number. However, we will only prove that it returns a number.
+  number. However, we will only prove that it returns a number. Later,
+  we will see other tools that will allow us to refine this.
 *)
 Definition prog2 : expr :=
   let: "l" := ref #0 in
@@ -190,3 +192,53 @@ Proof.
 Qed.
 
 End proofs.
+
+(*
+  This time we'll use the par operator, to do 2 parallel fetch and
+  adds. Again we will only prove that r ends up even.
+*)
+Definition parallel_add : expr :=
+  let: "r" := ref #0 in
+  (FAA "r" #2)
+  |||
+  (FAA "r" #6)
+  ;;
+  !"r".
+
+Section parallel_add.
+Context `{!heapGS Σ, !spawnG Σ}.
+
+(* The invariant is thus that r points to an even integer. *)
+Definition parallel_add_inv (r : loc) : iProp Σ :=
+  ∃ n : Z, r ↦ #n ∗ ⌜Zeven n⌝.
+
+Lemma parallel_add_spec :
+  {{{ True }}} parallel_add {{{ n, RET #n; ⌜Zeven n⌝ }}}.
+Proof.
+  iIntros "%Φ _ HΦ".
+  rewrite /parallel_add.
+  wp_alloc r as "Hr".
+  wp_pures.
+  iMod (inv_alloc nroot _ (parallel_add_inv r) with "[Hr]") as "#I".
+  {
+    iNext.
+    iExists 0.
+    iFrame.
+  }
+  (*
+    We don't need information back from the threads, so we will simply
+    use (λ _, True) as the post conditions.
+  *)
+  wp_apply (wp_par (λ _, True%I) (λ _, True%I)).
+  - iInv "I" as "(%n & Hr & >%Hn)".
+    wp_faa.
+    iModIntro.
+    iSplitL=>//.
+    iModIntro.
+    iExists (n + 2)%Z.
+    iFrame.
+    iPureIntro.
+    by apply Zeven_plus_Zeven.
+  (* FILL IN HERE *) Admitted.
+
+End parallel_add.

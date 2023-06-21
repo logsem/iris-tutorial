@@ -1,11 +1,11 @@
-From iris.base_logic Require Import iprop.
+From iris.base_logic Require Import upred iprop.
 From iris.proofmode Require Import proofmode.
 
 Section proofs.
 Context {Σ : gFunctors}.
 
 (*
-  Turnstyle can be used as a unary operator to as whether a
+  Turnstyle can be used as a unary operator to ask whether a
   proposition follows from the empty context. Here we locally specify
   that we want to talk about Iris propositions over Σ.
   This is useful when stating lemmas that don't depend on generic Iris
@@ -56,5 +56,30 @@ Proof.
   iPureIntro. (* Separation preserves pureness *)
   split; reflexivity.
 Qed.
+
+(*
+  The pure modality allows us to state the most important property.
+  Namely soundness. Iris is only a usefull extension because we can
+  extract knowledge from Iris out to the Coq metalogic.
+
+  Soundness is proved in the `uPred_primitive.pure_soundness` lemma
+  stating: ∀ φ, (True ⊢ ⌜φ⌝) → φ
+
+  This means that anything proved inside the Iris logic is as true as
+  anything proved in Coq.
+*)
+
+(*
+  ⌜_⌝ turns Coq propositions into Iris propositions, while ⊢_ turns
+  Iris propositions into Coq propositions. These operations aren't
+  inverses, but they are related.
+*)
+Lemma pure_adj1 (φ : Prop) : φ → ⊢ ⌜φ⌝.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+Lemma pure_adj2 (P : iProp Σ) : ⌜⊢P⌝ -∗ P.
+Proof.
+  (* FILL IN HERE *) Admitted.
 
 End proofs.

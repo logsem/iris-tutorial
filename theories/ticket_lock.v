@@ -2,6 +2,19 @@ From iris.algebra Require Import auth excl gset numbers.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
+(*
+  Let's look at another implementation of a lock, namely a ticket
+  lock. Instead of having every thread fight to acquire the lock. The
+  ticket lock makes them wait in line. It does this by maintaining two
+  counters representing queue positions. The first counter is the
+  position next in line to access the critical region. While the
+  second counter is the end of the line.
+  A thread can acquire the lock by incrementing the second counter and
+  keeping its previous value as a ticket for it's position in the
+  queue. When the first counter reachest this ticket value, the thread
+  gains access to the critical region. The thread can then release the
+  lock by incrementing the first counter.
+*)
 Definition mk_lock : val :=
   λ: <>, (ref #0, ref #0).
 Definition wait : val :=
@@ -18,10 +31,75 @@ Definition acquire : val :=
 Definition release : val :=
   λ: "l", Fst "l" <- ! (Fst "l") + #1.
 
+(*
+  As a ticket lock is a lock, we expect it to satisfy the same
+  specification as the spin lick. Its recomemded that you try to prove
+  this specification yourself before continueing. The following module
+  contains the definitions needed for that.
+*)
+Module barebones.
+
+Definition RA : cmra
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+
 Section proofs.
-Context `{!heapGS Σ, !inG Σ (auth (option (excl nat) * gset_disj nat))%type}.
+Context `{!heapGS Σ, !inG Σ RA}.
 Let N := nroot .@ "ticket_lock".
 
+Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+
+Definition is_lock (γ : gname) (l : val) (P : iProp Σ) : iProp Σ :=
+  ∃ lo ln : loc, ⌜l = (#lo, #ln)%V⌝ ∗ inv N (lock_inv γ lo ln P).
+
+Definition locked (γ : gname) : iProp Σ.
+Proof. Admitted.
+
+Definition issued (γ : gname) (x : nat) : iProp Σ.
+Proof. Admitted.
+
+Lemma locked_excl γ : locked γ -∗ locked γ -∗ False.
+Proof.
+  Admitted.
+
+Lemma mk_lock_spec P : {{{ P }}} mk_lock #() {{{ γ l, RET l; is_lock γ l P }}}.
+Proof.
+  Admitted.
+
+Lemma wait_spec γ l P x : {{{ is_lock γ l P ∗ issued γ x }}} wait #x l {{{ RET #(); locked γ ∗ P }}}.
+Proof.
+  Admitted.
+
+Lemma acquire_spec γ l P : {{{ is_lock γ l P }}} acquire l {{{ RET #(); locked γ ∗ P }}}.
+Proof.
+  Admitted.
+
+Lemma release_spec γ l P : {{{ is_lock γ l P ∗ locked γ ∗ P }}} release l {{{ RET #(); True }}}.
+Proof.
+  Admitted.
+
+End proofs.
+End barebones.
+
+(*
+  We will use a finite set of numbers to represent the tickets that
+  have been issued. This becomes a camera by using the disjoint union
+  as operation.
+  For the first counter we will use an exclusive camera. By wraping
+  them both in an authoratative camera, we can use the authoratative
+  fragment to bind the values of our counters to the ghost state.
+*)
+Section proofs.
+Context `{!heapGS Σ, !inG Σ (authR (optionUR (prodR (exclR natO) (gset_disjR nat))}.
+Let N := nroot .@ "ticket_lock".
+
+(*
+  Our invariant will firstly link the authoratative fragment to the
+  counters. For the second counter this means that all tickets prior
+  to its current value must have been issued.
+  Secondly the lock either contains the current ticket, or access to
+  the critical area, as well as ownership of the value of the first counter.
+*)
 Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ :=
   ∃ o n : nat, lo ↦ #o ∗ ln ↦ #n ∗
   own γ (● (Excl' o, GSet (set_seq 0 n))) ∗
@@ -33,9 +111,16 @@ Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ :=
 Definition is_lock (γ : gname) (l : val) (P : iProp Σ) : iProp Σ :=
   ∃ lo ln : loc, ⌜l = (#lo, #ln)%V⌝ ∗ inv N (lock_inv γ lo ln P).
 
+(*
+  The lock will be locked when the ownership of the first counters
+  value is not in the invariant.
+*)
 Definition locked (γ : gname) : iProp Σ :=
   ∃ o, own γ (◯ (Excl' o, GSet ∅)).
 
+(*
+  A ticket is simply the singleton set over its index.
+*)
 Definition issued (γ : gname) (x : nat) : iProp Σ :=
   own γ (◯ (ε : option (excl nat), GSet {[x]})).
 

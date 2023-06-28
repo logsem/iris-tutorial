@@ -113,7 +113,7 @@ Abort.
   meaning `Excl a ⋅ Excl b` isn't valid. As we don't care about the
   value of the state, we will let `A:=()`.
 *)
-Context `{!inG Σ (excl ())}.
+Context `{!inG Σ (exclR unitO)}.
 
 Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w, ⌜v = SOMEV w⌝ ∗ (own γ (Excl ()) ∨ Ψ w)).

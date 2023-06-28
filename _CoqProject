@@ -3,5 +3,17 @@
 -Q theories iris_tutorial
 -Q solutions iris_tutorial_solutions
 
+theories/base.v
+theories/pure.v
+theories/persistently.v
+theories/lang.v
+theories/linked_lists.v
+theories/fixpoint.v
+theories/merge_sort.v
+theories/invariants.v
+theories/counter.v
 theories/spin_lock.v
+theories/threads.v
+theories/ticket_lock.v
+theories/adequacy.v
 logic/key.v

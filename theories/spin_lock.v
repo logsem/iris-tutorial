@@ -43,7 +43,7 @@ Let N := nroot .@ "lock".
   camera is generic over state, however we don't need this feature. So
   we will instatiate it with unit.
 *)
-Context `{!inG Σ (excl ())}.
+Context `{!inG Σ (exclR unitO)}.
 
 (*
   We will think of the name of our ghost state as the name of the

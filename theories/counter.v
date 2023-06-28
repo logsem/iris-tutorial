@@ -75,7 +75,7 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   With this we can use the max_nat camera whose operation is just the
   maximum.
 *)
-Context `{!inG Σ (auth max_nat)}.
+Context `{!inG Σ (authR max_natUR)}.
 
 Definition is_counter (v : val) (γ : gname) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ MaxNat n) ∗ inv N (∃ m : nat, l ↦ #m ∗ own γ (● MaxNat m)).
@@ -199,7 +199,7 @@ End spec1.
 
 Module spec2.
 Section spec2.
-Context `{!heapGS Σ, !inG Σ (auth (option (frac * nat)))}.
+Context `{!heapGS Σ, !inG Σ (authR (optionUR (prodR fracR natR)))}.
 
 Let N := nroot .@ "counter".
 
@@ -321,4 +321,3 @@ Proof.
 
 End spec2.
 End spec2.
-

@@ -107,3 +107,5 @@ Proof.
       iExists t.
       iFrame.
 Qed.
+
+End proofs.

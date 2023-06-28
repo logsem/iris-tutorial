@@ -26,16 +26,16 @@ This [cheatsheet](/cheatsheet.md) contains a table of the most importent tactics
 # Content
 
 - [base](/theories/base.v) - Introduction to the Iris proofmode
-  - [pure](/theories/pure.v) - Distinktion between the Coq context and Iris context
+  - [pure](/theories/pure.v) - Distinction between the Coq context and Iris context
   - [persistently](/theories/persistently.v) - The 3rd context
 - [lang](/theories/lang.v) - Introduction to heaplang
 - [linked_lists](/theories/linked_lists.v) - Exercises with linked lists
   - [fixpoint](/theories/fixpoint.v) - Fixpoints of propositions
 - [merge_sort](/theories/merge_sort.v) - Merge sort
 - [invariants](/theories/invariants.v) - Introduction to invariants
-  - [threads](/theories/threads.v) - Construction of thread operations
+  - [counter](/theories/counter.v) - Introduction to the authoratative camera
   - [spin_lock](/theories/spin_lock.v) - Specification for a spin lock
-  - [counter](/theories/counter.v) - Introduction to the authoratative camera.
+  - [threads](/theories/threads.v) - Construction of thread operations
   - [ticket_lock](/theories/ticket_lock.v) - Specification for a ticket lock (TO BE DOCUMENTED)
 - [adequacy](/theories/adequacy.v)
 

@@ -31,7 +31,8 @@ This [cheatsheet](/cheatsheet.md) contains a table of the most importent tactics
 - [lang](/theories/lang.v) - Introduction to heaplang
 - [linked_lists](/theories/linked_lists.v) - Exercises with linked lists
   - [fixpoint](/theories/fixpoint.v) - Fixpoints of propositions
-- [merge_sort](/theories/merge_sort.v) - Merge sort
+- [arrays](/theories/arrays.v) - Introduction to arrays in heaplang
+  - [merge_sort](/theories/merge_sort.v) - Merge sort
 - [invariants](/theories/invariants.v) - Introduction to invariants
   - [counter](/theories/counter.v) - Introduction to the authoratative camera
   - [spin_lock](/theories/spin_lock.v) - Specification for a spin lock

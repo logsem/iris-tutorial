@@ -9,6 +9,7 @@ theories/persistently.v
 theories/lang.v
 theories/linked_lists.v
 theories/fixpoint.v
+theories/arrays.v
 theories/merge_sort.v
 theories/invariants.v
 theories/counter.v

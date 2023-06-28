@@ -90,7 +90,7 @@ End barebones.
   fragment to bind the values of our counters to the ghost state.
 *)
 Section proofs.
-Context `{!heapGS Σ, !inG Σ (authR (optionUR (prodR (exclR natO) (gset_disjR nat))}.
+Context `{!heapGS Σ, !inG Σ (authR (prodUR (optionUR (exclR natO)) (gset_disjR nat)))}.
 Let N := nroot .@ "ticket_lock".
 
 (*

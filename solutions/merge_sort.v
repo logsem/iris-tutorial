@@ -1,3 +1,4 @@
+From stdpp Require Export sorting.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import array lang proofmode notation par.
 
@@ -12,7 +13,7 @@ From iris.heap_lang Require Import array lang proofmode notation par.
   We merge two arrays a1 and a2 of lengths n1 and n2 into an array b
   of length n1 + n2.
 *)
-Definition merge_inner : val :=
+Definition merge : val :=
   rec: "merge" "a1" "n1" "a2" "n2" "b" :=
   (* If a1 is empty, we simply copy the second a2 into b *)
   if: "n1" = #0 then
@@ -35,116 +36,34 @@ Definition merge_inner : val :=
       "merge" "a1" "n1" ("a2" +ₗ #1) ("n2" - #1) ("b" +ₗ #1).
 
 (*
-  Heaplang recuires array allocations to contain atleast 1 element. So
-  in the case that either of the peaces is empty, we simply return the
-  other.
-*)
-Definition merge : val :=
-  λ: "a1" "n1" "a2" "n2",
-  if: "n1" = #0 then
-    "a2"
-  else if: "n2" = #0 then
-    "a1"
-  else
-    let: "b" := AllocN ("n1" + "n2") #() in
-    merge_inner "a1" "n1" "a2" "n2" "b";;
-    "b".
-
-(*
   To sort we simply split the array in half. Sort them on seperate
-  threads. Then the results are merged together.
+  threads. Then the results are merged together and copied back into the array.
 *)
-Definition merge_sort : val :=
-  rec: "merge_sort" "a" "n" :=
-  if: "n" ≤ #1 then
-    "a"
+Definition merge_sort_inner : val :=
+  rec: "merge_sort_inner" "a" "b" "n" :=
+  if: "n" ≤ #1 then #()
   else
     let: "n1" := "n" `quot` #2 in
     let: "n2" := "n" - "n1" in
-    let: "p" := ("merge_sort" "a" "n1" ||| "merge_sort" ("a" +ₗ "n1") "n2") in
-    merge (Fst "p") "n1" (Snd "p") "n2".
+    ("merge_sort_inner" "b" "a" "n1" ||| "merge_sort_inner" ("b" +ₗ "n1") ("a" +ₗ "n1") "n2");;
+    merge "b" "n1" ("b" +ₗ "n1") "n2" "a".
+
+(*
+  Heaplang recuires array allocations to contain atleast 1 element. So
+  we need to treat this case seperatly.
+*)
+Definition merge_sort : val :=
+  λ: "a" "n",
+  if: "n" = #0 then #()
+  else
+    let: "b" := AllocN "n" #() in
+    array_copy_to "b" "a" "n";;
+    merge_sort_inner "a" "b" "n".
 
 (*
   Our desired specification will be that sort produces a new sorted
   array that's a permutation of the input.
-
-  We define sorting as follows:
 *)
-Inductive sorted : list Z → Prop :=
-  | sorted_nil : sorted []
-  | sorted_singleton x : sorted [x]
-  | sorted_cons_cons x y l : (x ≤ y)%Z → sorted (y :: l) → sorted (x :: y :: l).
-
-(*
-  Alternatively a list is sorted if all ordered pairs of indecies
-  corresponds to orderered values.
-*)
-Lemma sorted_alt l : sorted l ↔ ∀ i j x y, l !! i = Some x → l !! j = Some y → i ≤ j → (x ≤ y)%Z.
-Proof.
-  split.
-  - induction 1 as [|x|x y l H Hl IH].
-    + intros i j x y H.
-      done.
-    + intros i j y z Hi Hj _.
-      apply list_lookup_singleton_Some in Hi.
-      apply list_lookup_singleton_Some in Hj.
-      destruct Hi as [-> <-].
-      destruct Hj as [-> <-].
-      done.
-    + intros i j z w Hi Hj Hle.
-      destruct i, j; cbn in Hi, Hj.
-      -- injection Hi as <-.
-        injection Hj as <-.
-        done.
-      -- injection Hi as <-.
-        trans y=>//.
-        apply (IH 0 j)=>//.
-        apply le_0_n.
-      -- inversion Hle.
-      -- by apply (IH i j), le_S_n.
-  - intros H.
-    induction l as [|x [|y l] IH].
-    all: constructor.
-    + apply (H 0 1)=>//.
-      by constructor.
-    + apply IH => i j z w Hi Hj Hle.
-      by apply (H (S i) (S j)), le_n_S.
-Qed.
-
-Lemma sorted_cons x l : sorted (x :: l) ↔ sorted l ∧ ∀ y, y ∈ l → (x ≤ y)%Z.
-Proof.
-  rewrite !sorted_alt.
-  split.
-  - intros H.
-    split.
-    + intros i j y z Hi Hj Hle.
-      by apply (H (S i) (S j)), le_n_S.
-    + intros y Hy.
-      apply elem_of_list_lookup in Hy.
-      destruct Hy as [i Hi].
-      by apply (H 0 (S i)), le_0_n.
-  - intros [H H0] i j y z Hi Hj Hle.
-    destruct i, j; cbn in *.
-    + injection Hi as <-.
-      injection Hj as <-.
-      done.
-    + injection Hi as <-.
-      apply H0, elem_of_list_lookup.
-      by exists j.
-    + inversion Hle.
-    + by apply (H i j), le_S_n.
-Qed.
-
-Lemma sorted_le_1 l : length l ≤ 1 → sorted l.
-Proof.
-  intros H.
-  destruct l as [|x [|y l]].
-  - apply sorted_nil.
-  - apply sorted_singleton.
-  - contradict H.
-    apply Nat.lt_nge=>/=.
-    apply le_n_S, le_n_S, le_0_n.
-Qed.
 
 Section proofs.
 Context `{!heapGS Σ, !spawnG Σ}.
@@ -154,10 +73,10 @@ Context `{!heapGS Σ, !spawnG Σ}.
   sorted. Furthermore we need the result array b to have enough space,
   though we don't care what it contains.
 *)
-Lemma merge_inner_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
-  {{{a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗ a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗ b ↦∗ l ∗ ⌜sorted l1⌝ ∗ ⌜sorted l2⌝ ∗ ⌜length l = (length l1 + length l2)%nat⌝}}}
-    merge_inner #a1 #(length l1) #a2 #(length l2) #b
-  {{{(l : list Z), RET #(); b ↦∗ ((λ x : Z, #x) <$> l) ∗ ⌜sorted l⌝ ∗ ⌜l1 ++ l2 ≡ₚ l⌝}}}.
+Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
+  {{{a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗ a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗ b ↦∗ l ∗ ⌜StronglySorted Z.le l1⌝ ∗ ⌜StronglySorted Z.le l2⌝ ∗ ⌜length l = (length l1 + length l2)%nat⌝}}}
+    merge #a1 #(length l1) #a2 #(length l2) #b
+  {{{(l : list Z), RET #(); a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗ a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗ b ↦∗ ((λ x : Z, #x) <$> l) ∗ ⌜StronglySorted Z.le l⌝ ∗ ⌜l1 ++ l2 ≡ₚ l⌝}}}.
 Proof.
   iIntros "%Φ (Ha1 & Ha2 & Hb & %Hl1 & %Hl2 & %H) HΦ".
   iLöb as "IH" forall (a1 a2 b l1 l2 l Hl1 Hl2 H).
@@ -186,12 +105,15 @@ Proof.
       iFrame.
       by rewrite app_nil_r.
   }
+  apply StronglySorted_inv in Hl1 as [H1 Hl1].
+  apply StronglySorted_inv in Hl2 as [H2 Hl2].
   wp_pures.
   rewrite !cons_length Nat.add_succ_l Nat.add_succ_r in H.
   destruct l as [|y l]=>//.
   cbn in H.
   injection H as H.
-  rewrite !fmap_cons !array_cons.
+  rewrite !fmap_cons.
+  setoid_rewrite array_cons.
   iDestruct "Ha1" as "[Hx1 Ha1]".
   iDestruct "Ha2" as "[Hx2 Ha2]".
   iDestruct "Hb" as "[Hy Hb]".
@@ -204,28 +126,27 @@ Proof.
     wp_pures.
     rewrite Nat2Z.inj_succ Z.sub_1_r Z.pred_succ.
     iApply ("IH" $! (a1 +ₗ 1) a2 (b +ₗ 1) l1 (x2 :: l2) l with "[] [] [] Ha1 [Hx2 Ha2] Hb").
-    + iPureIntro.
-      by eapply sorted_cons.
     + done.
+    + iPureIntro.
+      by apply SSorted_cons.
     + iPureIntro.
       cbn.
       by rewrite Nat.add_succ_r.
     + rewrite fmap_cons array_cons.
       iFrame.
-    + iIntros "!> %l3 (Hb & %Hl3 & %Hp)".
+    + iIntros "!> %l3 (Ha1 & Ha2 & Hb & %Hl3 & %Hp)".
       iApply ("HΦ" $! (x1 :: l3)).
       rewrite fmap_cons array_cons.
       iFrame.
       iPureIntro.
       split.
-      -- apply sorted_cons.
-        split=>// z Hz.
-        rewrite -Hp elem_of_app elem_of_cons in Hz.
-        destruct Hz as [Hz|[->|Hz]].
-        ++ by apply sorted_cons with l1.
-        ++ done.
-        ++ trans x2=>//.
-          by apply sorted_cons with l2.
+      -- apply SSorted_cons=>//.
+        rewrite -Hp.
+        rewrite Forall_app Forall_cons.
+        split_and!=>//.
+        eapply Forall_impl=>//.
+        intros z Hz.
+        by etrans.
       -- by apply Permutation_skip.
   - apply Z.nle_gt, Z.lt_le_incl in Hx.
     wp_pures.
@@ -233,103 +154,57 @@ Proof.
     wp_pures.
     rewrite (Nat2Z.inj_succ (length l2)) Z.sub_1_r Z.pred_succ.
     iApply ("IH" $! a1 (a2 +ₗ 1) (b +ₗ 1) (x1 :: l1) l2 l with "[] [] [] [Hx1 Ha1] Ha2 Hb").
-    + done.
     + iPureIntro.
-      by eapply sorted_cons.
+      by apply SSorted_cons.
+    + done.
     + done.
     + rewrite fmap_cons array_cons.
       iFrame.
-    + iIntros "!> %l3 (Hb & %Hl3 & %Hp)".
+    + iIntros "!> %l3 (Ha1 & Ha2 & Hb & %Hl3 & %Hp)".
       iApply ("HΦ" $! (x2 :: l3)).
       rewrite fmap_cons array_cons.
       iFrame.
       iPureIntro.
       split.
-      -- apply sorted_cons.
-        split=>// z Hz.
-        rewrite -Hp elem_of_app elem_of_cons in Hz.
-        destruct Hz as [[->|Hz]|Hz].
-        ++ done.
-        ++ trans x1=>//.
-          by apply sorted_cons with l1.
-        ++ by apply sorted_cons with l2.
+      -- apply SSorted_cons=>//.
+        rewrite -Hp /=.
+        rewrite Forall_cons Forall_app.
+        split_and!=>//.
+        eapply Forall_impl=>//.
+        intros z Hz.
+        by etrans.
       -- by apply (Permutation_elt _ l2 [] l3 x2).
 Qed.
 
-Lemma merge_spec (a1 a2 : loc) (l1 l2 : list Z) :
-  {{{a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗ a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗ ⌜sorted l1⌝ ∗ ⌜sorted l2⌝}}}
-    merge #a1 #(length l1) #a2 #(length l2)
-  {{{(b : loc) (l : list Z), RET #b; b ↦∗ ((λ x : Z, #x) <$> l) ∗ ⌜sorted l⌝ ∗ ⌜l1 ++ l2 ≡ₚ l⌝}}}.
-Proof.
-  iIntros "%Φ (Ha1 & Ha2 & Hl1 & Hl2) HΦ".
-  wp_lam.
-  wp_pures.
-  destruct (bool_decide_reflect (#(length l1) = #0)) as [H1|H1].
-  {
-    change 0%Z with (Z.of_nat 0) in H1.
-    injection H1 as H1.
-    destruct l1=>//.
-    wp_pures.
-    iApply "HΦ".
-    iModIntro.
-    by iFrame "Ha2 Hl2".
-  }
-  wp_pures.
-  destruct (bool_decide_reflect (#(length l2) = #0)) as [H2|H2].
-  {
-    change 0%Z with (Z.of_nat 0) in H2.
-    injection H2 as H2.
-    destruct l2=>//.
-    wp_pures.
-    iApply "HΦ".
-    iModIntro.
-    iFrame "Ha1 Hl1".
-    by rewrite app_nil_r.
-  }
-  wp_pures.
-  wp_alloc b as "Hb".
-  {
-    change 0%Z with (Z.of_nat 0).
-    rewrite -Nat2Z.inj_add.
-    apply inj_lt.
-    destruct l1=>//=.
-    apply le_n_S, le_0_n.
-  }
-  wp_pures.
-  wp_apply (merge_inner_spec with "[$Ha1 $Ha2 $Hb $Hl1 $Hl2]").
-  {
-    iPureIntro.
-    rewrite -Nat2Z.inj_add Nat2Z.id.
-    apply replicate_length.
-  }
-  iIntros "%l H".
-  wp_pures.
-  iApply ("HΦ" with "H").
-Qed.
-
 (*
-  With this we can finally prove that sort actually sorts the output.
+  With this we can prove that sort actually sorts the output.
 *)
-Lemma merge_sort_spec (a : loc) (l : list Z) :
-  {{{a ↦∗ ((λ x : Z, #x) <$> l)}}}
-    merge_sort #a #(length l)
-  {{{(b : loc) (l' : list Z), RET #b; b ↦∗ ((λ x : Z, #x) <$> l') ∗ ⌜sorted l'⌝ ∗ ⌜l ≡ₚ l'⌝}}}.
+Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
+  {{{a ↦∗ ((λ x : Z, #x) <$> l) ∗ b ↦∗ ((λ x : Z, #x) <$> l)}}}
+    merge_sort_inner #a #b #(length l)
+  {{{(l' : list Z) vs, RET #(); a ↦∗ ((λ x : Z, #x) <$> l') ∗ b ↦∗ vs ∗ ⌜StronglySorted Z.le l'⌝ ∗ ⌜l ≡ₚ l'⌝ ∗ ⌜length vs = length l'⌝}}}.
 Proof.
-  iIntros "%Φ Ha HΦ".
-  iLöb as "IH" forall (a l Φ).
+  iIntros "%Φ (Ha & Hb) HΦ".
+  iLöb as "IH" forall (a b l Φ).
   wp_rec.
   wp_pures.
-  destruct (bool_decide_reflect (length l ≤ 1)%Z) as [H|H].
+  destruct (bool_decide_reflect (length l ≤ 1)%Z) as [Hlen|Hlen].
   {
     wp_pures.
     iModIntro.
     iApply "HΦ".
     iFrame.
-    iSplitL=>//.
     iPureIntro.
-    apply sorted_le_1, Nat2Z.inj_le, H.
+    rewrite fmap_length.
+    split; last done.
+    apply (Nat2Z.inj_le _ 1) in Hlen.
+    destruct l as [|i1 [|i2 l]].
+    - apply SSorted_nil.
+    - apply SSorted_cons=>//.
+      apply SSorted_nil.
+    - contradict Hlen=>/=. lia.
   }
-  apply Z.nle_gt, (Nat2Z.inj_lt 1) in H.
+  apply Z.nle_gt, (Nat2Z.inj_lt 1) in Hlen.
   wp_pures.
   rewrite Z.quot_div_nonneg //; last apply Nat2Z.is_nonneg.
   change 2%Z with (Z.of_nat 2).
@@ -349,38 +224,92 @@ Proof.
     - apply take_drop.
     - by apply firstn_length_le.
   }
-  clear H0.
-  rewrite app_length in H.
+  clear H.
+  rewrite app_length in Hlen.
   rewrite app_length Nat.sub_add'.
-  rewrite fmap_app array_app fmap_length.
+  rewrite fmap_app !array_app fmap_length.
   iDestruct "Ha" as "[Ha1 Ha2]".
+  iDestruct "Hb" as "[Hb1 Hb2]".
   wp_apply (par_spec
-    (λ v, ∃ (b : loc) l', ⌜#b = v⌝ ∗ b ↦∗ ((λ x : Z, #x) <$> l') ∗ ⌜sorted l'⌝ ∗ ⌜l1 ≡ₚ l'⌝)%I
-    (λ v, ∃ (b : loc) l', ⌜#b = v⌝ ∗ b ↦∗ ((λ x : Z, #x) <$> l') ∗ ⌜sorted l'⌝ ∗ ⌜l2 ≡ₚ l'⌝)%I
-    with "[Ha1] [Ha2]"
+    (λ v, ∃ l' vs, a ↦∗ vs ∗ b ↦∗ ((λ x : Z, #x) <$> l') ∗ ⌜StronglySorted Z.le l'⌝ ∗ ⌜l1 ≡ₚ l'⌝ ∗ ⌜length vs = length l'⌝)%I
+    (λ v, ∃ l' vs, (a +ₗ length l1) ↦∗ vs ∗ (b +ₗ length l1) ↦∗ ((λ x : Z, #x) <$> l') ∗ ⌜StronglySorted Z.le l'⌝ ∗ ⌜l2 ≡ₚ l'⌝ ∗ ⌜length vs = length l'⌝)%I
+    with "[Ha1 Hb1] [Ha2 Hb2]"
   ).
   - wp_pures.
-    wp_apply ("IH" with "Ha1").
-    iIntros "%b %l' H".
-    iExists b, l'.
-    by iFrame.
+    wp_apply ("IH" with "Hb1 Ha1").
+    iIntros "%l' %vs (Ha & Hb & H)".
+    iExists l', vs.
+    iFrame.
   - wp_pures.
-    wp_apply ("IH" with "Ha2").
-    iIntros "%b %l' H".
-    iExists b, l'.
-    by iFrame.
+    wp_apply ("IH" with "Hb2 Ha2").
+    iIntros "%l' %vs (Ha & Hb & H)".
+    iExists l', vs.
+    iFrame.
   - iIntros (? ?) "[
-      (%b1 & %l1' & <- & Hb1 & %Hl1 & %H1)
-      (%b2 & %l2' & <- & Hb2 & %Hl2 & %H2)
+      (%l1' & %vs1 & Ha1 & Hb1 & %H1 & %Hl1 & %Hvs1)
+      (%l2' & %vs2 & Ha2 & Hb2 & %H2 & %Hl2 & %Hvs2)
     ] !>".
     wp_pures.
-    rewrite (Permutation_length H1) (Permutation_length H2).
-    wp_apply (merge_spec with "[$Hb1 $Hb2]")=>//.
-    iIntros "%b %l (Hb & Hl & %Hl)".
+    rewrite (Permutation_length Hl1) (Permutation_length Hl2) -{1}Hvs1.
+    iCombine "Ha1 Ha2" as "Ha".
+    rewrite -array_app.
+    wp_apply (merge_spec with "[$Hb1 $Hb2 $Ha]").
+    {
+      iPureIntro.
+      split_and!; [done..|].
+      rewrite app_length.
+      by f_equal.
+    }
+    iIntros "%l (Hb1 & Hb2 & Ha & Hl & %Hl)".
+    iCombine "Hb1 Hb2" as "Hb".
+    erewrite <-fmap_length, <-array_app, <-fmap_app.
     iApply "HΦ".
     iFrame.
     iPureIntro.
-    by rewrite H1 H2.
+    split.
+    + by rewrite Hl1 Hl2.
+    + rewrite fmap_length.
+      by apply Permutation_length.
+Qed.
+
+Lemma merge_sort_spec (a : loc) (l : list Z) :
+  {{{a ↦∗ ((λ x : Z, #x) <$> l)}}}
+    merge_sort #a #(length l)
+  {{{(l' : list Z), RET #(); a ↦∗ ((λ x : Z, #x) <$> l') ∗ ⌜StronglySorted Z.le l'⌝ ∗ ⌜l ≡ₚ l'⌝}}}.
+Proof.
+  iIntros "%Φ Ha HΦ".
+  wp_lam.
+  wp_pures.
+  destruct (bool_decide_reflect (#(length l) = #0)).
+  {
+    injection e as e.
+    apply (inj Z.of_nat _ 0), nil_length_inv in e as ->.
+    wp_pures.
+    iModIntro.
+    iApply "HΦ".
+    iFrame.
+    iPureIntro.
+    split; last done.
+    apply SSorted_nil.
+  }
+  wp_pures.
+  wp_alloc b as "Hb".
+  {
+    apply Z.nle_gt.
+    contradict n.
+    by apply (Nat2Z.inj_le _ 0), Nat.le_0_r in n as ->.
+  }
+  rewrite Nat2Z.id.
+  wp_pures.
+  wp_apply (wp_array_copy_to with "[$Hb $Ha]").
+  { by rewrite replicate_length. }
+  { by rewrite fmap_length. }
+  iIntros "[Hb Ha]".
+  wp_pures.
+  wp_apply (merge_sort_inner_spec with "[$Ha $Hb]").
+  iIntros "%l' %vs (Ha & Hb & H & Hl & _)".
+  iApply "HΦ".
+  iFrame.
 Qed.
 
 End proofs.

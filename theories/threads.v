@@ -2,7 +2,7 @@ From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*
+(**
   Heaplang has concurency in the form of a fork operation. This
   operation takes an expresion and runs it in a seperate thread.
   Meanwhile, the initial thread continues execution with a unit value.
@@ -10,10 +10,10 @@ From iris.heap_lang Require Import lang proofmode notation.
   specification explicitly via `wp_fork`. This lemma is more general
   than we need for our current use cases, but it esentially states
   that:
-  `WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}`
+  [WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}]
 
   We can use fork to implement other common concurency operators such
-  as `spawn` and `join`.
+  as [spawn] and [join].
 *)
 Definition spawn: val :=
   λ: "f",
@@ -27,7 +27,7 @@ Definition join: val :=
   | SOME "x" => "x"
   end.
 
-(*
+(**
   We can then use the function to define the par operator.
 *)
 Definition par: val :=
@@ -37,24 +37,24 @@ Definition par: val :=
   let: "v1" := join "h" in
   ("v1", "v2").
 
-(* The notation for the par operator then hides the thunks *)
+(** The notation for the par operator then hides the thunks *)
 Notation "e1 ||| e2" := (par (λ: <>, e1)%E (λ: <>, e2)%E) : expr_scope.
-(*
+(**
   Lambda expresions actually canonicalize as lambda values. Thus we
   need to refer to this canonical form when proving our specifications
 *)
 Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
 
-(*
-  Our desired specification for `par` is going to be:
+(**
+  Our desired specification for [par] is going to be:
   {{{ P1 }}} e1 {{{ v, RET v; Ψ1 v }}} -∗
   {{{ P2 }}} e2 {{{ v, RET v; Ψ2 v }}} -∗
   {{{ P1 ∗ P2 }}} e1 ||| e2 {{{ v1 v2, RET (v1, v2); Ψ1 v1 ∗ Ψ2 v2 }}}
 
 
-  To achieve this we need specifications for `spawn` and `join`. For
-  this we need a predicate `join_handle` for the result of the join.
+  To achieve this we need specifications for [spawn] and [join]. For
+  this we need a predicate [join_handle] for the result of the join.
   {{{ P }}} f #() {{{ v, RET v; Ψ v }}} -∗
   {{{ P }}} spawn f {{{ v, RET v; join_handle v Ψ }}}
 
@@ -95,23 +95,23 @@ Proof.
     by iApply "IH".
   - wp_load.
     iModIntro.
-    (*
+    (**
       Now we need HΨ to reestablish the invariant. However we also
       need it for the post-condition. As such, we are stuck.
     *)
 Abort.
 
-(*
+(**
   To fix this we need a way to keep track of whether Ψ is in the
   invariant. However we don't have any program state to link it to.
   Therefor we will use a different kind of state, called ghost state.
   Iris supports many kinds of ghost state, but we will only need one
   property, namely that our ghost state be exclusive.
 
-  We will use the camera `excl A`. This is the exclusive camera. It
-  has the valid states `Excl a`. Importantly this state is exclusive,
-  meaning `Excl a ⋅ Excl b` isn't valid. As we don't care about the
-  value of the state, we will let `A:=()`.
+  We will use the camera [excl A]. This is the exclusive camera. It
+  has the valid states [Excl a]. Importantly this state is exclusive,
+  meaning [Excl a ⋅ Excl b] isn't valid. As we don't care about the
+  value of the state, we will let [A:=()].
 *)
 Context `{!inG Σ (excl ())}.
 

@@ -2,7 +2,7 @@ From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*
+(**
   A spin-lock consists of a pointer to a boolean. This boolean tells us
   whether the lock is currently locked or not.
 
@@ -11,11 +11,11 @@ From iris.heap_lang Require Import lang proofmode notation.
 Definition mk_lock : val :=
   λ: <>, ref #false.
 
-(*
-  To acquire the lock, we use `CAS l false true` (compare and set).
+(**
+  To acquire the lock, we use [CAS l false true] (compare and set).
   This is an atomic operation that updated l to true if l was false.
-  `CAS` then evaluates to whether l was updated.
-  If the CAS fails, it means that the lock is currently acquired
+  [CAS] then evaluates to whether l was updated.
+  If the [CAS] fails, it means that the lock is currently acquired
   somewhere else. So we simply again, until the lock is free.
 *)
 Definition acquire : val :=
@@ -25,7 +25,7 @@ Definition acquire : val :=
   else
     "acquire" "l".
 
-(*
+(**
   To release a lock, we simply update the boolean to false. As such
   it is only safe to call release when we are the ones who locked it.
 *)
@@ -36,7 +36,7 @@ Section proofs.
 Context `{heapGS Σ}.
 Let N := nroot .@ "lock".
 
-(*
+(**
   We use ghost state to describe that the lock is only ever acquired
   once at a time. To do this we simply need ghost state that is
   exclusive. So naturally we will use the exclusive camera. This
@@ -45,7 +45,7 @@ Let N := nroot .@ "lock".
 *)
 Context `{!inG Σ (exclR unitO)}.
 
-(*
+(**
   We will think of the name of our ghost state as the name of the
   lock. It's invariant will be that l maps to a boolean b, and if
   b is false, meaning the lock is unlocked, then the invariant owns
@@ -59,13 +59,13 @@ Definition lock_inv γ l P : iProp Σ :=
 Definition is_lock γ v P : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (lock_inv γ l P).
 
-(*
+(**
   The knowledge that we have acquired the is then represented by
   ownership of the resource.
 *)
 Definition locked γ : iProp Σ := own γ (Excl ()).
 
-(*
+(**
   We need the ghost state to prove that this is exclusive.
 *)
 Lemma locked_excl γ : locked γ -∗ locked γ -∗ False.
@@ -76,7 +76,7 @@ Proof.
   done.
 Qed.
 
-(*
+(**
   Making a new lock consists of giving away ownership of the critical
   area to the lock.
 *)
@@ -99,7 +99,7 @@ Proof.
   by iFrame.
 Qed.
 
-(*
+(**
   Acquirering the lock should result in access to the critical area,
   as well as knowledge that the lock has been locked.
 *)
@@ -159,7 +159,7 @@ Definition prog : expr :=
   acquire "l";;
   !"x".
 
-(*
+(**
   x can take on the values of 0, 1, and 7. However we should not
   observe 7, as it is overriden before the lock is released.
 *)

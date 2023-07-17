@@ -3,12 +3,12 @@ From iris.heap_lang Require Import lang proofmode notation.
 Section proofs.
 Context `{heapGS Σ}.
 
-(*
+(**
   Thus far we've looked at linked lists as our main list
-  implementation. However heaplang also supports arrays. `AllocN n v`
+  implementation. However heaplang also supports arrays. [AllocN n v]
   allocates n contiguous copies of v and returns the location of the
   first element. Then to access a values we can perform offsets
-  `l +ₗ i` and then perform a load.
+  [l +ₗ i] and then perform a load.
 
   To see arrays in action, let's implement a function that copies an
   array, while keeping the origional intact.
@@ -27,9 +27,9 @@ Definition copy : val :=
   copy_to "src" "dst" "len";;
   "dst".
 
-(*
+(**
   Just as with is_list, arrays have a predicate we can use written
-  l ↦∗ vs. Where l is the location of the first element in the array,
+  [l ↦∗ vs]. Where l is the location of the first element in the array,
   and vs is a list of the values currently stored at each location.
 *)
 
@@ -42,7 +42,7 @@ Proof.
   iLöb as "IH" forall (a1 a2 l1 l2 H).
   destruct l1 as [|v1 l1], l2 as [|v2 l2]=>//.
   - wp_rec; wp_pures.
-    (*
+    (**
       The empty array predicate is trivial, as it says nothing about
       the values on the heap. So we can use array_nil to rewrite them
       into emp, which in Iris is just a synonym for True.
@@ -51,7 +51,7 @@ Proof.
     iModIntro.
     by iApply "HΦ".
   - wp_rec; wp_pures.
-    (*
+    (**
       For the cons case we can use array_cons to split the array into
       a mapsto on the first location, with the remaining array
       starting at the next location.
@@ -70,7 +70,7 @@ Proof.
     iFrame.
 Qed.
 
-(*
+(**
   When allocating arrays, heaplang requires the size be greater than
   zero. So we add this to our precondition.
 *)
@@ -97,7 +97,7 @@ Proof.
   by iFrame.
 Qed.
 
-(*
+(**
   Now let's reimplement some of the functions we use for linked lists.
 *)
 Definition inc : val :=
@@ -114,7 +114,7 @@ Lemma inc_spec a l :
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(*
+(**
   To reverse an array, we will swap the first and last value. Then
   we'll recursively repeat this process on the remaining array.
 *)
@@ -128,7 +128,7 @@ Definition reverse : val :=
     "last" <- "tmp";;
     "reverse" ("arr" +ₗ #1) ("len" - #2).
 
-(*
+(**
   Notice we are not following structural induction on the list of
   values as we remove elements from both the front and the back. As
   such you need to use either löb induction or strong induction on the

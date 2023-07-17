@@ -2,7 +2,7 @@ From iris.algebra Require Import auth excl gset numbers.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*
+(**
   Let's look at another implementation of a lock, namely a ticket
   lock. Instead of having every thread fight to acquire the lock. The
   ticket lock makes them wait in line. It does this by maintaining two
@@ -31,7 +31,7 @@ Definition acquire : val :=
 Definition release : val :=
   λ: "l", Fst "l" <- ! (Fst "l") + #1.
 
-(*
+(**
   As a ticket lock is a lock, we expect it to satisfy the same
   specification as the spin lick. Its recomemded that you try to prove
   this specification yourself before continueing. The following module
@@ -81,7 +81,7 @@ Proof.
 End proofs.
 End barebones.
 
-(*
+(**
   We will use a finite set of numbers to represent the tickets that
   have been issued. This becomes a camera by using the disjoint union
   as operation.
@@ -93,7 +93,7 @@ Section proofs.
 Context `{!heapGS Σ, !inG Σ (authR (prodUR (optionUR (exclR natO)) (gset_disjR nat)))}.
 Let N := nroot .@ "ticket_lock".
 
-(*
+(**
   Our invariant will firstly link the authoratative fragment to the
   counters. For the second counter this means that all tickets prior
   to its current value must have been issued.
@@ -111,14 +111,14 @@ Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ :=
 Definition is_lock (γ : gname) (l : val) (P : iProp Σ) : iProp Σ :=
   ∃ lo ln : loc, ⌜l = (#lo, #ln)%V⌝ ∗ inv N (lock_inv γ lo ln P).
 
-(*
+(**
   The lock will be locked when the ownership of the first counters
   value is not in the invariant.
 *)
 Definition locked (γ : gname) : iProp Σ :=
   ∃ o, own γ (◯ (Excl' o, GSet ∅)).
 
-(*
+(**
   A ticket is simply the singleton set over its index.
 *)
 Definition issued (γ : gname) (x : nat) : iProp Σ :=

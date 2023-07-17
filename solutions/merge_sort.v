@@ -2,27 +2,27 @@ From stdpp Require Export sorting.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import array lang proofmode notation par.
 
-(*
+(**
   Let us implement a simple multitheaded merge sort on arrays. Merge
   sort consists of splitting the array in half until we are left with
   pieces of size 0 or 1. Then each pair of pieces are merged into a
   new sorted array.
 *)
 
-(*
+(**
   We merge two arrays a1 and a2 of lengths n1 and n2 into an array b
   of length n1 + n2.
 *)
 Definition merge : val :=
   rec: "merge" "a1" "n1" "a2" "n2" "b" :=
-  (* If a1 is empty, we simply copy the second a2 into b *)
+  (** If a1 is empty, we simply copy the second a2 into b *)
   if: "n1" = #0 then
     array_copy_to "b" "a2" "n2"
-  (* Likewise if a2 is empty instead *)
+  (** Likewise if a2 is empty instead *)
   else if: "n2" = #0 then
     array_copy_to "b" "a1" "n1"
   else
-  (*
+  (**
     Otherwise we compare the first elements of a1 and a2. The least is
     removed and written to b. Rince and repeat.
   *)
@@ -35,7 +35,7 @@ Definition merge : val :=
       "b" <- "x2";;
       "merge" "a1" "n1" ("a2" +ₗ #1) ("n2" - #1) ("b" +ₗ #1).
 
-(*
+(**
   To sort we simply split the array in half. Sort them on seperate
   threads. Then the results are merged together and copied back into the array.
 *)
@@ -48,7 +48,7 @@ Definition merge_sort_inner : val :=
     ("merge_sort_inner" "b" "a" "n1" ||| "merge_sort_inner" ("b" +ₗ "n1") ("a" +ₗ "n1") "n2");;
     merge "b" "n1" ("b" +ₗ "n1") "n2" "a".
 
-(*
+(**
   Heaplang recuires array allocations to contain atleast 1 element. So
   we need to treat this case seperatly.
 *)
@@ -60,7 +60,7 @@ Definition merge_sort : val :=
     array_copy_to "b" "a" "n";;
     merge_sort_inner "a" "b" "n".
 
-(*
+(**
   Our desired specification will be that sort produces a new sorted
   array that's a permutation of the input.
 *)
@@ -68,7 +68,7 @@ Definition merge_sort : val :=
 Section proofs.
 Context `{!heapGS Σ, !spawnG Σ}.
 
-(*
+(**
   To merge to arrays a1 and a2, we require that they are both already
   sorted. Furthermore we need the result array b to have enough space,
   though we don't care what it contains.
@@ -176,7 +176,7 @@ Proof.
       -- by apply (Permutation_elt _ l2 [] l3 x2).
 Qed.
 
-(*
+(**
   With this we can prove that sort actually sorts the output.
 *)
 Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :

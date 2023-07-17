@@ -2,7 +2,7 @@ From iris.algebra Require Export auth excl frac numbers.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation par.
 
-(*
+(**
   Let us define a simple counter module. A counter has 3 functions, a
   constructor, an incr, and a read. The counter is initialized as 0,
   and incr increments the counter while returning the old value. While
@@ -24,7 +24,7 @@ Module spec1.
 Section spec1.
 Context `{heapGS Σ}.
 
-(*
+(**
   We are going to keep the fact that our counter is build on a pointer
   as an implementation detail. Instead we will define a predicate
   describing when a value is a counter.
@@ -33,7 +33,7 @@ Context `{heapGS Σ}.
 Definition is_counter1 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ l ↦ #n.
 
-(*
+(**
   This description is however not persistent, so our value would not
   be shareable across threads. To fix this we can put the knowledge
   into an invariant.
@@ -43,7 +43,7 @@ Let N := nroot .@ "counter".
 Definition is_counter2 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (l ↦ #n).
 
-(*
+(**
   However with this definition we have locked the value of the pointer
   to always be n. To fix this we could abstract the value and instead
   only specify its lower bound.
@@ -52,7 +52,7 @@ Definition is_counter2 (v : val) (n : nat) : iProp Σ :=
 Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (∃ m : nat, l ↦ #m ∗ ⌜n ≤ m⌝).
 
-(*
+(**
   Now we can change the what the pointer mapsto, but we still can't
   refine the lowerbound.
 
@@ -60,17 +60,17 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   peaces of ghost state in such a way that validity of their composit
   is n ≤ m.
 
-  To achieve this we can use the camera `auth A`. This camera is has 2
+  To achieve this we can use the camera [auth A]. This camera is has 2
   peaces:
-  - `● x` called an authoratative element.
-  - `◯ y` called a fragment.
+  - [● x] called an authoratative element.
+  - [◯ y] called a fragment.
   
   The idea of the authoratative camera is as follows. The authoratative
   element represents the whole of the resource, while the fragments
   acts as the peaces. To achive this the authoratative element acts
   like the exclusive camera, while the fragment inherits all the
-  operations of A. Furthermore validity of `● x ⋅ ◯ y` is defined as
-  `✓ x ∧ y ≼ x`.
+  operations of A. Furthermore validity of [● x ⋅ ◯ y] is defined as
+  [✓ x ∧ y ≼ x].
 
   With this we can use the max_nat camera whose operation is just the
   maximum.
@@ -82,21 +82,21 @@ Definition is_counter (v : val) (γ : gname) (n : nat) : iProp Σ :=
 
 Global Instance is_counter_persistent v γ n : Persistent (is_counter v γ n) := _.
 
-(*
+(**
   Before we start proving the specifications. Lets prove some useful
   lemmas about our ghost state. For starters we need to know that we
   can allocate the initial state we need.
 *)
 Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● MaxNat 0) ∗ own γ (◯ MaxNat 0).
 Proof.
-  (*
+  (**
     Ownership of multiple fragments of state compose into ownership of
     thier composit. So we can simply the goal a little.
   *)
   setoid_rewrite <-own_op.
-  (* Now the goal is on the form expected by own_alloc. *)
+  (** Now the goal is on the form expected by own_alloc. *)
   apply own_alloc.
-  (*
+  (**
     However we are only allowed to allocate valid state. So we must
     prove that our desired state is a valid one.
 
@@ -106,10 +106,10 @@ Proof.
   *)
   apply auth_both_valid_discrete.
   split.
-  - (* Inclusion for max_nat turns out to be the natural ordering. *)
+  - (** Inclusion for max_nat turns out to be the natural ordering. *)
     apply max_nat_included =>/=.
     reflexivity.
-  - (* All elements of max_nat are valid. *)
+  - (** All elements of max_nat are valid. *)
     cbv.
     done.
 Qed.
@@ -128,14 +128,14 @@ Qed.
 Lemma update_state γ n : own γ (● MaxNat n) ==∗ own γ (● MaxNat (S n)) ∗ own γ (◯ MaxNat (S n)).
 Proof.
   rewrite -own_op.
-  (*
-    `own` can be updated using frame preserving updates. These are
+  (**
+    [own] can be updated using frame preserving updates. These are
     updates that will not invalidate any other own that could posibly
     exist.
   *)
   apply own_update.
-  (*
-    `auth` has it's own special version of these called local updates,
+  (**
+    [auth] has it's own special version of these called local updates,
     as we actually know what the whole of the state is.
   *)
   apply auth_update_alloc.
@@ -244,7 +244,7 @@ Qed.
 End spec1.
 End spec1.
 
-(*
+(**
   Our first specification only allowed us to find a lower bound for
   the value in par_incr. Any solution to this problem has to be
   non-persistent, as we need to agregate the knowledge to conclude
@@ -252,7 +252,7 @@ End spec1.
 
   As we've seen before, we can use fractions to keep track of peaces
   of knowledge. So we will use the camera
-  `auth (option (frac * nat))`.
+  [auth (option (frac * nat))].
 *)
 
 Module spec2.

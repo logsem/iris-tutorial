@@ -3,7 +3,7 @@ From iris.heap_lang Require Import lang proofmode notation.
 Section linked_lists.
 Context `{!heapGS Σ}.
 
-(*
+(**
   Let's define what we mean by a linked list in heaplang. We'll do
   this by relating a value to a list of values.
 *)
@@ -13,7 +13,7 @@ Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   | x :: xs => ∃ (hd : loc) l', ⌜l = SOMEV #hd⌝ ∗ hd ↦ (x, l') ∗ isList l' xs
   end.
 
-(*
+(**
   Now we can define heaplang functions that act on lists, such as
   append. This function recursively decents l1, updating the links.
   Eventually it reaches the tail, where it will replace it with l2.
@@ -29,9 +29,9 @@ Definition append : val :=
         SOME "p"
     end.
 
-(*
+(**
   If l1 and l2 implements the lists xs and ys respectively, we expect
-  that append will return a list representing `xs ++ ys`.
+  that append will return a list representing [xs ++ ys].
 *)
 Lemma append_spec (l1 l2 : val) (xs ys : list val) :
   {{{isList l1 xs ∗ isList l2 ys}}}
@@ -41,7 +41,7 @@ Proof.
   induction xs in ys, l1, l2 |- * =>/=.
   (* FILL IN HERE *) Admitted.
 
-(*
+(**
   Now let's define a program that increments all the values of a list.
 *)
 Definition inc : val :=
@@ -55,9 +55,9 @@ Definition inc : val :=
         "inc" "t"
     end.
 
-(*
+(**
   Here we want the list to be a list of integers. To do this we take a
-  list of integers and map the elements to values using `# _`. When
+  list of integers and map the elements to values using [# _]. When
   the function is done, we expect all the elements in the list to have
   incremented. So we again use a map to represent this.
 *)
@@ -69,10 +69,10 @@ Proof.
   induction xs in l |- * =>/=.
   (* FILL IN HERE *) Admitted.
 
-(*
+(**
   We will implement reverse using a helper function. This function
-  takes two arguments, `l` and `acc`, and returns the list
-  `rev l ++ acc`.
+  takes two arguments, [l] and [acc], and returns the list
+  [rev l ++ acc].
 *)
 Definition reverse_append : val :=
   rec: "reverse_append" "l" "acc" :=
@@ -85,9 +85,9 @@ Definition reverse_append : val :=
         "reverse_append" "t" "l"
     end.
 
-(*
+(**
   When acc is the empty list, it should thus simply return the reverse
-  of l.
+  of [l].
 *)
 Definition reverse : val :=
   rec: "reverse" "l" := reverse_append "l" NONE.
@@ -100,7 +100,7 @@ Proof.
   induction xs in l, acc, ys |- * =>/=.
   (* FILL IN HERE *) Admitted.
 
-(*
+(**
   Use the specification of reverse_append to prove the specification
   of reverse.
 *)
@@ -111,9 +111,9 @@ Lemma reverse_spec (l : val) (xs : list val) :
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(*
+(**
   The specifications thus far have been rather straight forward. So
-  now we will show a very general specification for `fold_right`.
+  now we will show a very general specification for [fold_right].
 *)
 Definition fold_right : val :=
   rec: "fold_right" "f" "v" "l" :=
@@ -125,25 +125,25 @@ Definition fold_right : val :=
         "f" "h" ("fold_right" "f" "v" "t")
     end.
 
-(*
+(**
   The following specification has a lot of moving parts, so lets go
   through them one by one.
-  - `l` is a linked list implementing `xs`, as seen by `isList l xs`
+  - [l] is a linked list implementing [xs], as seen by [isList l xs]
     in the precondition.
-  - `P` is a predicate that all the values in xs should satisfy.
-    This is written as `[∗ list] x ∈ xs, P x`. This is a recursively
+  - [P] is a predicate that all the values in xs should satisfy.
+    This is written as [[∗ list] x ∈ xs, P x]. This is a recursively
     defined predicate, defined as follows:
-    `[∗ list] x ∈ [], P x := True`
-    `[∗ list] x ∈ x0 :: xs, P x := P x0 ∗ [∗ list] x ∈ xs, P x`
-  - `I` is a predicate describing the relation between a list
+    [[∗ list] x ∈ [], P x := True]
+    [[∗ list] x ∈ x0 :: xs, P x := P x0 ∗ [∗ list] x ∈ xs, P x]
+  - [I] is a predicate describing the relation between a list
     and the result of the fold.
-  - `a` is the initial value, so the empty list should produce it.
-    This is captured by `I [] a`.
-  - `f` is the folding function. So it satisfies:
-    `{{{ P x ∗ I ys a'}}} f x a' {{{ r, RET; I (x :: ys) r }}}`.
-  - The result `r` must then satisfy `I xs r`.
+  - [a] is the initial value, so the empty list should produce it.
+    This is captured by [I [] a].
+  - [f] is the folding function. So it satisfies:
+    [{{{ P x ∗ I ys a'}}} f x a' {{{ r, RET; I (x :: ys) r }}}].
+  - The result [r] must then satisfy [I xs r].
   - Importantly, we don't change the original list. So we put
-    `isList l xs` in the post condition.
+    [isList l xs] in the post condition.
 *)
 Lemma fold_right_spec P I (f a l : val) xs :
   {{{
@@ -156,7 +156,7 @@ Proof.
   induction xs in a, l |- * =>/=.
   (* FILL IN HERE *) Admitted.
 
-(* We can now sum over a list simply by folding it using addition. *)
+(** We can now sum over a list simply by folding it using addition. *)
 Definition sum_list : val :=
   λ: "l",
     let: "f" := (λ: "x" "y", "x" + "y") in

@@ -127,13 +127,14 @@ Qed.
 
 Lemma update_state γ n : own γ (● MaxNat n) ==∗ own γ (● MaxNat (S n)) ∗ own γ (◯ MaxNat (S n)).
 Proof.
+  iIntros "H".
   rewrite -own_op.
   (**
     [own] can be updated using frame preserving updates. These are
     updates that will not invalidate any other own that could posibly
     exist.
   *)
-  apply own_update.
+  iApply (own_update with "H").
   (**
     [auth] has it's own special version of these called local updates,
     as we actually know what the whole of the state is.
@@ -331,8 +332,9 @@ Qed.
 
 Lemma update_state γ n m (q : Qp) : own γ (● Some (1%Qp, n)) ∗ own γ (◯ Some (q, m)) ==∗ own γ (● Some (1%Qp, S n)) ∗ own γ (◯ Some (q, S m)).
 Proof.
+  iIntros "H".
   rewrite -!own_op.
-  apply own_update.
+  iApply (own_update with "H").
   apply auth_update.
   apply option_local_update.
   apply prod_local_update_2.

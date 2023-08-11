@@ -112,7 +112,27 @@ Lemma inc_spec a l :
     inc #a #(length l)
   {{{RET #(); a ↦∗ ((λ i : Z, #(i + 1)) <$> l)}}}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "%Φ Ha HΦ".
+  iInduction l as [|i l] "IH" forall (a).
+  - wp_rec.
+    wp_pures.
+    iApply "HΦ".
+    done.
+  - rewrite !fmap_cons !array_cons.
+    iDestruct "Ha" as "[Hi Ha]".
+    wp_rec.
+    wp_pures.
+    wp_load.
+    wp_pures.
+    wp_store.
+    wp_pures.
+    rewrite Nat2Z.inj_succ Z.sub_1_r Z.pred_succ.
+    wp_apply ("IH" with "Ha").
+    iIntros "Ha".
+    iApply "HΦ".
+    iFrame.
+Qed.
 
 (**
   To reverse an array, we will swap the first and last value. Then
@@ -139,6 +159,44 @@ Lemma reverse_spec a l :
     reverse #a #(length l)
   {{{RET #(); a ↦∗ rev l}}}.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "%Φ Ha HΦ".
+  iLöb as "IH" forall (a l).
+  wp_rec.
+  wp_pures.
+  destruct (bool_decide_reflect (length l ≤ 1)%Z) as [H|H].
+  - apply (Nat2Z.inj_le _ 1) in H.
+    wp_pures.
+    iApply "HΦ".
+    destruct l as [|v1 [|v2 l]]=>//.
+    cbn in H.
+    apply le_S_n in H.
+    inversion H.
+  - apply Z.nle_gt in H.
+    induction l as [|v2 l _] using rev_ind=>//.
+    destruct l as [|v1 l]=>//.
+    clear H.
+    change (v1 :: ?l) with ([v1] ++ l) at 2.
+    rewrite !rev_app_distr app_length Nat2Z.inj_add /=.
+    rewrite !array_cons !array_app !array_singleton.
+    rewrite rev_length Loc.add_assoc.
+    iDestruct "Ha" as "(Hv1 & Hl & Hv2)".
+    wp_pures.
+    wp_load.
+    wp_pures.
+    rewrite Z.add_simpl_r.
+    change 1%Z with (Z.of_nat 1) at 2 4.
+    rewrite -Nat2Z.inj_add /=.
+    wp_load.
+    wp_store.
+    wp_store.
+    wp_pures.
+    rewrite {3}Nat2Z.inj_succ Z.add_succ_comm.
+    rewrite (Z.add_simpl_r _ 2).
+    wp_apply ("IH" with "Hl").
+    iIntros "Hl".
+    iApply "HΦ".
+    iFrame.
+Qed.
 
 End proofs.

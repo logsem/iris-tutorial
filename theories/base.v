@@ -77,7 +77,11 @@ Qed.
 *)
 Lemma modus_ponens (P Q : iProp Σ) : P -∗ (P -∗ Q) -∗ Q.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "P H".
+  iApply "H".
+  iApply "P".
+Qed.
 
 (**
   Seperating conjunction is very analogous to conjunction in coq. To
@@ -118,7 +122,13 @@ Qed.
 *)
 Lemma sep_assoc_1 (P Q R : iProp Σ) : P ∗ Q ∗ R ⊢ (P ∗ Q) ∗ R.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "(P & Q & R)".
+  iSplitR "R"; last iApply "R".
+  iSplitL "P".
+  - iApply "P".
+  - iApply "Q".
+Qed.
 
 (**
   iProp supports bientailment as equivalence relation [P ⊣⊢ Q]. Most
@@ -140,7 +150,15 @@ Proof.
 Lemma wand_adj (P Q R : iProp Σ) : (P -∗ Q -∗ R) ⊣⊢ (P ∗ Q -∗ R).
 Proof.
   iSplit.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  - iIntros "H [P Q]".
+    iApply ("H" with "P Q").
+  - iIntros "H P Q".
+    iApply "H".
+    iSplitL "P".
+    + iApply "P".
+    + iApply "Q".
+Qed.
 
 (**
   Disjunctions [∨] are treated just like disjuctions in coq.
@@ -151,7 +169,11 @@ Proof.
 *)
 Lemma or_comm (P Q : iProp Σ) : Q ∨ P ⊢ P ∨ Q.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "[Q | P]".
+  - by iRight.
+  - by iLeft.
+Qed.
 
 (**
   We can even prove the usual elemination rule for or elemination
@@ -160,12 +182,23 @@ Proof.
 *)
 Lemma or_elem (P Q R : iProp Σ) : (P -∗ R) -∗ (Q -∗ R) -∗ P ∨ Q -∗ R.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "H1 H2 [P|Q]".
+  - iApply ("H1" with "P").
+  - iApply ("H2" with "Q").
+Qed.
 
 Lemma sep_or_distr (P Q R : iProp Σ) : P ∗ (Q ∨ R) ⊣⊢ P ∗ Q ∨ P ∗ R.
 Proof.
   iSplit.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  - iIntros "[P [Q | R]]".
+    + iLeft. iFrame.
+    + iRight. iFrame.
+  - iIntros "[[P Q] | [P R]]".
+    + iFrame.
+    + iFrame.
+Qed.
 
 (**
   Iris has existetial and universal quantifiers over defined on any
@@ -176,7 +209,16 @@ Proof.
 *)
 Lemma sep_ex_distr {A} (P : iProp Σ) (Φ : A → iProp Σ) : (P ∗ ∃ x, Φ x) ⊣⊢ ∃ x, P ∗ Φ x.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iSplit.
+  - iIntros "(P & %x & Φ)".
+    iExists x.
+    iFrame.
+  - iIntros "(%x & P & Φ)".
+    iSplitL "P".
+    + done.
+    + by iExists x.
+Qed.
 
 (**
   Forall likewise works almost like in coq. To introduce the variables
@@ -186,6 +228,9 @@ Proof.
 *)
 Lemma sep_all_distr {A} (P Q : A → iProp Σ) : (∀ x, P x) ∗ (∀ x, Q x) -∗ (∀ x, P x ∗ Q x).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "[P Q] %x".
+  by iSplitL "P".
+Qed.
 
 End proofs.

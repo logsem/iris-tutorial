@@ -42,7 +42,12 @@ Qed.
 
 Lemma pers_sep (P : iProp Σ) `{!Persistent P} : P ⊢ P ∗ P.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros "#P".
+  iSplit.
+  - done.
+  - done.
+Qed.
 
 (**
   Persistent propositions satisfy a lot of nice proporties simply by being duplicable [P ⊢ P ∗ P]

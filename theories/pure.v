@@ -76,10 +76,17 @@ Qed.
 *)
 Lemma pure_adj1 (φ : Prop) : φ → ⊢ ⌜φ⌝.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  intros H.
+  iPureIntro.
+  exact H.
+Qed.
 
 Lemma pure_adj2 (P : iProp Σ) : ⌜⊢P⌝ -∗ P.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  iIntros (H).
+  iApply H.
+Qed.
 
 End proofs.

@@ -239,6 +239,26 @@ Proof.
     iFrame.
     iPureIntro.
     by apply Zeven_plus_Zeven.
-  (* FILL IN HERE *) Admitted.
+  (* Exercise start *)
+  - iInv "I" as "(%n & Hr & >%Hn)".
+    wp_faa.
+    iModIntro.
+    iSplitL=>//.
+    iModIntro.
+    iExists (n + 6)%Z.
+    iFrame.
+    iPureIntro.
+    by apply Zeven_plus_Zeven.
+  - iIntros "%v1 %v2 _ !>".
+    wp_pures.
+    iInv "I" as "(%n & Hr & >%Hn)".
+    wp_load.
+    iModIntro.
+    iSplitL "Hr".
+    + iNext.
+      iExists n.
+      by iFrame.
+    + by iApply "HΦ".
+Qed.
 
 End parallel_add.

@@ -32,76 +32,38 @@ Definition release : val :=
   λ: "l", Fst "l" <- ! (Fst "l") + #1.
 
 (**
-  As a ticket lock is a lock, we expect it to satisfy the same
-  specification as the spin lick. Its recomemded that you try to prove
-  this specification yourself before continueing. The following module
-  contains the definitions needed for that.
+  As a ticket lock is a lock. So we expect it to satisfy the same
+  specification as the spin lick. This time you have to find the
+  necessary resource and lock invariant by your self.
 *)
-Module barebones.
 
 Definition RA : cmra
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+  (* Exercise definition *)
+  (**
+    We will use a finite set of numbers to represent the tickets that
+    have been issued. This becomes a camera by using the disjoint
+    union as operation.
+    For the first counter we will use an exclusive camera. By wraping
+    them both in an authoratative camera, we can use the authoratative
+    fragment to bind the values of our counters to the ghost state.
+  *)
+  := authR (prodUR (optionUR (exclR natO)) (gset_disjR nat)).
 
 Section proofs.
 Context `{!heapGS Σ, !inG Σ RA}.
 Let N := nroot .@ "ticket_lock".
 
 Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
-
-Definition is_lock (γ : gname) (l : val) (P : iProp Σ) : iProp Σ :=
-  ∃ lo ln : loc, ⌜l = (#lo, #ln)%V⌝ ∗ inv N (lock_inv γ lo ln P).
-
-Definition locked (γ : gname) : iProp Σ.
-Proof. Admitted.
-
-Definition issued (γ : gname) (x : nat) : iProp Σ.
-Proof. Admitted.
-
-Lemma locked_excl γ : locked γ -∗ locked γ -∗ False.
-Proof.
-  Admitted.
-
-Lemma mk_lock_spec P : {{{ P }}} mk_lock #() {{{ γ l, RET l; is_lock γ l P }}}.
-Proof.
-  Admitted.
-
-Lemma wait_spec γ l P x : {{{ is_lock γ l P ∗ issued γ x }}} wait #x l {{{ RET #(); locked γ ∗ P }}}.
-Proof.
-  Admitted.
-
-Lemma acquire_spec γ l P : {{{ is_lock γ l P }}} acquire l {{{ RET #(); locked γ ∗ P }}}.
-Proof.
-  Admitted.
-
-Lemma release_spec γ l P : {{{ is_lock γ l P ∗ locked γ ∗ P }}} release l {{{ RET #(); True }}}.
-Proof.
-  Admitted.
-
-End proofs.
-End barebones.
-
-(**
-  We will use a finite set of numbers to represent the tickets that
-  have been issued. This becomes a camera by using the disjoint union
-  as operation.
-  For the first counter we will use an exclusive camera. By wraping
-  them both in an authoratative camera, we can use the authoratative
-  fragment to bind the values of our counters to the ghost state.
-*)
-Section proofs.
-Context `{!heapGS Σ, !inG Σ (authR (prodUR (optionUR (exclR natO)) (gset_disjR nat)))}.
-Let N := nroot .@ "ticket_lock".
-
-(**
-  Our invariant will firstly link the authoratative fragment to the
-  counters. For the second counter this means that all tickets prior
-  to its current value must have been issued.
-  Secondly the lock either contains the current ticket, or access to
-  the critical area, as well as ownership of the value of the first counter.
-*)
-Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ :=
-  ∃ o n : nat, lo ↦ #o ∗ ln ↦ #n ∗
+  (* Exercise definition *)
+  (**
+    Our invariant will firstly link the authoratative fragment to the
+    counters. For the second counter this means that all tickets prior
+    to its current value must have been issued.
+    Secondly the lock either contains the current ticket, or access to
+    the critical area, as well as ownership of the value of the first
+    counter.
+  *)
+  := ∃ o n : nat, lo ↦ #o ∗ ln ↦ #n ∗
   own γ (● (Excl' o, GSet (set_seq 0 n))) ∗
   (
     (own γ (◯ (Excl' o, GSet ∅)) ∗ P) ∨
@@ -111,23 +73,22 @@ Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ :=
 Definition is_lock (γ : gname) (l : val) (P : iProp Σ) : iProp Σ :=
   ∃ lo ln : loc, ⌜l = (#lo, #ln)%V⌝ ∗ inv N (lock_inv γ lo ln P).
 
-(**
-  The lock will be locked when the ownership of the first counters
-  value is not in the invariant.
-*)
-Definition locked (γ : gname) : iProp Σ :=
-  ∃ o, own γ (◯ (Excl' o, GSet ∅)).
+Definition locked (γ : gname) : iProp Σ
+  (* Exercise definition *)
+  (**
+    The lock will be locked when the ownership of the first counters
+    value is not in the invariant.
+  *)
+  := ∃ o, own γ (◯ (Excl' o, GSet ∅)).
 
-(**
-  A ticket is simply the singleton set over its index.
-*)
-Definition issued (γ : gname) (x : nat) : iProp Σ :=
-  own γ (◯ (ε : option (excl nat), GSet {[x]})).
-
-Global Instance is_lock_persistent γ l P : Persistent (is_lock γ l P) := _.
+Definition issued (γ : gname) (x : nat) : iProp Σ
+  (* Exercise definition *)
+  (** A ticket is simply the singleton set over its index. *)
+  := own γ (◯ (ε : option (excl nat), GSet {[x]})).
 
 Lemma locked_excl γ : locked γ -∗ locked γ -∗ False.
 Proof.
+  (* Exercise start *)
   iIntros "[%o1 H1] [%o2 H2]".
   iPoseProof (own_valid_2 with "H1 H2") as "%H".
   rewrite auth_frag_valid /= in H.
@@ -137,6 +98,7 @@ Qed.
 
 Lemma mk_lock_spec P : {{{ P }}} mk_lock #() {{{ γ l, RET l; is_lock γ l P }}}.
 Proof.
+  (* Exercise start *)
   iIntros "%Φ HP HΦ".
   wp_lam.
   wp_alloc ln as "Hln".
@@ -157,6 +119,7 @@ Qed.
 
 Lemma wait_spec γ l P x : {{{ is_lock γ l P ∗ issued γ x }}} wait #x l {{{ RET #(); locked γ ∗ P }}}.
 Proof.
+  (* Exercise start *)
   iIntros "%Φ [(%lo & %ln & -> & #I) Hx] HΦ".
   iLöb as "IH".
   wp_rec.
@@ -195,6 +158,7 @@ Qed.
 
 Lemma acquire_spec γ l P : {{{ is_lock γ l P }}} acquire l {{{ RET #(); locked γ ∗ P }}}.
 Proof.
+  (* Exercise start *)
   iIntros "%Φ (%lo & %ln & -> & #I) HΦ".
   iLöb as "IH".
   wp_rec.
@@ -245,6 +209,7 @@ Qed.
 
 Lemma release_spec γ l P : {{{ is_lock γ l P ∗ locked γ ∗ P }}} release l {{{ RET #(); True }}}.
 Proof.
+  (* Exercise start *)
   iIntros "%Φ ((%lo & %ln & -> & #I) & [%o Hexcl] & HP) HΦ".
   wp_lam.
   wp_pures.

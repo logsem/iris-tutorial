@@ -32,8 +32,8 @@ Proof.
   iDestruct "HP" as "#HP".
   iSplitR.
   - (**
-      Notice that event though I asked Iris to move all hypotheses
-      into the second subgoal, I still kept "HP".
+      Notice that event though we asked Iris to move all hypotheses
+      into the second subgoal, we still kept "HP".
     *)
     iApply "HP".
   - (** And "HP" is also present in this subgoal *)

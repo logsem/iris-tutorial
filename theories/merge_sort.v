@@ -74,9 +74,21 @@ Context `{!heapGS Σ, !spawnG Σ}.
   though we don't care what it contains.
 *)
 Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
-  {{{a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗ a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗ b ↦∗ l ∗ ⌜StronglySorted Z.le l1⌝ ∗ ⌜StronglySorted Z.le l2⌝ ∗ ⌜length l = (length l1 + length l2)%nat⌝}}}
+  {{{
+    a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗
+    a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗ b ↦∗ l ∗
+    ⌜StronglySorted Z.le l1⌝ ∗
+    ⌜StronglySorted Z.le l2⌝ ∗
+    ⌜length l = (length l1 + length l2)%nat⌝
+  }}}
     merge #a1 #(length l1) #a2 #(length l2) #b
-  {{{(l : list Z), RET #(); a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗ a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗ b ↦∗ ((λ x : Z, #x) <$> l) ∗ ⌜StronglySorted Z.le l⌝ ∗ ⌜l1 ++ l2 ≡ₚ l⌝}}}.
+  {{{(l : list Z), RET #();
+    a1 ↦∗ ((λ x : Z, #x) <$> l1) ∗
+    a2 ↦∗ ((λ x : Z, #x) <$> l2) ∗
+    b ↦∗ ((λ x : Z, #x) <$> l) ∗
+    ⌜StronglySorted Z.le l⌝ ∗
+    ⌜l1 ++ l2 ≡ₚ l⌝
+  }}}.
 Proof.
   (* Exercise start *)
   iIntros "%Φ (Ha1 & Ha2 & Hb & %Hl1 & %Hl2 & %H) HΦ".
@@ -181,9 +193,17 @@ Qed.
   With this we can prove that sort actually sorts the output.
 *)
 Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
-  {{{a ↦∗ ((λ x : Z, #x) <$> l) ∗ b ↦∗ ((λ x : Z, #x) <$> l)}}}
+  {{{
+    a ↦∗ ((λ x : Z, #x) <$> l) ∗
+    b ↦∗ ((λ x : Z, #x) <$> l)
+  }}}
     merge_sort_inner #a #b #(length l)
-  {{{(l' : list Z) vs, RET #(); a ↦∗ ((λ x : Z, #x) <$> l') ∗ b ↦∗ vs ∗ ⌜StronglySorted Z.le l'⌝ ∗ ⌜l ≡ₚ l'⌝ ∗ ⌜length vs = length l'⌝}}}.
+  {{{(l' : list Z) vs, RET #();
+    a ↦∗ ((λ x : Z, #x) <$> l') ∗
+    b ↦∗ vs ∗ ⌜StronglySorted Z.le l'⌝ ∗
+    ⌜l ≡ₚ l'⌝ ∗
+    ⌜length vs = length l'⌝
+  }}}.
 Proof.
   (* Exercise start *)
   iIntros "%Φ (Ha & Hb) HΦ".
@@ -277,7 +297,11 @@ Qed.
 Lemma merge_sort_spec (a : loc) (l : list Z) :
   {{{a ↦∗ ((λ x : Z, #x) <$> l)}}}
     merge_sort #a #(length l)
-  {{{(l' : list Z), RET #(); a ↦∗ ((λ x : Z, #x) <$> l') ∗ ⌜StronglySorted Z.le l'⌝ ∗ ⌜l ≡ₚ l'⌝}}}.
+  {{{(l' : list Z), RET #();
+    a ↦∗ ((λ x : Z, #x) <$> l') ∗
+    ⌜StronglySorted Z.le l'⌝ ∗
+    ⌜l ≡ₚ l'⌝
+  }}}.
 Proof.
   (* Exercise start *)
   iIntros "%Φ Ha HΦ".

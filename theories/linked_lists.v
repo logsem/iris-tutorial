@@ -5,7 +5,7 @@ Context `{!heapGS Σ}.
 
 (**
   Let's define what we mean by a linked list in heaplang. We'll do
-  this by relating a value to a list of values.
+  this by relating a value to the list it represents.
 *)
 Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   match xs with
@@ -30,7 +30,7 @@ Definition append : val :=
     end.
 
 (**
-  If l1 and l2 implements the lists xs and ys respectively, we expect
+  If l1 and l2 represents the lists xs and ys respectively, we expect
   that append will return a list representing [xs ++ ys].
 *)
 Lemma append_spec (l1 l2 : val) (xs ys : list val) :
@@ -78,7 +78,7 @@ Definition inc : val :=
   Here we want the list to be a list of integers. To do this we take a
   list of integers and map the elements to values using [# _]. When
   the function is done, we expect all the elements in the list to have
-  incremented. So we again use a map to represent this.
+  incremented. So we again use a map to incode this.
 *)
 Lemma inc_spec (l : val) (xs : list Z) :
   {{{isList l ((λ x : Z, #x) <$> xs)}}}

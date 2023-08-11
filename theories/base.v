@@ -29,7 +29,7 @@ Context {Σ: gFunctors}.
   can be curried or combined. However, and more importantly, unlike in
   clasical logic, in seperation logic we have multiple sensible
   choices for combining propositions. Iris is equiped with the usual
-  `and` connective written [P ∧ Q], however this is rarely used.
+  and connective written [P ∧ Q], however this is rarely used.
   Instead we use the seperating conjunction [P ∗ Q] stating that [P]
   and [Q] are satisfied using seperate resources. In fact seperation
   is so widely used that [P ⊢ Q] is more commonly written as [P -∗ Q]
@@ -59,15 +59,15 @@ Proof.
     that they can refer to the Iris context.
 
     To introduce hypotheses in coq, one would normaly use the tactic
-    [intros HP]. However we are working with the iris logic so we use
-    instead use the tactic [iIntros "HP"].
+    [intros H]. However we are working with the iris logic so we use
+    instead use the tactic [iIntros "H"].
   *)
-  iIntros "HP".
+  iIntros "H".
   (**
     And to finish the proof on would normaly use either [exact] or
     [apply]. So in Iris we use either [iExact] or [iApply].
   *)
-  iApply "HP".
+  iApply "H".
 Qed.
 
 (**
@@ -140,9 +140,10 @@ Qed.
 
   For hypotheses with multiple curried wands, it is again nesessary to
   specify how to split the Iris context during application. This can
-  be done as [iApply ("Hyp" with "[H1 H2 H3] [H4 H5]")]. Each square
-  brackets specifies the peace of the context going to that argument.
-  Hypotheses that fit arguments dirrectly can be supply dirrectly
+  be done as [iApply ("Hyp" with "[H1 H2 H3] [H4 H5]")]. Each set of
+  square brackets specifies the peace of the context going to that
+  argument.
+  Hypotheses that fit arguments directly can be supplied directly
   without a square bracket to avoid trivial subgoals.
 
   Prove currying for the seperation connectives.
@@ -176,7 +177,7 @@ Proof.
 Qed.
 
 (**
-  We can even prove the usual elemination rule for or elemination
+  We can even prove the usual elemination rule for or-elemination
   written with seperation. This version is however not very useful, as
   it does not allow the 2 cases to share resources.
 *)

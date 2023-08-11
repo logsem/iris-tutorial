@@ -5,7 +5,7 @@ Section proofs.
 Context {Σ : gFunctors}.
 
 (**
-  Turnstyle can be used as a unary operator to as whether a
+  Turnstyle can be used as a unary operator to ask whether a
   proposition follows from the empty context. Here we locally specify
   that we want to talk about Iris propositions over [Σ].
   This is useful when stating lemmas that don't depend on generic Iris
@@ -15,7 +15,7 @@ Local Notation "⊢ P" := (⊢@{iPropI Σ} P).
 
 (**
   Coq propositions can be embeded into iris using the pure modality
-  [⌜ϕ⌝]. Pure propositions can be introduced using [iPureIntro]. This
+  [⌜Φ⌝]. Pure propositions can be introduced using [iPureIntro]. This
   will exit Iris proofmode, throwing away the Iris context. Pure
   propositions can be eleminated using the introduction pattern "%_".
 *)
@@ -34,7 +34,7 @@ Qed.
 
 (**
   Iris has a class of propositions we call pure.
-  These are the propositions [P] that are bientailed by [⌜ϕ⌝] for
+  These are the propositions [P] that are bientailed by [⌜Φ⌝] for
   some Φ. Iris has a 2 typeclasses [IntoPure] and [FromPure] to
   identify such propositions.
 *)

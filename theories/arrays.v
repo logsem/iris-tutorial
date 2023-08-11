@@ -30,7 +30,8 @@ Definition copy : val :=
 (**
   Just as with is_list, arrays have a predicate we can use written
   [l ↦∗ vs]. Where l is the location of the first element in the array,
-  and vs is a list of the values currently stored at each location.
+  and vs is the list of values currently stored at each location of
+  the array.
 *)
 
 Lemma copy_to_spec a1 a2 l1 l2 :
@@ -44,7 +45,7 @@ Proof.
   - wp_rec; wp_pures.
     (**
       The empty array predicate is trivial, as it says nothing about
-      the values on the heap. So we can use array_nil to rewrite them
+      the values on the heap. So we can use [array_nil] to rewrite them
       into emp, which in Iris is just a synonym for True.
     *)
     rewrite !array_nil.

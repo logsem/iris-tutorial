@@ -21,7 +21,7 @@ Definition prog : expr :=
 (**
   This program should evaluate to 3. To prove this we'll use the
   weakest precondition [WP]. This let's us specify a post condition we
-  expect to hold if and when the program halts.
+  expect to hold if the program halts.
 *)
 Lemma wp_prog : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
 Proof.
@@ -30,7 +30,8 @@ Proof.
     Heaplang has a set of tactics describing evaluation of the
     language. The initial step of the program is to allocate the
     reference to 1. To do this we call [wp_alloc] with a name for the
-    location and a name for the knowledge that the location stores 1.
+    location and a name for the knowledge that the location stores the
+    value 1.
   *)
   wp_alloc l as "Hl".
   (**
@@ -39,7 +40,8 @@ Proof.
   *)
   wp_pures.
   (**
-    Next we load the location [l] using the knowledge that it stores 1.
+    Next we load the location [l] using the knowledge that it
+    currently stores the value 1.
   *)
   wp_load.
   (** Then we evaluate the addition *)
@@ -112,7 +114,7 @@ Qed.
 Lemma wp_prog_add_2_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
 Proof.
   wp_bind prog.
-  (** Now the proof is on the exact for required by [wp_prog_2] *)
+  (** Now the proof is on the exact form required by [wp_prog_2] *)
   iApply wp_prog_2.
   (** And the proof proceeds as before *)
   iIntros "%_ ->".
@@ -123,7 +125,7 @@ Qed.
   Hoare triples are an extended version of WP that contains a
   precondition. They are defined as
   [∀ Φ, Pre -∗ (▷ ∀ r0 .. rn, Post -∗ Φ v) -∗ WP e {{v, Φ v}}].
-  This may seem like very long and complicated definition, so let's
+  This may seem like a very long and complicated definition, so let's
   look at it's parts.
 
   Like before, Hoare triples are parameterised on the post conditions
@@ -143,7 +145,7 @@ Qed.
   - [Post]: the postcondition satisfied after the program has halted.
 *)
 
-(** Let's consider a function that swaps 2 valued *)
+(** Let's consider a function that swaps 2 values *)
 Definition swap : val :=
   λ: "x" "y",
   let: "v" := !"x" in
@@ -167,6 +169,10 @@ Proof.
   by iFrame.
 Qed.
 
+(**
+  And we can use this specification to prove correctness of client
+  code.
+*)
 Lemma swap_swap (l1 l2 : loc) (v1 v2 : val) :
   {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
     swap #l1 #l2;; swap #l1 #l2

@@ -23,6 +23,9 @@ Iris uses unicode charecters in its notation. [This guide](https://gitlab.mpi-sw
 # Tactics
 This [cheatsheet](/cheatsheet.md) contains a table of the most importent tactics for each logical connective. A full description of the tactics can be found [here](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md).
 
+# Usage
+It is recomended that you go through the files in the order specified in [Content](README.md#content), as later files will relly on knowledge and examples from the previous files.
+
 # Content
 
 - [base](/theories/base.v) - Introduction to the Iris proofmode
@@ -37,7 +40,7 @@ This [cheatsheet](/cheatsheet.md) contains a table of the most importent tactics
   - [counter](/theories/counter.v) - Introduction to the authoratative camera
   - [spin_lock](/theories/spin_lock.v) - Specification for a spin lock
   - [threads](/theories/threads.v) - Construction of thread operations
-  - [ticket_lock](/theories/ticket_lock.v) - Specification for a ticket lock (TO BE DOCUMENTED)
+  - [ticket_lock](/theories/ticket_lock.v) - Specification for a ticket lock
 - [adequacy](/theories/adequacy.v)
 
 # To be sorted

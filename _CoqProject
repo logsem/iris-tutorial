@@ -1,7 +1,4 @@
--Q logic iris_tutorial.logic
--Q heaplang iris_tutorial.heaplang
 -Q theories iris_tutorial
--Q solutions iris_tutorial_solutions
 
 theories/base.v
 theories/pure.v
@@ -17,4 +14,3 @@ theories/spin_lock.v
 theories/threads.v
 theories/ticket_lock.v
 theories/adequacy.v
-logic/key.v

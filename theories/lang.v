@@ -56,7 +56,8 @@ Proof.
   wp_load.
   (**
     Now that the program is concluded, we are left with a fancy update
-    modality. You can usually ignore this modality and simply introduce it.
+    modality. You can usually ignore this modality and simply introduce
+    it. We will go into its uses as we go along.
   *)
   iModIntro.
   (** Now we are left with a trivial proof that 1 + 2 = 3 *)

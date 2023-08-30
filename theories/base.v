@@ -3,41 +3,42 @@ From iris.proofmode Require Import proofmode.
 
 (**
   All proofs in Iris are done in a context with a [Σ: gFunctors]. It
-  is used as a parameter in [iProp Σ] the type of iris propositions to
+  is used as a parameter in [iProp Σ], the type of iris propositions, to
   specify available resources. The details of Σ will come later. For
-  now just remember to work inside a section with a Σ in it's context.
+  now, just remember to work inside a section with a Σ in it's context.
   Keep in mind that [Σ] has type [gFunctors] plural, not [gFunctor]
   singular. There is a coersion from gFunctor to gFunctors, so
-  everything will seem to work until Σ becomes relevant.
+  everything will seem to work until Σ becomes relevant, if you 
+  accidentally use [gFunctor].
 *)
 Section proofs.
 Context {Σ: gFunctors}.
 
 (**
-  Iris propositions contain many of the usual logical connectives. As
-  such iris uses a notation scope to overload the usual logical
-  notation. This scope is delimited by [I] and bound to [iProp Σ]. As
-  such you may need to wrap your propositions in [(_)%I] to use the
+  Iris propositions include many of the usual logical connectives. As
+  such, Iris uses a notation scope to overload the usual logical
+  notation. This scope is delimited by [I] and bound to [iProp Σ]. 
+  Hence, you may need to wrap your propositions in [(_)%I] to use the
   notations.
 
-  Iris defines two coq propositions for proving Iris propositions:
+  Iris defines two Coq propositions for proving Iris propositions:
   - [⊢ P] asks whether [P] holds with no assumptions
   - [P ⊢ Q] asks whether [Q] holds assuming [P]
 
   There is no explicit proposition allowing you to give multiple
-  hypotheses. This is partially because it's unesesary as assumptions
-  can be curried or combined. However, and more importantly, unlike in
-  clasical logic, in seperation logic we have multiple sensible
-  choices for combining propositions. Iris is equiped with the usual
-  and connective written [P ∧ Q], however this is rarely used.
-  Instead we use the seperating conjunction [P ∗ Q] stating that [P]
-  and [Q] are satisfied using seperate resources. In fact seperation
-  is so widely used that [P ⊢ Q] is more commonly written as [P -∗ Q]
-  the seperating implication also known as magic wand or simply wand.
+  hypotheses. This is partially because it is not necessary, as assumptions
+  can be curried or combined. However, more importantly, unlike in
+  clasical logic, in separation logic we have multiple sensible
+  choices for combining propositions. Iris is equipped with the usual
+  'and' connective, written [P ∧ Q], however this is rarely used.
+  Instead, we often use the separating conjunction [P ∗ Q], stating that [P]
+  and [Q] are satisfied using separate resources. In fact separation
+  is so widely used that [P ⊢ Q] is more commonly written as [P -∗ Q],
+  the separating implication, also known as magic wand or simply wand.
 
-  Iris has a proofmode that works very similarly to the coq proof
-  mode. With this it is posible to proof Iris propositions much like
-  you would coq propositions. To see this in action we will prove the
+  Iris has a proofmode that works very similarly to the Coq proof
+  mode. With this it is posible to proove Iris propositions much like
+  you would Coq propositions. To see this in action we will prove the
   statement [P ⊢ P] for all [P].
 *)
 Lemma asm (P : iProp Σ) : P ⊢ P.

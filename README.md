@@ -32,6 +32,7 @@ It is recomended that you go through the files in the order specified in [Conten
   - [pure](/theories/pure.v) - Distinction between the Coq context and Iris context
   - [persistently](/theories/persistently.v) - The 3rd context
 - [lang](/theories/lang.v) - Introduction to heaplang
+  - [later](/theories/later.v) - Recursive functions
 - [linked_lists](/theories/linked_lists.v) - Exercises with linked lists
   - [fixpoint](/theories/fixpoint.v) - Fixpoints of propositions
 - [arrays](/theories/arrays.v) - Introduction to arrays in heaplang

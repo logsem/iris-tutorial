@@ -130,18 +130,18 @@ Proof.
 Qed.
 
 (**
-  Hoare triples are an extended version of WP that contains a
+  Hoare triples are basically an extended version of a WP with a 
   precondition. They are defined as
   [∀ Φ, Pre -∗ (▷ ∀ r0 .. rn, Post -∗ Φ v) -∗ WP e {{v, Φ v}}].
   This may seem like a very long and complicated definition, so let's
   look at it's parts.
 
-  Like before, Hoare triples are parameterised on the post conditions
-  that are satisfied by Post. This allows us to further specialize the
+  As in the example above, Hoare triples are parameterised on the post conditions
+  satisfied by Post. This allows us to further specialize the
   posible return values by specifying it as a pattern quantified over
   arbitrary parameters. The implication of the post condition is
-  hidden under a later, signifying that the program takes at least one
-  step. And finaly we now have a precondition.
+  hidden under a later modality (▷), signifying that the program takes at least one
+  step. And finally we have a precondition Pre.
 
   The syntax for Hoare triples is as follows:
   [{{{ Pre }}} e {{{ r0 .. rn, RET v; Post }}}]
@@ -153,14 +153,18 @@ Qed.
   - [Post]: the postcondition satisfied after the program has halted.
 *)
 
-(** Let's consider a function that swaps 2 values *)
+(**XXX Lars: the later has not been introduced before; maybe just say that 
+  it will be described in detail in the following file, or make a file for later
+  before doing Heaplang, similarly to persistent.v ?? *)
+
+(** Let's consider a function that swaps 2 values. *)
 Definition swap : val :=
   λ: "x" "y",
   let: "v" := !"x" in
   "x" <- !"y";;
   "y" <- "v".
 
-(** To specify this program we use a Hoare triple *)
+(** To specify this program we can use a Hoare triple. *)
 Lemma wp_swap (l1 l2 : loc) (v1 v2 : val) :
   {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
     swap #l1 #l2

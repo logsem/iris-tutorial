@@ -4,8 +4,8 @@ Section linked_lists.
 Context `{!heapGS Σ}.
 
 (**
-  Let's define what we mean by a linked list in heaplang. We'll do
-  this by relating a value to the list it represents.
+  Let us define what we mean by a linked list in Heaplang. We will do
+  so by relating a program value to the Coq list it represents.
 *)
 Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   match xs with
@@ -14,8 +14,8 @@ Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   end.
 
 (**
-  Now we can define heaplang functions that act on lists, such as
-  append. This function recursively decents l1, updating the links.
+  Now we can define Heaplang functions that act on lists, such as
+  append. The append function recursively descends l1, updating the links.
   Eventually it reaches the tail, where it will replace it with l2.
 *)
 Definition append : val :=
@@ -30,8 +30,8 @@ Definition append : val :=
     end.
 
 (**
-  If l1 and l2 represents the lists xs and ys respectively, we expect
-  that append will return a list representing [xs ++ ys].
+  If l1 and l2 represent the lists xs and ys respectively, then we expect
+  that append l1 l2 will return a list representing [xs ++ ys].
 *)
 Lemma append_spec (l1 l2 : val) (xs ys : list val) :
   {{{isList l1 xs ∗ isList l2 ys}}}
@@ -39,7 +39,12 @@ Lemma append_spec (l1 l2 : val) (xs ys : list val) :
   {{{l, RET l; isList l (xs ++ ys)}}}.
 Proof.
   induction xs in ys, l1, l2 |- * =>/=.
+  (**XXX Lars: need some explanation of the above line, the last 4-5 symbols *)
+  (**XXX Lars: also need to explain NONEV and SOMEV shown as InjLV and InjRV, 
+    when stepping through proof *)
   (* Exercise start *)
+  (**XXX I think this is too hard as a first exercise with lists, maybe just
+    keep the proof and then use the next examples as exercises. *)
   - iIntros "%Φ [-> H2] HΦ".
     wp_rec.
     wp_pures.
@@ -75,10 +80,10 @@ Definition inc : val :=
     end.
 
 (**
-  Here we want the list to be a list of integers. To do this we take a
+  Here we want the input list to be a list of integers. To capture this we take a
   list of integers and map the elements to values using [# _]. When
-  the function is done, we expect all the elements in the list to have
-  incremented. So we again use a map to incode this.
+  the function is done, we expect all the elements in the list to have been 
+  incremented. So we again use a map to express this.
 *)
 Lemma inc_spec (l : val) (xs : list Z) :
   {{{isList l ((λ x : Z, #x) <$> xs)}}}
@@ -106,8 +111,8 @@ Proof.
 Qed.
 
 (**
-  We will implement reverse using a helper function. This function
-  takes two arguments, [l] and [acc], and returns the list
+  We will implement reverse using a helper function, called reverse_append,
+  which takes two arguments, [l] and [acc], and returns the list
   [rev l ++ acc].
 *)
 Definition reverse_append : val :=
@@ -146,6 +151,8 @@ Proof.
     wp_load.
     wp_store.
     wp_apply (IHxs _ _ (a :: ys) with "[$Hl Hhd Hacc]").
+    (**XXX Lars: not sure you have explained why the $ is used on Hl and not
+      on the others *)
     {
       cbn.
       iExists hd, acc.

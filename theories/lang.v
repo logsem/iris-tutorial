@@ -3,12 +3,18 @@ From iris.heap_lang Require Import lang proofmode notation.
 Section heaplang.
 Context `{!heapGS Σ}.
 
-(**
-  Heaplang is a rather simple language defined on top of iris. It's a
-  right to left call by value language reminisent of lambda calculus.
-  However it is equiped with a heap as well as multithreading.
+(**XXX Lars: !heapGS not explained *)
 
-  To see the language in action, let's define a small toy program.
+(**
+  Heaplang is a programming language with an accompanying Iris program logic 
+  defined on top of Iris base logic. Heaplang is an untyped higher-order
+  functional programming language with dynamically allocated references 
+  and concurrency, in the form of dynamically allocated threads that 
+  can share access to memory.
+  The evaluation order is right to left and it is a call-by-value language.
+
+  To see how we can reason about programs written in Heaplang,
+  let us define a small toy program.
 *)
 Definition prog : expr :=
   (** Allocate the number 1 on the heap *)
@@ -21,26 +27,27 @@ Definition prog : expr :=
 (**
   This program should evaluate to 3. To prove this we'll use the
   weakest precondition [WP]. This let's us specify a post condition we
-  expect to hold if the program halts.
+  expect to hold, if the program halts.
 *)
 Lemma wp_prog : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
 Proof.
   rewrite /prog.
   (**
-    Heaplang has a set of tactics describing evaluation of the
-    language. The initial step of the program is to allocate the
-    reference to 1. To do this we call [wp_alloc] with a name for the
+    Heaplang has a set of tactics for reasoning about the evaluation of the
+    language. The initial step of prog is to allocate a reference
+    containing the value 1. We can symbolically execute this step of prog by
+    using the [wp_alloc] tactic with a name for the
     location and a name for the knowledge that the location stores the
     value 1.
   *)
   wp_alloc l as "Hl".
   (**
-    As pure steps don't require external knowledge [wp_pures] is able
-    to evaluate them automatically.
+    The next step of prog is a purely functional reduction step, and 
+    and thus we can use [wp_pures] to continue symbolic execution.
   *)
   wp_pures.
   (**
-    Next we load the location [l] using the knowledge that it
+    Next we load from the location [l] using the knowledge that it
     currently stores the value 1.
   *)
   wp_load.
@@ -49,7 +56,7 @@ Proof.
   (**
     Storing is handled by [wp_store].
     Notice that this updates [Hl]. This only works because we are
-    working in a seperation logic.
+    working in a separation logic.
   *)
   wp_store.
   (** Finally we use [wp_load] again *)
@@ -57,7 +64,7 @@ Proof.
   (**
     Now that the program is concluded, we are left with a fancy update
     modality. You can usually ignore this modality and simply introduce
-    it. We will go into its uses as we go along.
+    it. We will explain its uses as we go along.
   *)
   iModIntro.
   (** Now we are left with a trivial proof that 1 + 2 = 3 *)
@@ -65,13 +72,13 @@ Proof.
 Qed.
 
 (**
-  The full list of evaluation tactics can be found at
+  The full list of symbolic evaluation tactics can be found at
   https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md
 *)
 
 (**
-  Let's use this knowledge to prove a specification for a larger
-  program.
+  Let us use the property we just proved for prog to 
+  prove a specification for a larger program.
 *)
 Lemma wp_prog_add_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
 Proof.
@@ -84,7 +91,7 @@ Proof.
   wp_bind prog.
   (**
     Now we have the problem that our post condition doesn't match the
-    one we proved. To fix this we can use monitonicity of WP.
+    one we proved. To fix this we can use monotonicity of WP.
   *)
   iApply wp_mono.
   2: { iApply wp_prog. }

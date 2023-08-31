@@ -14,10 +14,10 @@ Context {Σ : gFunctors}.
 Local Notation "⊢ P" := (⊢@{iPropI Σ} P).
 
 (**
-  Coq propositions can be embeded into iris using the pure modality
-  [⌜Φ⌝]. Pure propositions can be introduced using [iPureIntro]. This
-  will exit Iris proofmode, throwing away the Iris context. Pure
-  propositions can be eleminated using the introduction pattern "%_".
+  Coq propositions can be embedded into Iris using the pure modality
+  [⌜Φ⌝]. Such propositions can be introduced using [iPureIntro]. This
+  will exit the Iris proofmode, throwing away the Iris context. Pure
+  propositions can be eliminated using the introduction pattern "%_".
 *)
 Lemma eq_5_5 : ⊢ ⌜5 = 5⌝.
 Proof.
@@ -34,8 +34,8 @@ Qed.
 
 (**
   Iris has a class of propositions we call pure.
-  These are the propositions [P] that are bientailed by [⌜Φ⌝] for
-  some Φ. Iris has a 2 typeclasses [IntoPure] and [FromPure] to
+  These are the propositions [P] that are bi-entailed by [⌜Φ⌝] for
+  some Φ. Iris has a two typeclasses, [IntoPure] and [FromPure], to
   identify such propositions.
 *)
 
@@ -58,9 +58,8 @@ Proof.
 Qed.
 
 (**
-  The pure modality allows us to state the most important property.
-  Namely soundness. Iris is only a usefull extension because we can
-  extract knowledge from Iris out to the Coq metalogic.
+  The pure modality allows us to state an important property,
+  namely soundness. 
 
   Soundness is proved in the [uPred_primitive.pure_soundness] lemma
   stating: [∀ φ, (True ⊢ ⌜φ⌝) → φ]
@@ -71,7 +70,7 @@ Qed.
 
 (**
   [⌜_⌝] turns Coq propositions into Iris propositions, while [⊢ _] turns
-  Iris propositions into Coq propositions. These operations aren't
+  Iris propositions into Coq propositions. These operations are not
   inverses, but they are related.
 *)
 Lemma pure_adj1 (φ : Prop) : φ → ⊢ ⌜φ⌝.

@@ -1,24 +1,20 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
-(**
-  Heaplang is a programming language with an accompanying Iris program logic 
-  defined on top of Iris base logic. Heaplang is an untyped higher-order
-  functional programming language with dynamically allocated references 
-  and concurrency, in the form of dynamically allocated threads that 
-  can share access to memory.
-  The evaluation order is right to left and it is a call-by-value language.
+(** Heaplang is a programming language with an accompanying Iris program
+  logic defined on top of Iris base logic. Heaplang is an untyped
+  higher-order functional programming language with dynamically
+  allocated references and concurrency, in the form of dynamically
+  allocated threads that can share access to memory. The evaluation
+  order is right to left and it is a call-by-value language.
 
-  Heaplang uses connectives describing locations. These connectives
-  require that certain resources are available. To insure this, we use
-  the typeclass [heapGS]. This typeclass ensures that Σ contains at
-  least the necesarry resources for heaplang. We will go into what
-  resources are later on.
+  The program logic for Heaplang uses connectives describing locations.
+  These connectives require that certain resources are available. To
+  ensure this, we use the typeclass [heapGS]. This typeclass ensures
+  that Σ contains at least the necesarry resources for Heaplang. Later on,
+  we will explain what resources actually are.
 *)
 Section heaplang.
 Context `{!heapGS Σ}.
-
-(**XXX Lars: !heapGS not explained *)
-(**XXX Mathias: Added a description *)
 
 (**
   To see how we can reason about programs written in Heaplang,
@@ -150,7 +146,7 @@ Qed.
   arbitrary parameters. The implication of the post condition is
   hidden under a later modality (▷), signifying that the program takes at least one
   step. This modality will be described in the following file.
-  Finally we have a precondition Pre.
+  Finally, we have a precondition Pre.
 
   The syntax for Hoare triples is as follows:
   [{{{ Pre }}} e {{{ r0 .. rn, RET v; Post }}}]
@@ -161,11 +157,6 @@ Qed.
   - [v]: an expression specifying the shape of the return value.
   - [Post]: the postcondition satisfied after the program has halted.
 *)
-
-(**XXX Lars: the later has not been introduced before; maybe just say that 
-  it will be described in detail in the following file, or make a file for later
-  before doing Heaplang, similarly to persistent.v ?? *)
-(**XXX Mathias: Done *)
 
 (** Let's consider a function that swaps 2 values. *)
 Definition swap : val :=

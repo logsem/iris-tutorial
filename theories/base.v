@@ -134,6 +134,19 @@ Proof.
 Qed.
 
 (**
+  Manually splitting a separation can become tedious. To alleviate
+  this, we can use the `iFrame` tactic. This tactic pairs up
+  hypotheses with pieces of a separation sequence.
+  Its full use is described in
+  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md?ref_type=heads#separation-logic-specific-tactics
+*)
+Lemma sep_comm_v2 (P Q : iProp Σ) : P ∗ Q ⊢ Q ∗ P.
+Proof.
+  iIntros "[HP HQ]".
+  iFrame.
+Qed.  
+
+(**
   Bi-entailment of Iris propositions is denoted [P ⊣⊢ Q]. It is
   and equivalence relation and most connectives preserve 
   this relation encoded using the setoid library
@@ -198,6 +211,7 @@ Qed.
   (for the same reason as ordinary conjunction).
  *)
 (**XXX Lars: iFrame has not been introduced before *)
+(**XXX Mathias: Attempted introduction at sep_comm_v2 *)
 Lemma sep_or_distr (P Q R : iProp Σ) : P ∗ (Q ∨ R) ⊣⊢ P ∗ Q ∨ P ∗ R.
 Proof.
   iSplit.

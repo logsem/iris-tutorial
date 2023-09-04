@@ -213,8 +213,6 @@ Qed.
   The separation conjunction distributes over disjunction 
   (for the same reason as ordinary conjunction).
  *)
-(**XXX Lars: iFrame has not been introduced before *)
-(**XXX Mathias: Attempted introduction at sep_comm_v2 *)
 Lemma sep_or_distr (P Q R : iProp Σ) : P ∗ (Q ∨ R) ⊣⊢ P ∗ Q ∨ P ∗ R.
 (* BEGIN SOLUTION *)
 Proof.

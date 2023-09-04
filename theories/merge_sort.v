@@ -89,8 +89,7 @@ Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
     ⌜StronglySorted Z.le l⌝ ∗
     ⌜l1 ++ l2 ≡ₚ l⌝
   }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ (Ha1 & Ha2 & Hb & %Hl1 & %Hl2 & %H) HΦ".
   iLöb as "IH" forall (a1 a2 b l1 l2 l Hl1 Hl2 H).
   wp_rec.
@@ -204,8 +203,7 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
     ⌜l ≡ₚ l'⌝ ∗
     ⌜length vs = length l'⌝
   }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ (Ha & Hb) HΦ".
   iLöb as "IH" forall (a b l Φ).
   wp_rec.
@@ -302,8 +300,7 @@ Lemma merge_sort_spec (a : loc) (l : list Z) :
     ⌜StronglySorted Z.le l'⌝ ∗
     ⌜l ≡ₚ l'⌝
   }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ Ha HΦ".
   wp_lam.
   wp_pures.

@@ -41,8 +41,7 @@ Proof.
 Qed.
 
 Lemma pers_sep (P : iProp Σ) `{!Persistent P} : P ⊢ P ∗ P.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "#P".
   iSplit.
   - done.

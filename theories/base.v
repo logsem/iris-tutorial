@@ -77,8 +77,7 @@ Qed.
   only [iIntros] and [iApply].
 *)
 Lemma modus_ponens (P Q : iProp Σ) : P -∗ (P -∗ Q) -∗ Q.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "P H".
   iApply "H".
   iApply "P".
@@ -124,8 +123,7 @@ Qed.
   to prove associativity for [∗].
 *)
 Lemma sep_assoc_1 (P Q R : iProp Σ) : P ∗ Q ∗ R ⊢ (P ∗ Q) ∗ R.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "(P & Q & R)".
   iSplitR "R"; last iApply "R".
   iSplitL "P".
@@ -166,9 +164,9 @@ Qed.
   Prove currying for the separation connectives.
 *)
 Lemma wand_adj (P Q R : iProp Σ) : (P -∗ Q -∗ R) ⊣⊢ (P ∗ Q -∗ R).
+(* BEGIN SOLUTION *)
 Proof.
   iSplit.
-  (* Exercise start *)
   - iIntros "H [P Q]".
     iApply ("H" with "P Q").
   - iIntros "H P Q".
@@ -177,6 +175,12 @@ Proof.
     + iApply "P".
     + iApply "Q".
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+Proof.
+  iSplit.
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 (**
   Disjunctions [∨] are treated just like disjuctions in Coq.
@@ -186,8 +190,7 @@ Qed.
   Prove that disjunction commutes.
 *)
 Lemma or_comm (P Q : iProp Σ) : Q ∨ P ⊢ P ∨ Q.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "[Q | P]".
   - by iRight.
   - by iLeft.
@@ -213,6 +216,7 @@ Qed.
 (**XXX Lars: iFrame has not been introduced before *)
 (**XXX Mathias: Attempted introduction at sep_comm_v2 *)
 Lemma sep_or_distr (P Q R : iProp Σ) : P ∗ (Q ∨ R) ⊣⊢ P ∗ Q ∨ P ∗ R.
+(* BEGIN SOLUTION *)
 Proof.
   iSplit.
   (* Exercise start *)
@@ -223,6 +227,11 @@ Proof.
     + iFrame.
     + iFrame.
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+Proof.
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 (**
   Iris has existential and universal quantifiers over any
@@ -232,8 +241,7 @@ Qed.
   "(_&..&_)" with a "%" in front of the existential variable.
 *)
 Lemma sep_ex_distr {A} (P : iProp Σ) (Φ : A → iProp Σ) : (P ∗ ∃ x, Φ x) ⊣⊢ ∃ x, P ∗ Φ x.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iSplit.
   - iIntros "(P & %x & Φ)".
     iExists x.
@@ -251,8 +259,7 @@ Qed.
   To specify parameters of hypotheses, we write [iApply ("H" $! x y z)].
 *)
 Lemma sep_all_distr {A} (P Q : A → iProp Σ) : (∀ x, P x) ∗ (∀ x, Q x) -∗ (∀ x, P x ∗ Q x).
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "[P Q] %x".
   by iSplitL "P".
 Qed.

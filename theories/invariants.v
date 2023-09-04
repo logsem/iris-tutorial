@@ -239,7 +239,7 @@ Proof.
     iFrame.
     iPureIntro.
     by apply Zeven_plus_Zeven.
-  (* Exercise start *)
+(* BEGIN SOLUTION *)
   - iInv "I" as "(%n & Hr & >%Hn)".
     wp_faa.
     iModIntro.
@@ -260,5 +260,9 @@ Proof.
       by iFrame.
     + by iApply "HΦ".
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 End parallel_add.

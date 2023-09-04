@@ -145,8 +145,7 @@ Proof.
 Qed.
 
 Lemma mk_counter_spec : {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0}}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ _ HΦ".
   wp_lam.
   wp_alloc l as "Hl".
@@ -162,8 +161,7 @@ Proof.
 Qed.
 
 Lemma read_spec c γ n : {{{ is_counter c γ n }}} read c {{{ (u : nat), RET #u; ⌜n ≤ u⌝ }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ (%l & -> & #Hγ' & #HI) HΦ".
   wp_lam.
   iInv "HI" as "(%m & Hl & Hγ)".
@@ -197,7 +195,7 @@ Proof.
     injection e as e.
     apply (inj Z.of_nat) in e.
     subst m'.
-    (* Exercise start *)
+(* BEGIN SOLUTION *)
     rewrite (comm Z.add m 1%Z) -(Nat2Z.inj_add 1) /=.
     iPoseProof (state_valid with "Hγ Hγ'") as "%H".
     iClear "Hγ'".
@@ -220,6 +218,10 @@ Proof.
     wp_pures.
     by wp_apply "IH".
 Qed.
+(* END SOLUTION
+    (* exercise *)
+Admitted.
+BEGIN TEMPLATE *)
 
 Context `{!spawnG Σ}.
 
@@ -229,8 +231,7 @@ Lemma par_incr :
     (incr "c" ||| incr "c");;
     read "c"
   {{{ n, RET #(S n); True }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ _ HΦ".
   wp_apply mk_counter_spec; first done.
   iIntros "%c %γ #Hγ".
@@ -348,8 +349,7 @@ Qed.
 
 Lemma mk_counter_spec :
   {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0 1}}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ _ HΦ".
   wp_lam.
   wp_alloc l as "Hl".
@@ -365,8 +365,7 @@ Qed.
 
 Lemma read_spec (c : val) (γ : gname) (n : nat) (q : Qp) :
   {{{ is_counter c γ n q }}} read c {{{ (u : nat), RET #u; is_counter c γ n q ∗ ⌜n ≤ u⌝ }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ (%l & -> & Hγ' & #I) HΦ".
   wp_lam.
   iInv "I" as "(%m & Hl & Hγ)".
@@ -384,8 +383,7 @@ Qed.
 
 Lemma read_spec_full (c : val) (γ : gname) (n : nat) :
   {{{ is_counter c γ n 1 }}} read c {{{ RET #n; is_counter c γ n 1 }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ (%l & -> & Hγ' & #I) HΦ".
   wp_lam.
   iInv "I" as "(%m & Hl & Hγ)".
@@ -420,7 +418,7 @@ Proof.
     apply (inj Z.of_nat) in e.
     subst m'.
     wp_cmpxchg_suc.
-    (* Exercise start *)
+(* BEGIN SOLUTION *)
     rewrite (comm Z.add) -(Nat2Z.inj_add 1) /=.
     iPoseProof (state_valid with "Hγ Hγ'") as "%H".
     iMod (update_state with "[$Hγ $Hγ']") as "[Hγ Hγ']".
@@ -441,6 +439,10 @@ Proof.
     wp_pures.
     wp_apply ("IH" with "Hγ' HΦ").
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+    (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 End spec2.
 End spec2.

@@ -38,7 +38,7 @@ Definition release : val :=
 *)
 
 Definition RA : cmra
-  (* Exercise definition *)
+(* BEGIN SOLUTION *)
   (**
     We will use a finite set of numbers to represent the tickets that
     have been issued. This becomes a camera by using the disjoint
@@ -48,13 +48,16 @@ Definition RA : cmra
     fragment to bind the values of our counters to the ghost state.
   *)
   := authR (prodUR (optionUR (exclR natO)) (gset_disjR nat)).
+(* END SOLUTION BEGIN TEMPLATE
+  (* := insert your definition here *). Admitted.
+END TEMPLATE *)
 
 Section proofs.
 Context `{!heapGS Σ, !inG Σ RA}.
 Let N := nroot .@ "ticket_lock".
 
 Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ
-  (* Exercise definition *)
+(* BEGIN SOLUTION *)
   (**
     Our invariant will firstly link the authoratative fragment to the
     counters. For the second counter this means that all tickets prior
@@ -69,26 +72,34 @@ Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ
     (own γ (◯ (Excl' o, GSet ∅)) ∗ P) ∨
     own γ (◯ (ε : option (excl nat), GSet {[o]}))
   ).
+(* END SOLUTION BEGIN TEMPLATE
+  (* := insert your definition here *). Admitted.
+END TEMPLATE *)
 
 Definition is_lock (γ : gname) (l : val) (P : iProp Σ) : iProp Σ :=
   ∃ lo ln : loc, ⌜l = (#lo, #ln)%V⌝ ∗ inv N (lock_inv γ lo ln P).
 
 Definition locked (γ : gname) : iProp Σ
-  (* Exercise definition *)
+(* BEGIN SOLUTION *)
   (**
     The lock will be locked when the ownership of the first counters
     value is not in the invariant.
   *)
   := ∃ o, own γ (◯ (Excl' o, GSet ∅)).
+(* END SOLUTION BEGIN TEMPLATE
+  (* := insert your definition here *). Admitted.
+END TEMPLATE *)
 
 Definition issued (γ : gname) (x : nat) : iProp Σ
-  (* Exercise definition *)
+(* BEGIN SOLUTION *)
   (** A ticket is simply the singleton set over its index. *)
   := own γ (◯ (ε : option (excl nat), GSet {[x]})).
+(* END SOLUTION BEGIN TEMPLATE
+  (* := insert your definition here *). Admitted.
+END TEMPLATE *)
 
 Lemma locked_excl γ : locked γ -∗ locked γ -∗ False.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "[%o1 H1] [%o2 H2]".
   iPoseProof (own_valid_2 with "H1 H2") as "%H".
   rewrite auth_frag_valid /= in H.
@@ -97,8 +108,7 @@ Proof.
 Qed.
 
 Lemma mk_lock_spec P : {{{ P }}} mk_lock #() {{{ γ l, RET l; is_lock γ l P }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ HP HΦ".
   wp_lam.
   wp_alloc ln as "Hln".
@@ -118,8 +128,7 @@ Proof.
 Qed.
 
 Lemma wait_spec γ l P x : {{{ is_lock γ l P ∗ issued γ x }}} wait #x l {{{ RET #(); locked γ ∗ P }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ [(%lo & %ln & -> & #I) Hx] HΦ".
   iLöb as "IH".
   wp_rec.
@@ -157,8 +166,7 @@ Proof.
 Qed.
 
 Lemma acquire_spec γ l P : {{{ is_lock γ l P }}} acquire l {{{ RET #(); locked γ ∗ P }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ (%lo & %ln & -> & #I) HΦ".
   iLöb as "IH".
   wp_rec.
@@ -208,8 +216,7 @@ Proof.
 Qed.
 
 Lemma release_spec γ l P : {{{ is_lock γ l P ∗ locked γ ∗ P }}} release l {{{ RET #(); True }}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ ((%lo & %ln & -> & #I) & [%o Hexcl] & HP) HΦ".
   wp_lam.
   wp_pures.

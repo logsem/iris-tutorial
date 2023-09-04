@@ -112,8 +112,7 @@ Lemma inc_spec a l :
   {{{a ↦∗ ((λ i : Z, #i) <$> l)}}}
     inc #a #(length l)
   {{{RET #(); a ↦∗ ((λ i : Z, #(i + 1)) <$> l)}}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ Ha HΦ".
   iInduction l as [|i l] "IH" forall (a).
   - wp_rec.
@@ -159,8 +158,7 @@ Lemma reverse_spec a l :
   {{{a ↦∗ l}}}
     reverse #a #(length l)
   {{{RET #(); a ↦∗ rev l}}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ Ha HΦ".
   iLöb as "IH" forall (a l).
   wp_rec.

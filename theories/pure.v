@@ -74,16 +74,14 @@ Qed.
   inverses, but they are related.
 *)
 Lemma pure_adj1 (φ : Prop) : φ → ⊢ ⌜φ⌝.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   intros H.
   iPureIntro.
   exact H.
 Qed.
 
 Lemma pure_adj2 (P : iProp Σ) : ⌜⊢P⌝ -∗ P.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros (H).
   iApply H.
 Qed.

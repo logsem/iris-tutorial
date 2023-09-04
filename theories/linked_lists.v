@@ -52,7 +52,7 @@ Proof.
   revert l.
   induction xs.
   all: simpl.
-  (* Exercise start *)
+(* BEGIN SOLUTION *)
   - iIntros (l) "%Φ -> HΦ".
     wp_rec.
     wp_pures.
@@ -70,6 +70,10 @@ Proof.
     iExists hd, l'.
     by iFrame.
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 (**
   The append function recursively descends l1, updating the links.
@@ -157,13 +161,15 @@ Lemma reverse_append_spec (l acc : val) (xs ys : list val) :
     reverse_append l acc
   {{{v, RET v; isList v (rev xs ++ ys)}}}.
 Proof.
-  induction xs in l, acc, ys |- * =>/=.
-  (* Exercise start *)
-  - iIntros "%Φ [-> Hacc] HΦ".
+  revert l acc ys.
+  induction xs.
+  all: simpl.
+(* BEGIN SOLUTION *)
+  - iIntros (l acc ys) "%Φ [-> Hacc] HΦ".
     wp_rec.
     wp_pures.
     by iApply "HΦ".
-  - iIntros "%Φ [(%hd & %l' & -> & Hhd & Hl) Hacc] HΦ".
+  - iIntros (l acc ys) "%Φ [(%hd & %l' & -> & Hhd & Hl) Hacc] HΦ".
     wp_rec.
     wp_pures.
     wp_load.
@@ -181,6 +187,10 @@ Proof.
     }
     by rewrite -app_assoc.
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 (**
   Use the specification of reverse_append to prove the specification
@@ -190,8 +200,7 @@ Lemma reverse_spec (l : val) (xs : list val) :
   {{{isList l xs}}}
     reverse l
   {{{v, RET v; isList v (rev xs)}}}.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "%Φ Hl HΦ".
   wp_lam.
   wp_pures.
@@ -242,15 +251,17 @@ Lemma fold_right_spec P I (f a l : val) xs :
     fold_right f a l
   {{{ r, RET r; isList l xs ∗ I xs r}}}.
 Proof.
-  induction xs in a, l |- * =>/=.
-  (* Exercise start *)
-  - iIntros "%Φ (-> & _ & I & #Hf) HΦ".
+  revert a l.
+  induction xs as [|x xs IHxs].
+  all: simpl.
+(* BEGIN SOLUTION *)
+  - iIntros (a l) "%Φ (-> & _ & I & #Hf) HΦ".
     wp_rec.
     wp_pures.
     iModIntro.
     iApply "HΦ".
     by iFrame.
-  - iIntros "%Φ ((%hd & %l' & -> & Hhd & Hl) & [P0 Ps] & I & #Hf) HΦ".
+  - iIntros (a l) "%Φ ((%hd & %l' & -> & Hhd & Hl) & [P0 Ps] & I & #Hf) HΦ".
     wp_rec.
     wp_pures.
     wp_load.
@@ -265,6 +276,10 @@ Proof.
     iExists hd, l'.
     by iFrame.
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 (** We can now sum over a list simply by folding it using addition. *)
 Definition sum_list : val :=

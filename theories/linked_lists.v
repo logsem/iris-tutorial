@@ -8,7 +8,7 @@ Context `{!heapGS Σ}.
   so by relating a program value to the Coq list it represents.
 
   Here we use [NONE] and [SOME e] as syntactic sugar for [InjL #()]
-  and [InjR e]. Further more, [NONE] is the expresion creating a
+  and [InjR e]. Furthermore, [NONE] is the expresion creating a
   [NONEV] value, likewise for [SOMEV], [InjLV] and [InjRV].
 *)
 Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
@@ -102,17 +102,7 @@ Proof.
   revert ys l1 l2.
   induction xs.
   all: simpl.
-  (**XXX Lars: need some explanation of the above line, the last 4-5 symbols *)
-  (**XXX Mathias: Seperated it for clarity. *)
-
-  (**XXX Lars: also need to explain NONEV and SOMEV shown as InjLV and InjRV, 
-    when stepping through proof *)
-  (**XXX Mathias: Added a rough description at the begining of the file *)
   (* Exercise start *)
-
-  (**XXX I think this is too hard as a first exercise with lists, maybe just
-    keep the proof and then use the next examples as exercises. *)
-  (**XXX Mathias: Moved inc up, and adjusted the comments*)
   - iIntros (ys l1 l2) "%Φ [-> H2] HΦ".
     wp_rec.
     wp_pures.
@@ -193,7 +183,7 @@ Admitted.
 END TEMPLATE *)
 
 (**
-  Use the specification of reverse_append to prove the specification
+  Now we use the specification of reverse_append to prove the specification
   of reverse.
 *)
 Lemma reverse_spec (l : val) (xs : list val) :
@@ -210,8 +200,8 @@ Lemma reverse_spec (l : val) (xs : list val) :
 Qed.
 
 (**
-  The specifications thus far have been rather straight forward. So
-  now we will show a very general specification for [fold_right].
+  The specifications thus far have been rather straightforward. 
+  Now we will show a very general specification for [fold_right].
 *)
 Definition fold_right : val :=
   rec: "fold_right" "f" "v" "l" :=
@@ -226,22 +216,30 @@ Definition fold_right : val :=
 (**
   The following specification has a lot of moving parts, so lets go
   through them one by one.
-  - [l] is a linked list implementing [xs], as seen by [isList l xs]
+  - [l] is a linked list representing [xs], as seen by [isList l xs]
     in the precondition.
-  - [P] is a predicate that all the values in xs should satisfy.
-    This is written as [[∗ list] x ∈ xs, P x]. This is a recursively
+  - [P] is a predicate which all the values in xs should satisfy.
+    This is written as [[∗ list] x ∈ xs, P x]. It is a recursively
     defined predicate, defined as follows:
-    [[∗ list] x ∈ [], P x := True]
-    [[∗ list] x ∈ x0 :: xs, P x := P x0 ∗ [∗ list] x ∈ xs, P x]
-  - [I] is a predicate describing the relation between a list
-    and the result of the fold.
-  - [a] is the initial value, so the empty list should produce it.
-    This is captured by [I [] a].
-  - [f] is the folding function. So it satisfies:
-    [{{{ P x ∗ I ys a'}}} f x a' {{{ r, RET; I (x :: ys) r }}}].
+      [[∗ list] x ∈ [], P x := True]
+      [[∗ list] x ∈ x0 :: xs, P x := P x0 ∗ [∗ list] x ∈ xs, P x]
+  - [I] is a predicate (think [I] for invariant) describing the 
+    relation between a list and the result of the fold.
+  - [a] is the base value, so fold will return a for the empty list;
+    this is captured by [I [] a].
+  - [f] is the folding function, which we assume satisfies:
+      [{{{ P x ∗ I ys a'}}} f x a' {{{ r, RET; I (x :: ys) r }}}].
+    Intuitively, this says that if [f] is applied to an argument from the
+    list (hence satisfying [P]) and [a'] is the result of folding [ys],
+    captured by [I ys a'], then the result [r] will be the result of
+    folding f over [x :: ys], captured by [I (x :: ys) r] in the postcondition.
   - The result [r] must then satisfy [I xs r].
   - Importantly, we don't change the original list. So we put
-    [isList l xs] in the post condition.
+    [isList l xs] in the postcondition.
+
+  Note that Hoare triples are persistent and persistent predicates are
+  closed under universal quantification, so, in the proof, the assumption for
+  [f] will move into the persistent context!
 *)
 Lemma fold_right_spec P I (f a l : val) xs :
   {{{
@@ -281,7 +279,7 @@ Qed.
 Admitted.
 END TEMPLATE *)
 
-(** We can now sum over a list simply by folding it using addition. *)
+(** We can now sum over a list simply by folding an addition function over it. *)
 Definition sum_list : val :=
   λ: "l",
     let: "f" := (λ: "x" "y", "x" + "y") in
@@ -302,6 +300,7 @@ Proof.
   - iFrame.
     repeat iSplit.
     + iPureIntro =>/= k v Hk.
+      (*XXX Lars: is the above line using ssreflect? *)
       rewrite list_lookup_fmap in Hk.
       destruct (xs !! k) as [x|] =>//.
       injection Hk as <-.

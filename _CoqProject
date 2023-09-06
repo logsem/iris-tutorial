@@ -1,4 +1,5 @@
 -Q theories iris_tutorial
+-arg -async-proofs-cache -arg force
 
 theories/base.v
 theories/pure.v

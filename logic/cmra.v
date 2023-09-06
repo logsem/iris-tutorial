@@ -42,7 +42,7 @@ Definition own_frac (γ : gname) (q : frac) := own γ q.
 Lemma own_frac_alloc : ⊢ |==> ∃ γ, own_frac γ 1.
 Proof.
   apply own_alloc.
-  do 2 red =>/=.
+  do 2 red; simpl.
   (* As validity on frac is defined as `q ≤ 1`, this becomes a rather trivial proof. *)
   reflexivity.
 Qed.

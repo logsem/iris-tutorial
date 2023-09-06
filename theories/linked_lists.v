@@ -299,10 +299,10 @@ Proof.
   ).
   - iFrame.
     repeat iSplit.
-    + iPureIntro =>/= k v Hk.
-      (*XXX Lars: is the above line using ssreflect? *)
+    + iPureIntro; simpl.
+      intros k v Hk.
       rewrite list_lookup_fmap in Hk.
-      destruct (xs !! k) as [x|] =>//.
+      destruct (xs !! k) as [x|]; last done.
       injection Hk as <-.
       by exists x.
     + by iExists [].

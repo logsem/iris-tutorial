@@ -84,7 +84,7 @@ Lemma is_list_rec_correct (v : val) (Φ : val → iProp Σ) : is_list v Φ ⊣�
 Proof.
   iSplit.
   - iIntros "(%xs & Hv & HΦs)".
-    iInduction xs as [|x xs] "IH" forall (v) =>/=.
+    iInduction xs as [|x xs] "IH" forall (v); simpl.
     + rewrite is_list_rec_unfold.
       by iLeft.
     + rewrite is_list_rec_unfold.

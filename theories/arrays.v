@@ -41,7 +41,7 @@ Lemma copy_to_spec a1 a2 l1 l2 :
 Proof.
   iIntros "%Φ (H1 & H2 & %H) HΦ".
   iLöb as "IH" forall (a1 a2 l1 l2 H).
-  destruct l1 as [|v1 l1], l2 as [|v2 l2]=>//.
+  destruct l1 as [|v1 l1], l2 as [|v2 l2]; try done.
   - wp_rec; wp_pures.
     (**
       The empty array predicate is trivial, as it says nothing about
@@ -167,13 +167,14 @@ Lemma reverse_spec a l :
   - apply (Nat2Z.inj_le _ 1) in H.
     wp_pures.
     iApply "HΦ".
-    destruct l as [|v1 [|v2 l]]=>//.
+    destruct l as [|v1 [|v2 l]]; try done.
     cbn in H.
     apply le_S_n in H.
     inversion H.
   - apply Z.nle_gt in H.
-    induction l as [|v2 l _] using rev_ind=>//.
-    destruct l as [|v1 l]=>//.
+    induction l as [|v2 l _] using rev_ind.
+    { done. }
+    destruct l as [|v1 l]; first done.
     clear H.
     change (v1 :: ?l) with ([v1] ++ l) at 2.
     rewrite !rev_app_distr app_length Nat2Z.inj_add /=.

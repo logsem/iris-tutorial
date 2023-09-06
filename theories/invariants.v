@@ -233,7 +233,7 @@ Proof.
   - iInv "I" as "(%n & Hr & >%Hn)".
     wp_faa.
     iModIntro.
-    iSplitL=>//.
+    iSplitL; last done.
     iModIntro.
     iExists (n + 2)%Z.
     iFrame.
@@ -243,7 +243,7 @@ Proof.
   - iInv "I" as "(%n & Hr & >%Hn)".
     wp_faa.
     iModIntro.
-    iSplitL=>//.
+    iSplitL; last done.
     iModIntro.
     iExists (n + 6)%Z.
     iFrame.

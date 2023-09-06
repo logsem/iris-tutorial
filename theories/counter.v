@@ -107,7 +107,7 @@ Proof.
   apply auth_both_valid_discrete.
   split.
   - (** Inclusion for max_nat turns out to be the natural ordering. *)
-    apply max_nat_included =>/=.
+    apply max_nat_included; simpl.
     reflexivity.
   - (** All elements of max_nat are valid. *)
     cbv.

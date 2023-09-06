@@ -121,7 +121,7 @@ Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
   apply StronglySorted_inv in Hl2 as [H2 Hl2].
   wp_pures.
   rewrite !cons_length Nat.add_succ_l Nat.add_succ_r in H.
-  destruct l as [|y l]=>//.
+  destruct l as [|y l]; first done.
   cbn in H.
   injection H as H.
   rewrite !fmap_cons.
@@ -152,11 +152,11 @@ Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
       iFrame.
       iPureIntro.
       split.
-      -- apply SSorted_cons=>//.
+      -- apply SSorted_cons; first done.
         rewrite -Hp.
         rewrite Forall_app Forall_cons.
-        split_and!=>//.
-        eapply Forall_impl=>//.
+        split_and!; try done.
+        eapply Forall_impl; first done.
         intros z Hz.
         by etrans.
       -- by apply Permutation_skip.
@@ -178,11 +178,11 @@ Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
       iFrame.
       iPureIntro.
       split.
-      -- apply SSorted_cons=>//.
+      -- apply SSorted_cons; first done.
         rewrite -Hp /=.
         rewrite Forall_cons Forall_app.
-        split_and!=>//.
-        eapply Forall_impl=>//.
+        split_and!; try done.
+        eapply Forall_impl; first done.
         intros z Hz.
         by etrans.
       -- by apply (Permutation_elt _ l2 [] l3 x2).
@@ -220,9 +220,9 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
     apply (Nat2Z.inj_le _ 1) in Hlen.
     destruct l as [|i1 [|i2 l]].
     - apply SSorted_nil.
-    - apply SSorted_cons=>//.
+    - apply SSorted_cons; last done.
       apply SSorted_nil.
-    - contradict Hlen=>/=. lia.
+    - contradict Hlen; simpl. lia.
   }
   apply Z.nle_gt, (Nat2Z.inj_lt 1) in Hlen.
   wp_pures.
@@ -232,7 +232,7 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
   assert (length l `div` 2 ≤ length l).
   {
     apply Nat.lt_le_incl, Nat.div_lt.
-    - eapply Nat.lt_trans=>//.
+    - eapply Nat.lt_trans; last done.
       apply Nat.lt_0_1.
     - apply Nat.lt_1_2.
   }

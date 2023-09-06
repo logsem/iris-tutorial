@@ -2,6 +2,20 @@ From iris.base_logic Require Import iprop.
 From iris.proofmode Require Import proofmode.
 
 (**
+  Iris uses ssreflect. However we won't assume knowledge of ssreflect
+  tactics. As such we will limit the use of ssreflect tactics when
+  posible. However ssreflect overrides the definition of [rewrite]
+  changing its syntacs and behaviour slightly, notebly:
+  - No commas between arguments, meaning you have to write
+    [rewrite H1 H2] instead of [rewrite H1, H2].
+  - [rewrite -H] instead of [rewrite <-H]
+  - occurences are written in from of the argument
+    [rewrite {1 2 3}H] instead of [rewrite H at 1 2 3]
+  - Rewrite can unfold definitions as [rewrite /def] which does the
+    same as [unfold def]
+*)
+
+(**
   All proofs in Iris are done in a context with a [Σ: gFunctors]. It
   is used as a parameter in [iProp Σ], the type of iris propositions, to
   specify available resources. The details of Σ will come later. For

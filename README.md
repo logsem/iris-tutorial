@@ -1,21 +1,23 @@
 # Setup
 ## Installation
-We recomend installing Iris via opam (2.0.0 or
-newer).  To obtain the latest stable release, you have to add the Coq opam
-repository:
+The recommended way to install the dependencies is through [opam](https://opam.ocaml.org/doc/Install.html).
 
-    opam repo add coq-released https://coq.inria.fr/opam/released
-
-If you wish to obtain a development version, also add the Iris opam repository:
-
-    opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
-
-Now to install iris simply run:
-
-    opam install coq-iris
-    opam install coq-iris-heap-lang
-
-To fetch updates later, run `opam update && opam upgrade`.
+1. Install [opam](https://opam.ocaml.org/doc/Install.html) if not already installed (a version greater than 2.0 is required).
+2. Install a new switch and link it to the project.
+```
+opam switch create iris_tutorial 4.14.0
+opam switch link iris_tutorial .
+```
+3. Add the Coq and Iris opam repositories.
+```
+opam repo add coq-released https://coq.inria.fr/opam/released
+opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
+opam update
+```
+4. Install the right version of the dependencies as specified in the iris-tutorial.opam file.
+```
+opam install . --deps-only
+```
 
 ## Editor
 Iris uses unicode charecters in its notation. [This guide](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/editor.md) describes how to set up your favorite editor.
@@ -25,6 +27,8 @@ This [cheatsheet](/cheatsheet.md) contains a table of the most importent tactics
 
 # Usage
 It is recomended that you go through the files in the order specified in [Content](README.md#content), as later files will relly on knowledge and examples from the previous files.
+
+Most excersises consist of `Admitted` proofs. The excersise is to finish the proof and replace `Admitted` with `Qed`.
 
 # Content
 
@@ -43,7 +47,3 @@ It is recomended that you go through the files in the order specified in [Conten
   - [threads](/theories/threads.v) - Construction of thread operations
   - [ticket_lock](/theories/ticket_lock.v) - Specification for a ticket lock
 - [adequacy](/theories/adequacy.v)
-
-# To be sorted
-- logic/cmra.v
-  - logic/key.v

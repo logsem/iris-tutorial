@@ -1,11 +1,11 @@
 # Generate an exercise for each solution.
-SOLUTIONS := $(wildcard solutions/*.v)
+SOLUTIONS := $(wildcard theories/*.v)
 EXERCISES := $(addprefix exercises/,$(notdir $(SOLUTIONS)))
 
 exercises: $(EXERCISES)
 .PHONY: exercises
 
-$(EXERCISES): exercises/%.v: solutions/%.v gen-exercises.awk
+$(EXERCISES): exercises/%.v: theories/%.v gen-exercises.awk
 	$(HIDE)if test -f $@ && ! git diff --exit-code $@ >/dev/null; then \
 	  echo "Exercise file $@ has been changed; skipping exercise generation"; \
 	else \

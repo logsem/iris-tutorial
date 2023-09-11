@@ -1,0 +1,16 @@
+opam-version: "2.0"
+name: "coq-iris-tutorial"
+synopsis: "A tutorial for the Iris framework"
+maintainer: "The Iris Tutorial Team"
+authors: "The Iris Tutorial Team"
+license: "MIT"
+homepage: "https://github.com/logsem/iris-tutorial"
+dev-repo: "git+https://github.com:logsem/iris-tutorial.git"
+bug-reports: "https://github.com/logsem/iris-tutorial/issues"
+build: [make "-j%{jobs}%"]
+install: []
+depends: [
+  "coq" { (>= "8.16" & < "8.18~") }
+  "coq-iris" { (= "4.0.0") }
+  "coq-iris-heap-lang" { (= "4.0.0") }
+]

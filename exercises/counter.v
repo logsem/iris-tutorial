@@ -173,18 +173,159 @@ Proof.
     injection e as e.
     apply (inj Z.of_nat) in e.
     subst m'.
+    (* exercise *)
+Admitted.
+
+Context `{!spawnG Σ}.
+
+Lemma par_incr :
+  {{{ True }}}
+    let: "c" := mk_counter #() in
+    (incr "c" ||| incr "c");;
+    read "c"
+  {{{ n, RET #(S n); True }}}.
 Proof.
   (* exercise *)
 Admitted.
+
+End spec1.
+End spec1.
+
+(**
+  Our first specification only allowed us to find a lower bound for
+  the value in par_incr. Any solution to this problem has to be
+  non-persistent, as we need to agregate the knowledge to conclude
+  the total value.
+
+  As we've seen before, we can use fractions to keep track of peaces
+  of knowledge. So we will use the camera
+  [auth (option (frac * nat))].
+*)
+
+Module spec2.
+Section spec2.
+Context `{!heapGS Σ, !inG Σ (authR (optionUR (prodR fracR natR)))}.
+
+Let N := nroot .@ "counter".
+
+Definition is_counter (v : val) (γ : gname) (n : nat) (q : Qp) : iProp Σ :=
+  ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ Some (q, n)) ∗ inv N (∃ m : nat, l ↦ #m ∗ own γ (● Some (1%Qp, m))).
+
+Lemma is_counter_add (c : val) (γ : gname) (n m : nat) (p q : Qp) :
+  is_counter c γ (n + m) (p + q) ⊣⊢ is_counter c γ n p ∗ is_counter c γ m q.
+Proof.
+  iSplit.
+  - iIntros "(%l & -> & [Hγ1 Hγ2] & #I)".
+    iSplitL "Hγ1".
+    + iExists l.
+      iSplitR; first done.
+      by iFrame.
+    + iExists l.
+      iSplitR; first done.
+      by iFrame.
+  - iIntros "[(%l & -> & Hγ1 & I) (%l' & %H & Hγ2 & _)]".
+    injection H as <-.
+    iExists l.
+    iSplitR; first done.
+    iCombine "Hγ1 Hγ2" as "Hγ".
+    iFrame.
+Qed.
+
+Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● Some (1%Qp, 0)) ∗ own γ (◯ Some (1%Qp, 0)).
+Proof.
+  setoid_rewrite <-own_op.
+  apply own_alloc.
+  apply auth_both_valid_discrete.
+  split.
+  - reflexivity.
+  - apply Some_valid.
+    apply pair_valid.
+    split.
+    + apply frac_valid.
+      reflexivity.
+    + cbv.
+      done.
+Qed.
+
+Lemma state_valid γ (n m : nat) (q : Qp) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (q, m)) -∗ ⌜m ≤ n⌝.
+Proof.
+  iIntros "Hγ Hγ'".
+  iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
+  iPureIntro.
+  apply auth_both_valid_discrete in H.
+  destruct H as [H _].
+  apply Some_pair_included in H.
+  destruct H as [_ H].
+  rewrite Some_included_total in H.
+  apply nat_included in H.
+  done.
+Qed.
+
+Lemma state_valid_full γ (n m : nat) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (1%Qp, m)) -∗ ⌜m = n⌝.
+Proof.
+  iIntros "Hγ Hγ'".
+  iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
+  iPureIntro.
+  apply auth_both_valid_discrete in H.
+  destruct H as [H _].
+  apply Some_included_exclusive in H.
+  - destruct H as [_ H]; cbn in H.
+    apply leibniz_equiv in H.
+    done.
+  - apply _.
+  - done.
+Qed.
+
+Lemma update_state γ n m (q : Qp) : own γ (● Some (1%Qp, n)) ∗ own γ (◯ Some (q, m)) ==∗ own γ (● Some (1%Qp, S n)) ∗ own γ (◯ Some (q, S m)).
+Proof.
+  iIntros "H".
+  rewrite -!own_op.
+  iApply (own_update with "H").
+  apply auth_update.
+  apply option_local_update.
+  apply prod_local_update_2.
+  apply (op_local_update_discrete _ _ 1).
+  done.
+Qed.
+
+Lemma mk_counter_spec :
+  {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0 1}}}.
 Proof.
   (* exercise *)
 Admitted.
+
+Lemma read_spec (c : val) (γ : gname) (n : nat) (q : Qp) :
+  {{{ is_counter c γ n q }}} read c {{{ (u : nat), RET #u; is_counter c γ n q ∗ ⌜n ≤ u⌝ }}}.
 Proof.
   (* exercise *)
 Admitted.
+
+Lemma read_spec_full (c : val) (γ : gname) (n : nat) :
+  {{{ is_counter c γ n 1 }}} read c {{{ RET #n; is_counter c γ n 1 }}}.
 Proof.
   (* exercise *)
 Admitted.
+
+Lemma incr_spec (c : val) (γ : gname) (n : nat) (q : Qp) :
+  {{{ is_counter c γ n q }}} incr c {{{ (u : nat), RET #u; ⌜n ≤ u⌝ ∗ is_counter c γ (S n) q }}}.
+Proof.
+  iIntros "%Φ (%l & -> & Hγ' & #I) HΦ".
+  iLöb as "IH".
+  wp_rec.
+  wp_bind (! _)%E.
+  iInv "I" as "(%m & Hl & Hγ)".
+  wp_load.
+  iModIntro.
+  iSplitL "Hl Hγ".
+  { iExists m. iFrame. }
+  wp_pures.
+  wp_bind (CmpXchg _ _ _).
+  iInv "I" as "(%m' & Hl & Hγ)".
+  destruct (decide (# m = # m')).
+  - injection e as e.
+    apply (inj Z.of_nat) in e.
+    subst m'.
+    wp_cmpxchg_suc.
     (* exercise *)
 Admitted.
 

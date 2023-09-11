@@ -218,10 +218,10 @@ Proof.
     wp_pures.
     by wp_apply "IH".
 Qed.
-(* END SOLUTION
+(* END SOLUTION BEGIN TEMPLATE
     (* exercise *)
 Admitted.
-BEGIN TEMPLATE *)
+END TEMPLATE *)
 
 Context `{!spawnG Σ}.
 

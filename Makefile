@@ -18,7 +18,7 @@ clean: Makefile.coq
 html: Makefile.coq _CoqProject
 	rm -fr html
 	+make -f Makefile.coq $@
-	cp $(EXTRA_DIR)/resources/* html
+	cp -R $(EXTRA_DIR)/resources html
 
 Makefile.coq: _CoqProject
 	coq_makefile -f _CoqProject -o Makefile.coq

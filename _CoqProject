@@ -1,4 +1,6 @@
--Q theories iris_tutorial
+-Q theories solutions
+-Q exercises exercises
+-docroot iris-tutorial
 -arg -async-proofs-cache -arg force
 
 theories/base.v
@@ -15,3 +17,18 @@ theories/spin_lock.v
 theories/threads.v
 theories/ticket_lock.v
 theories/adequacy.v
+
+exercises/base.v
+exercises/pure.v
+exercises/persistently.v
+exercises/lang.v
+exercises/linked_lists.v
+exercises/fixpoint.v
+exercises/arrays.v
+exercises/merge_sort.v
+exercises/invariants.v
+exercises/counter.v
+exercises/spin_lock.v
+exercises/threads.v
+exercises/ticket_lock.v
+exercises/adequacy.v

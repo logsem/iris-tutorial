@@ -1,6 +1,6 @@
 From iris.algebra Require Import excl.
 From iris.heap_lang Require Import adequacy lang proofmode notation par.
-From solutions Require Import spin_lock.
+From exercises Require Import spin_lock.
 
 (**
   Thus far we've assumed that the weakest precondition is correct. But

@@ -195,8 +195,8 @@ Proof.
     injection e as e.
     apply (inj Z.of_nat) in e.
     subst m'.
-(* BEGIN SOLUTION *)
-    rewrite (comm Z.add m 1%Z) -(Nat2Z.inj_add 1) /=.
+    (* BEGIN SOLUTION *)
+    rewrite Z.add_comm -(Nat2Z.inj_add 1) /=.
     iPoseProof (state_valid with "Hγ Hγ'") as "%H".
     iClear "Hγ'".
     iMod (update_state with "Hγ") as "[Hγ #Hγ']".
@@ -388,7 +388,7 @@ Lemma read_spec_full (c : val) (γ : gname) (n : nat) :
   wp_lam.
   iInv "I" as "(%m & Hl & Hγ)".
   wp_load.
-  iPoseProof (state_valid_full with "Hγ Hγ'") as "<-".
+  iPoseProof (state_valid_full with "Hγ Hγ'") as "#<-".
   iModIntro.
   iSplitL "Hl Hγ".
   { iExists n. iFrame. }
@@ -419,7 +419,7 @@ Proof.
     subst m'.
     wp_cmpxchg_suc.
 (* BEGIN SOLUTION *)
-    rewrite (comm Z.add) -(Nat2Z.inj_add 1) /=.
+    rewrite Z.add_comm -(Nat2Z.inj_add 1) /=.
     iPoseProof (state_valid with "Hγ Hγ'") as "%H".
     iMod (update_state with "[$Hγ $Hγ']") as "[Hγ Hγ']".
     iModIntro.

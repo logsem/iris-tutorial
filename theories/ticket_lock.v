@@ -186,7 +186,7 @@ Lemma acquire_spec γ l P : {{{ is_lock γ l P }}} acquire l {{{ RET #(); locked
     apply (inj Z.of_nat) in e.
     subst n'.
     wp_cmpxchg_suc.
-    rewrite (comm Z.add) -(Nat2Z.inj_add 1) /=.
+    rewrite Z.add_comm -(Nat2Z.inj_add 1) /=.
     iDestruct "Hγ" as "[Hγ Hγ']".
     iMod (own_update _ _ (● (Excl' o, GSet (set_seq 0 (S n))) ⋅ ◯ (ε, GSet {[n]})) with "Hγ") as "[Hγ Hn]".
     {
@@ -241,7 +241,7 @@ Lemma release_spec γ l P : {{{ is_lock γ l P ∗ locked γ ∗ P }}} release l
   { iExists o, n. iFrame. }
   clear n.
   wp_pures.
-  rewrite (comm Z.add) -(Nat2Z.inj_add 1) /=.
+  rewrite Z.add_comm -(Nat2Z.inj_add 1) /=.
   iInv "I" as "(%o' & %n & Hlo & Hln & [Hγ [[>Hexcl' _]|Ho]])".
   {
     iPoseProof (own_valid_2 with "Hexcl Hexcl'") as "%H".

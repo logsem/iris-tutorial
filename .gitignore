@@ -22,5 +22,6 @@ Makefile.coq.conf
 .Makefile.coq.d
 Makefile.package.*
 .Makefile.package.*
+_opam
 .DS_Store
 html/*

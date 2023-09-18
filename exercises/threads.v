@@ -2,86 +2,99 @@ From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(**
-  HeapLang has concurency in the form of a fork operation. This
-  operation takes an expresion and runs it in a seperate thread.
-  Meanwhile, the initial thread continues execution with a unit value.
-  Fork does not have a reduction tactic. Instead we need to use it's
-  specification explicitly via `wp_fork`. This lemma is more general
-  than we need for our current use cases, but it esentially states
-  that:
-  [WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}]
+(** HeapLang's primitive concurency mechanism is the [Fork] construct. The
+    operation takes an expression [e] as argument and spawns a new thread that
+    executes [e] concurrently. The operation itself returns the unit value on
+    the spawning thread.
 
-  We can use fork to implement other common concurency operators such
-  as [spawn] and [join].
-*)
-Definition spawn: val :=
+    [Fork] does not have dedicated tactical support. Instead, we simply apply
+    the lemma [wp_fork]. This lemma is more general than what we need for our
+    current use cases, but its specification is as follows:
+
+      [WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}]
+
+    That is, to show the weakest precondition of [Fork e] we have to show the
+    weakest precondition of [e] for a trivial postcondition. The key point is
+    that we only require the forked-off thread to be safe---we do not care about
+    its return value, hence the trivial postcondition.
+
+    We can use the [Fork] construct to implement other common concurency
+    operators such as [spawn] and [join]. *)
+
+Definition spawn : val :=
   λ: "f",
-  let: "c" := ref NONE in
-  Fork ("c" <- SOME ("f" #()));;
-  "c".
+    let: "c" := ref NONE in
+    Fork ("c" <- SOME ("f" #()));;
+    "c".
+
 Definition join: val :=
   rec: "join" "c" :=
-  match: !"c" with
-    NONE => "join" "c"
-  | SOME "x" => "x"
-  end.
+    match: !"c" with
+      NONE => "join" "c"
+    | SOME "x" => "x"
+    end.
 
-(**
-  We can then use the function to define the par operator.
-*)
-Definition par: val :=
+(** [spawn] creates a new thread and a "shared channel" which is used to signal
+    when it is done, and the [join] function listens on the channel until the
+    spawned thread is done. In contrast to plain [Fork], these two functions
+    allow us to wait for a forked-off thread to finish. *)
+
+(** We can then use [spawn] and [join] to define a classical parallel
+    composition operator [par]. *)
+Definition par : val :=
   λ: "f1" "f2",
   let: "h" := spawn "f1" in
   let: "v2" := "f2" #() in
   let: "v1" := join "h" in
   ("v1", "v2").
 
-(** The notation for the par operator then hides the thunks *)
-Notation "e1 ||| e2" := (par (λ: <>, e1)%E (λ: <>, e2)%E) : expr_scope.
-(**
-  Lambda expresions actually canonicalize as lambda values. Thus we
-  need to refer to this canonical form when proving our specifications
-*)
+(** ... and introduce convenient notation that hides the thunks. *)
 Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
+(** Our desired specification for [par] is going look as follows:
 
-(**
-  Our desired specification for [par] is going to be:
-  {{{ P1 }}} e1 {{{ v, RET v; Ψ1 v }}} -∗
-  {{{ P2 }}} e2 {{{ v, RET v; Ψ2 v }}} -∗
-  {{{ P1 ∗ P2 }}} e1 ||| e2 {{{ v1 v2, RET (v1, v2); Ψ1 v1 ∗ Ψ2 v2 }}}
+    [[
+      {{{ P1 }}} e1 {{{ v, RET v; Ψ1 v }}} -∗
+      {{{ P2 }}} e2 {{{ v, RET v; Ψ2 v }}} -∗
+      {{{ P1 ∗ P2 }}} e1 ||| e2 {{{ v1 v2, RET (v1, v2); Ψ1 v1 ∗ Ψ2 v2 }}}
+    ]]
 
+    The rule states that we can run [e1] and [e2] in parallel if they have
+    _disjoint_ footprints and that we can verify the two components separately.
+    The rule is this reason sometimes also referred to as the _disjoint
+    concurrency rule_.
 
-  To achieve this we need specifications for [spawn] and [join]. For
-  this we need a predicate [join_handle] for the result of the join.
-  {{{ P }}} f #() {{{ v, RET v; Ψ v }}} -∗
-  {{{ P }}} spawn f {{{ v, RET v; join_handle v Ψ }}}
-
-  {{{ join_handle v Ψ }}} join v {{{ v, RET v; Ψ v }}}
+    To show the rule, we will first show separate specifications for the
+    auxiliary functions [spawn] and [join]. Since we are using a shared channel
+    we will use an invariant to allow the two (concurrently running) threads to
+    access it.
 *)
-
 
 Section threads.
 Context `{!heapGS Σ}.
 Let N := nroot .@ "handle".
 
-
+(** An initial attempt at stating this invariant looks like follows. *)
 Definition handle_inv1 (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
-  ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w, ⌜v = SOMEV w⌝ ∗ Ψ w).
+  ∃ v : val, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w : val, ⌜v = SOMEV w⌝ ∗ Ψ w).
 
 Definition join_handle1 (v : val) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (handle_inv1 l Ψ).
 
+(** The stated invariant governs the shared channel (some location [l]) and
+    states that either no value has been sent yet, or some value has been sent
+    that satisfies the predicate [Ψ].
+
+    Let us try this out. *)
 
 Lemma join_spec (v : val) (Ψ : val → iProp Σ) :
   {{{ join_handle1 v Ψ }}} join v {{{ v, RET v; Ψ v }}}.
 Proof.
-  iIntros "%Φ (%l & -> & #I) HΦ".
+  iIntros (Φ) "(%l & -> & #I) HΦ".
   iLöb as "IH".
   wp_rec.
   wp_bind (! _)%E.
-  iInv "I" as "(%v & Hl & [>->|(%w & >-> & HΨ)])".
+  iInv "I" as "(%v & Hl & [>-> | (%w & >-> & HΨ)])".
   - wp_load.
     iModIntro.
     iSplitL "Hl".
@@ -95,24 +108,20 @@ Proof.
     by iApply "IH".
   - wp_load.
     iModIntro.
-    (**
-      Now we need HΨ to reestablish the invariant. However we also
-      need it for the post-condition. As such, we are stuck.
-    *)
+    (** Now we need [HΨ] to reestablish the invariant but we also need it for
+        the postcondition. We are stuck... *)
 Abort.
 
-(**
-  To fix this we need a way to keep track of whether Ψ is in the
-  invariant. However we don't have any program state to link it to.
-  Therefor we will use a different kind of state, called ghost state.
-  Iris supports many kinds of ghost state, but we will only need one
-  property, namely that our ghost state be exclusive.
+(** We need a way to keep track of whether [Ψ w] has been "taken out" of the
+    invariant or not. However we do not have any program state to link it to.
+    Instead, we will use _ghost state_ instead to track this information. Iris
+    supports different kinds of ghost state, but we will only need one property,
+    namely that our ghost state is _exclusive_.
 
-  We will use the camera [excl A]. This is the exclusive camera. It
-  has the valid states [Excl a]. Importantly this state is exclusive,
-  meaning [Excl a ⋅ Excl b] isn't valid. As we don't care about the
-  value of the state, we will let [A:=()].
-*)
+    We will use the camera [excl A]. This is the exclusive camera. It has the
+    valid states [Excl a]. Importantly, this state is exclusive, meaning [Excl a
+    ⋅ Excl b] is not valid. As we don't care about the value of the state, we
+    will simply let [A:=()]. *)
 Context `{!inG Σ (excl ())}.
 
 Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
@@ -124,18 +133,20 @@ Definition join_handle (v : val) (Ψ : val → iProp Σ) : iProp Σ :=
 Lemma token_alloc : ⊢ |==> ∃ γ, own γ (Excl ()).
 Proof. by iApply own_alloc. Qed.
 
+(** Due to the exclusivity of [Excl ()] ownership becomes exclusive as well. *)
 Lemma token_excl γ : own γ (Excl ()) -∗ own γ (Excl ()) -∗ False.
 Proof.
   iIntros "H1 H2".
-  iPoseProof (own_valid_2 with "H1 H2") as "%H".
+  iDestruct (own_valid_2 with "H1 H2") as %?.
   cbv in H.
   done.
 Qed.
 
-Lemma token_lock (γ : gname) (P : iProp Σ) : own γ (Excl ()) -∗ (own γ (Excl ()) ∨ P) -∗ own γ (Excl ()) ∗ P.
+Lemma token_lock (γ : gname) (P : iProp Σ) :
+  own γ (Excl ()) -∗ (own γ (Excl ()) ∨ P) -∗ own γ (Excl ()) ∗ P.
 Proof.
-  iIntros "H1 [H2|HP]".
-  - iPoseProof (token_excl with "H1 H2") as "[]".
+  iIntros "H1 [H2 | HP]".
+  - iExFalso. iApply (token_excl with "H1 H2").
   - iFrame.
 Qed.
 
@@ -178,9 +189,9 @@ Proof.
 Qed.
 
 Lemma join_spec (Ψ : val → iProp Σ) (h : val) :
-  {{{join_handle h Ψ}}} join h {{{v, RET v; Ψ v}}}.
+  {{{ join_handle h Ψ }}} join h {{{ v, RET v; Ψ v }}}.
 Proof.
-  iIntros "%Φ (%γ & %l & -> & Hγ & #I) HΦ".
+  iIntros (Φ) "(%γ & %l & -> & Hγ & #I) HΦ".
   iLöb as "IH".
   wp_rec.
   wp_bind (! #l)%E.
@@ -213,9 +224,9 @@ Proof.
 Qed.
 
 Lemma par_spec (P1 P2 : iProp Σ) (e1 e2 : expr) (Q1 Q2 : val → iProp Σ) :
-  {{{P1}}} e1 {{{v, RET v; Q1 v}}} -∗
-  {{{P2}}} e2 {{{v, RET v; Q2 v}}} -∗
-  {{{P1 ∗ P2}}} (e1 ||| e2)%V {{{v1 v2, RET (v1, v2); Q1 v1 ∗ Q2 v2}}}.
+  {{{ P1 }}} e1 {{{ v, RET v; Q1 v }}} -∗
+  {{{ P2 }}} e2 {{{ v, RET v; Q2 v }}} -∗
+  {{{ P1 ∗ P2 }}} (e1 ||| e2)%V {{{ v1 v2, RET (v1, v2); Q1 v1 ∗ Q2 v2 }}}.
 Proof.
   iIntros "#H1 #H2 %Φ !> [HP1 HP2] HΦ".
   rewrite /par.

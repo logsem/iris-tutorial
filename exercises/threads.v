@@ -3,7 +3,7 @@ From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (**
-  Heaplang has concurency in the form of a fork operation. This
+  HeapLang has concurency in the form of a fork operation. This
   operation takes an expresion and runs it in a seperate thread.
   Meanwhile, the initial thread continues execution with a unit value.
   Fork does not have a reduction tactic. Instead we need to use it's

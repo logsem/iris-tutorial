@@ -4,7 +4,7 @@ Section linked_lists.
 Context `{!heapGS Σ}.
 
 (**
-  Let us define what we mean by a linked list in Heaplang. We will do
+  Let us define what we mean by a linked list in HeapLang. We will do
   so by relating a program value to the Coq list it represents.
 
   Here we use [NONE] and [SOME e] as syntactic sugar for [InjL #()]
@@ -18,7 +18,7 @@ Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   end.
 
 (**
-  Now we can define Heaplang functions that act on lists, such as
+  Now we can define HeapLang functions that act on lists, such as
   inc. The inc function recursively increments all the values of a
   list by 1.
 *)

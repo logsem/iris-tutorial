@@ -13,7 +13,7 @@ From solutions Require Import spin_lock.
   In this file we'll go over how to define these properties, and show
   that the weakest precondition satisfies them.
 
-  Heaplang is defined using a step relation. This relation defines how
+  HeapLang is defined using a step relation. This relation defines how
   an expression can reduce in a single step.
   [prim_step e1 σ1 κs e2 σ2 efs]
   Here [e1] is the expression we want to reduce, and [σ1] is the

@@ -49,7 +49,7 @@ Definition merge_sort_inner : val :=
     merge "b" "n1" ("b" +ₗ "n1") "n2" "a".
 
 (**
-  Heaplang recuires array allocations to contain atleast 1 element. So
+  HeapLang recuires array allocations to contain atleast 1 element. So
   we need to treat this case seperatly.
 *)
 Definition merge_sort : val :=

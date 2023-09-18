@@ -6,7 +6,8 @@ Context `{!heapGS Σ}.
 
 (**
   As we have already seen, we can define a predicate for linked lists
-  representing a list of specific values.
+  representing a list of specific values, using Coq's notion of
+  fixpoint for the inductive Coq type [list val].
 *)
 Fixpoint is_list_of (v : val) (xs : list val) : iProp Σ :=
   match xs with
@@ -16,9 +17,10 @@ Fixpoint is_list_of (v : val) (xs : list val) : iProp Σ :=
 
 (**
   However, sometimes we don't care about the exact list and instead
-  only want to know that each values of the list satisfy a predicate.
-  To do this we could define a predicate for when all elements of a
-  list. Then simply state that the value is represented by one such
+  we only want to know that each value of the list satisfies a predicate.
+  This can be captures by using a helper predicate [all] expressing that
+  all elements of a Coq list satisfies a predicate. 
+  Using that, we can then simply state that the value is represented by one such
   list.
 *)
 
@@ -32,11 +34,11 @@ Definition is_list (v : val) (Φ : val → iProp Σ) : iProp Σ :=
   ∃ xs, is_list_of v xs ∗ all xs Φ.
 
 (**
-  However this definition is rather anoying to work with, as it
-  requires explicitly finding the list of values. Alternatively we
-  could define the predicate as the solution to a recursive
+  However, this definition is rather annoying to work with, as it
+  requires explicitly finding the list of values. Alternatively, we
+  can define the is_list redicate as the solution to a recursive
   definition. This means defining a function:
-  [F : (A → iProp Σ) → (A → iProp Σ)]
+    [F : (A → iProp Σ) → (A → iProp Σ)]
   A solution is then a function [f] satisfying [f = F f]. Solutions to
   such equations are called fixpoints as [f] doesn't change under [F].
 *)
@@ -46,10 +48,10 @@ Definition is_list_pre (Φ : val → iProp Σ) (f : val → iProp Σ) (v : val) 
 (**
   Recursive definitions can have multiple fixpoints. Of these there
   are two special fixpoints: The least fixpoint and the greatest fixpoint.
-  The least fixpoint coresponds to an inductively defined predicate,
-  while the greatest coresponds to coinductively defined predicates.
+  The least fixpoint corresponds to an inductively defined predicate,
+  while the greatest corresponds to a coinductively defined predicates.
 
-  These solutions exists when [F] is monotone. This is handled by the
+  These solutions exists when [F] is monotone, as captured by the
   typeclass [BiMonoPred].
 *)
 Global Instance is_list_pre_mono Φ : BiMonoPred (is_list_pre Φ).
@@ -65,12 +67,18 @@ Proof.
       iFrame.
       iApply ("HΨ" with "Ht").
   - (**
-      Additionally to monitonicity. We also need to prove that the
-      resulting predicate is time preserving. This is trivial in this
-      case as values are discrete.
+      In addition to monotonicity, we also need to prove that the
+      resulting predicate is 'time preserving' (NonExpansive).
+      (We will explain NonExpansiveness etc. in more detail later.)
+      This is trivial in this case as values are discrete.
     *)
     apply _.
 Qed.
+
+(** 
+  Now that we have proved monotonicity, we can obtain the least fixed point,
+  and lemmas for its unfolding and for induction.
+*)
 
 Definition is_list_rec (v : val) (Φ : val → iProp Σ) := bi_least_fixpoint (is_list_pre Φ) v.
 
@@ -80,6 +88,10 @@ Proof. apply least_fixpoint_unfold, _. Qed.
 Lemma is_list_rec_ind (Φ Ψ : val → iProp Σ) : □ (∀ v, is_list_pre Φ Ψ v -∗ Ψ v ) -∗ ∀ v, is_list_rec v Φ -∗ Ψ v.
 Proof. apply least_fixpoint_iter, _. Qed.
 
+(** 
+  We can now prove that our new definition is_list_rec obtained as the fixpoint
+  is equivalent to the definition we gave earlier.
+*)
 Lemma is_list_rec_correct (v : val) (Φ : val → iProp Σ) : is_list v Φ ⊣⊢ is_list_rec v Φ.
 Proof.
   iSplit.

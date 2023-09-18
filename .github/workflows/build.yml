@@ -28,12 +28,11 @@ jobs:
       with:
         coq_version: ${{ matrix.coq_version }}
         ocaml_version: "4.14.1-flambda"
-        install: ""
+        install: "opam install . --deps-only --yes"
         before_script: |
           sudo chown -R coq:coq . # workaround a permission issue
         script: |
           startGroup Build
-            opam install . --deps-only
             make ci -j2
           endGroup
         uninstall: |

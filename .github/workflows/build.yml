@@ -33,6 +33,7 @@ jobs:
           sudo chown -R coq:coq . # workaround a permission issue
         script: |
           startGroup Build
+            opam install . --deps-only
             make ci -j2
           endGroup
         uninstall: |

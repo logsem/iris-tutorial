@@ -1,23 +1,23 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
-(** Heaplang is a programming language with an accompanying Iris program
-  logic defined on top of Iris base logic. Heaplang is an untyped
+(** HeapLang is a programming language with an accompanying Iris program
+  logic defined on top of Iris base logic. HeapLang is an untyped
   higher-order functional programming language with dynamically
   allocated references and concurrency, in the form of dynamically
   allocated threads that can share access to memory. The evaluation
   order is right to left and it is a call-by-value language.
 
-  The program logic for Heaplang uses connectives describing locations.
+  The program logic for HeapLang uses connectives describing locations.
   These connectives require that certain resources are available. To
   ensure this, we use the typeclass [heapGS]. This typeclass ensures
-  that Σ contains at least the necesarry resources for Heaplang. Later on,
+  that Σ contains at least the necesarry resources for HeapLang. Later on,
   we will explain what resources actually are.
 *)
 Section heaplang.
 Context `{!heapGS Σ}.
 
 (**
-  To see how we can reason about programs written in Heaplang,
+  To see how we can reason about programs written in HeapLang,
   let us define a small toy program.
 *)
 Definition prog : expr :=
@@ -37,7 +37,7 @@ Lemma wp_prog : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
 Proof.
   rewrite /prog.
   (**
-    Heaplang has a set of tactics for reasoning about the evaluation of the
+    HeapLang has a set of tactics for reasoning about the evaluation of the
     language. The initial step of prog is to allocate a reference
     containing the value 1. We can symbolically execute this step of prog by
     using the [wp_alloc] tactic with a name for the

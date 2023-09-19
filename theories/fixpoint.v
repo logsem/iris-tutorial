@@ -1,6 +1,17 @@
 From iris.bi Require Export fixpoint.
 From iris.heap_lang Require Import lang proofmode notation.
 
+(**
+  In this file we present an alternative approach to defining representation
+  predicates for linked lists, which uses fixpoints of predicates rather than
+  Coq's Fixpoint mechanism. 
+  The high-level point to notice is that we can define fixpoints of monotone 
+  functions on Iris predicates, much in the same way as one can define fixpoints
+  of monotone function on Coq predicates [XXX insert reference, or include an
+  example.]
+  Later on, we will discuss different kinds of fixpoints in more detail.
+ *)
+
 Section proofs.
 Context `{!heapGS Σ}.
 

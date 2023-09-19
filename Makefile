@@ -10,21 +10,23 @@ export COQDOCFLAGS
 
 all: Makefile.coq
 	+make -f Makefile.coq all
+.PHONY: all
 
 clean: Makefile.coq
 	+make -f Makefile.coq clean
 	rm -f Makefile.coq
+.PHONY: clean
 
 html: Makefile.coq _CoqProject
 	rm -fr html
 	+make -f Makefile.coq $@
 	cp -R $(EXTRA_DIR)/resources html
+.PHONY: html
 
 Makefile.coq: _CoqProject
 	coq_makefile -f _CoqProject -o Makefile.coq
 
 exercises: $(EXERCISES)
-
 .PHONY: exercises
 
 $(EXERCISES): exercises/%.v: theories/%.v gen-exercises.awk
@@ -38,5 +40,4 @@ $(EXERCISES): exercises/%.v: theories/%.v gen-exercises.awk
 ci: all
 	+@make -B exercises # force make (in case exercise files have been edited directly)
 	if [ -n "$$(git status --porcelain)" ]; then echo 'ERROR: Exercise files are not up-to-date with solutions. `git diff` and `git status` after re-making them:'; git diff; git status; exit 1; fi
-
-.PHONY: clean all
+.PHONY: ci

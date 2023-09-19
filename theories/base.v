@@ -216,8 +216,7 @@ Qed.
   it does not allow the 2 cases to share resources.
 *)
 Lemma or_elim (P Q R : iProp Σ) : (P -∗ R) -∗ (Q -∗ R) -∗ P ∨ Q -∗ R.
-Proof.
-  (* Exercise start *)
+(* SOLUTION *) Proof.
   iIntros "H1 H2 [P|Q]".
   - iApply ("H1" with "P").
   - iApply ("H2" with "Q").

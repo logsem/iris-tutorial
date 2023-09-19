@@ -196,11 +196,8 @@ Admitted.
 *)
 Lemma or_elim (P Q R : iProp Σ) : (P -∗ R) -∗ (Q -∗ R) -∗ P ∨ Q -∗ R.
 Proof.
-  (* Exercise start *)
-  iIntros "H1 H2 [P|Q]".
-  - iApply ("H1" with "P").
-  - iApply ("H2" with "Q").
-Qed.
+  (* exercise *)
+Admitted.
 
 (**
   The separation conjunction distributes over disjunction 

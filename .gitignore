@@ -25,3 +25,4 @@ Makefile.package.*
 _opam
 .DS_Store
 html/*
+.vscode/

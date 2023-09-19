@@ -35,7 +35,7 @@ opam update
 opam install . --deps-only
 ```
 
-### Editor
+## Editor
 Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/editor.md) describes how to set up your favorite editor.
 
 ## Overview
@@ -56,7 +56,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [adequacy](/theories/adequacy.v) - Adequacy
 
 ## Exercises
-To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`; your task is to fill in those definitions and complete the proofs all the way to `Qed`. 
+To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`. 
 
 After you are done with a file, run `make` (with your working directory being the repository root, where the `Makefile` is located) to compile and check the exercises.
 
@@ -66,7 +66,7 @@ If you are stuck, you can find solutions in the corresponding file in the `theor
 This [cheatsheet](/cheatsheet.md) contains a table of the most important tactics for each logical connective. A full description of the Iris Proof Mode tactics can be found in the files [proof_mode.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md) and [heap_lang.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md).
 
 ## Generating the exercises
-If you want to contribute to the tutorial, note that the files in `exercises/` are generated from the corresponding files in `theories/`. Run `make exercises` to re-generate those files this requires `gawk` to be installed (which should be available on Linux, and on macOS can be installed via `brew install gawk`).
+If you want to contribute to the tutorial, note that the files in `exercises/` are generated from the corresponding files in `theories/`. Run `make exercises` to re-generate those files. This requires `gawk` to be installed (which should be available on Linux, and on macOS can be installed via `brew install gawk`).
 
 The syntax for the solution files is as follows:
 

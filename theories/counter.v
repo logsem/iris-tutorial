@@ -6,7 +6,7 @@ From iris.heap_lang Require Import lang proofmode notation par.
   Let us define a simple counter module. A counter has 3 functions, a
   constructor, an incr, and a read. The counter is initialized as 0,
   and incr increments the counter while returning the old value. While
-  read simply returns the current value of the counter. Further more
+  read simply returns the current value of the counter. Furthermore,
   we want the counter to be shareable across multiple threads.
 *)
 
@@ -25,8 +25,8 @@ Section spec1.
 Context `{heapGS Σ}.
 
 (**
-  We are going to keep the fact that our counter is build on a pointer
-  as an implementation detail. Instead we will define a predicate
+  We are going to keep the fact that our counter is built on a pointer
+  as an implementation detail. Instead, we will define a predicate
   describing when a value is a counter.
 *)
 
@@ -54,22 +54,22 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
 
 (**
   Now we can change the what the pointer mapsto, but we still can't
-  refine the lowerbound.
+  refine the lower bound.
 
   The final step is to use ghost state. The idea is to link n and m to
-  peaces of ghost state in such a way that validity of their composit
-  is n ≤ m.
+  pieces of ghost state in such a way that the validity of their
+  composite is [n ≤ m].
 
-  To achieve this we can use the camera [auth A]. This camera is has 2
-  peaces:
-  - [● x] called an authoratative element.
+  To achieve this we can use the camera [auth A]. This camera has 2
+  pieces:
+  - [● x] called an authoritative element.
   - [◯ y] called a fragment.
   
-  The idea of the authoratative camera is as follows. The authoratative
+  The idea of the authoritative camera is as follows. The authoritative
   element represents the whole of the resource, while the fragments
-  acts as the peaces. To achive this the authoratative element acts
+  act as the pieces. To achieve this the authoritative element acts
   like the exclusive camera, while the fragment inherits all the
-  operations of A. Furthermore validity of [● x ⋅ ◯ y] is defined as
+  operations of A. Furthermore, validity of [● x ⋅ ◯ y] is defined as
   [✓ x ∧ y ≼ x].
 
   With this we can use the max_nat camera whose operation is just the
@@ -83,25 +83,25 @@ Definition is_counter (v : val) (γ : gname) (n : nat) : iProp Σ :=
 Global Instance is_counter_persistent v γ n : Persistent (is_counter v γ n) := _.
 
 (**
-  Before we start proving the specifications. Lets prove some useful
-  lemmas about our ghost state. For starters we need to know that we
+  Before we start proving the specifications. Let's prove some useful
+  lemmas about our ghost state. For starters, we need to know that we
   can allocate the initial state we need.
 *)
 Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● MaxNat 0) ∗ own γ (◯ MaxNat 0).
 Proof.
   (**
-    Ownership of multiple fragments of state compose into ownership of
-    thier composit. So we can simply the goal a little.
+    Ownership of multiple fragments of state composes into ownership of
+    their composite. So we can simply the goal a little.
   *)
   setoid_rewrite <-own_op.
   (** Now the goal is on the form expected by own_alloc. *)
   apply own_alloc.
   (**
-    However we are only allowed to allocate valid state. So we must
+    However, we are only allowed to allocate valid states. So we must
     prove that our desired state is a valid one.
 
-    Validity of auth says that the fragment must be included in
-    the authoratative element, and the authoratative element must be
+    The validity of auth says that the fragment must be included in
+    the authoritative element and the authoritative element must be
     valid.
   *)
   apply auth_both_valid_discrete.
@@ -130,14 +130,14 @@ Proof.
   iIntros "H".
   rewrite -own_op.
   (**
-    [own] can be updated using frame preserving updates. These are
-    updates that will not invalidate any other own that could posibly
+    [own] can be updated using frame-preserving updates. These are
+    updates that will not invalidate any other own that could possibly
     exist.
   *)
   iApply (own_update with "H").
   (**
-    [auth] has it's own special version of these called local updates,
-    as we actually know what the whole of the state is.
+    [auth] has its own special version of these called local updates,
+    as we know what the whole of the state is.
   *)
   apply auth_update_alloc.
   apply max_nat_local_update; cbn.
@@ -253,10 +253,10 @@ End spec1.
 (**
   Our first specification only allowed us to find a lower bound for
   the value in par_incr. Any solution to this problem has to be
-  non-persistent, as we need to agregate the knowledge to conclude
+  non-persistent, as we need to aggregate the knowledge to conclude
   the total value.
 
-  As we've seen before, we can use fractions to keep track of peaces
+  As we've seen before, we can use fractions to keep track of pieces
   of knowledge. So we will use the camera
   [auth (option (frac * nat))].
 *)

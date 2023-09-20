@@ -7,14 +7,14 @@ Context {Σ : gFunctors}.
 (**
   Thus far we've seen the pure context (the coq context) and the
   spatial context. The Iris proofmode has a third context, called the
-  inituitionistic context or (for [iProp]) the persistent context.
-  These are proposisitions that act like propositions in an
-  inituitionistic logic. Namely, they are reusable. These propositions
-  need not, however, be pure as their validity can still depend on resurces. Just
+  intuitionistic context or (for [iProp]) the persistent context.
+  These are propositions that act like propositions in an
+  intuitionistic logic. Namely, they are reusable. These propositions
+  need not, however, be pure as their validity can still depend on resources. Just
   like the pure modality, we also have a persistently modality [□ P].
   It turns an arbitrary Iris proposition into a weaker persistent
-  proposition. Persistent proposistions are thus those [P] such that
-  [P ⊢ □ P]. Iris identifies these proposisition using the typeclass
+  proposition. Persistent propositions are thus those [P] such that
+  [P ⊢ □ P]. Iris identifies these propositions using the typeclass
   [Persistent]. In fact, all pure propositions are persistent.
 *)
 Lemma pers_ex (P Q : iProp Σ) `{!Persistent P} : P -∗ Q -∗ P ∗ Q.
@@ -57,8 +57,8 @@ Qed.
 Check bi.persistent_and_sep.
 Check bi.impl_wand.
 
-(** The Iris proofmode knows these facts, and allows 
-  [iSplit] to introduce [∗] when one of its arguments are persistent. 
+(** The Iris proofmode knows these facts and allows 
+  [iSplit] to introduce [∗] when one of its arguments is persistent. 
 *)
 
 

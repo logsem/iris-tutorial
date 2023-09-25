@@ -4,14 +4,14 @@ From iris.heap_lang Require Import lang proofmode notation.
   logic defined on top of Iris base logic. HeapLang is an untyped
   higher-order functional programming language with dynamically
   allocated references and concurrency, in the form of dynamically
-  allocated threads that can share access to memory. The evaluation
+  allocated threads that can share memory access. The evaluation
   order is right to left and it is a call-by-value language.
 
   The program logic for HeapLang uses connectives describing locations.
   These connectives require that certain resources are available. To
   ensure this, we use the typeclass [heapGS]. This typeclass ensures
-  that Σ contains at least the necesarry resources for HeapLang. Later on,
-  we will explain what resources actually are.
+  that Σ contains at least the necessary resources for HeapLang. Later on,
+  we will explain what resources are.
 *)
 Section heaplang.
 Context `{!heapGS Σ}.
@@ -30,8 +30,8 @@ Definition prog : expr :=
 
 (**
   This program should evaluate to 3. To prove this we'll use the
-  weakest precondition [WP]. This let's us specify a post condition we
-  expect to hold, if the program halts.
+  weakest precondition [WP]. This lets us specify a postcondition we
+  expect to hold if the program halts.
 *)
 Lemma wp_prog : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
 Proof.
@@ -51,7 +51,7 @@ Proof.
   *)
   wp_pures.
   (**
-    Next we load from the location [l] using the knowledge that it
+    Next, we load from the location [l] using the knowledge that it
     currently stores the value 1.
   *)
   wp_load.
@@ -66,7 +66,7 @@ Proof.
   (** Finally we use [wp_load] again *)
   wp_load.
   (**
-    Now that the program is concluded, we are left with a fancy update
+    Now that the program has concluded, we are left with a fancy update
     modality. You can usually ignore this modality and simply introduce
     it. We will explain its uses as we go along.
   *)
@@ -89,26 +89,26 @@ Proof.
   iStartProof.
   (**
     The first part of this program is to evaluate [prog]. So we can
-    seperate the program into 2 parts. First we evaluate [prog], then
+    separate the program into 2 parts. First, we evaluate [prog], then
     we take the result and add 2 to it. To do this we can use [wp_bind].
   *)
   wp_bind prog.
   (**
-    Now we have the problem that our post condition doesn't match the
-    one we proved. To fix this we can use monotonicity of WP.
+    Now we have the problem that our postcondition doesn't match the
+    one we proved. To fix this we can use the monotonicity of WP.
   *)
   iApply wp_mono.
   2: { iApply wp_prog. }
   iIntros "%_ ->".
   (** And now we can evaluate the rest of the program *)
   wp_pures.
-  (** This post condition is again trivial *)
+  (** This postcondition is again trivial *)
   done.
 Qed.
 
 (**
   The previous proof worked, but it is not very ergonomic.
-  To fix this, we'll make [wp_prog] generic on its post condition.
+  To fix this, we'll make [wp_prog] generic on its postcondition.
 *)
 Lemma wp_prog_2 (Φ : val → iProp Σ) :
   (∀ v, ⌜v = #3⌝ -∗ Φ v) -∗ WP prog {{v, Φ v}}.
@@ -134,28 +134,28 @@ Proof.
 Qed.
 
 (**
-  Hoare triples are basically an extended version of a WP with a 
+  Hoare triples are an extended version of a WP with a 
   precondition. They are defined as
   [∀ Φ, Pre -∗ (▷ ∀ r0 .. rn, Post -∗ Φ v) -∗ WP e {{v, Φ v}}].
   This may seem like a very long and complicated definition, so let's
   look at it's parts.
 
-  As in the example above, Hoare triples are parameterised on the post conditions
+  As in the example above, Hoare triples are parameterized on the post conditions
   satisfied by Post. This allows us to further specialize the
-  posible return values by specifying it as a pattern quantified over
-  arbitrary parameters. The implication of the post condition is
+  possible return values by specifying them as a pattern quantified over
+  arbitrary parameters. The implication of the postcondition is
   hidden under a later modality (▷), signifying that the program takes at least one
   step. This modality will be described in the following file.
   Finally, we have a precondition Pre.
 
   The syntax for Hoare triples is as follows:
   [{{{ Pre }}} e {{{ r0 .. rn, RET v; Post }}}]
-  - [Pre]: the precondiction that is assumed to hold before the
+  - [Pre]: the precondition that is assumed to hold before the
     program runs.
   - [e]: the program to run.
   - [r0 .. rn]: the parameters used to define the return value.
   - [v]: an expression specifying the shape of the return value.
-  - [Post]: the postcondition satisfied after the program has halted.
+  - [Post]: the postcondition is satisfied after the program has halted.
 *)
 
 (** Let's consider a function that swaps 2 values. *)
@@ -183,8 +183,8 @@ Proof.
 Qed.
 
 (**
-  And we can use this specification to prove correctness of client
-  code.
+  And we can use this specification to prove the correctness of the
+  client code.
 *)
 Lemma swap_swap (l1 l2 : loc) (v1 v2 : val) :
   {{{l1 ↦ v1 ∗ l2 ↦ v2}}}

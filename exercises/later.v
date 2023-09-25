@@ -48,16 +48,16 @@ Qed.
 *)
 
 (**
-  With this later modality we can do a special kind of induction,
+  With this later modality, we can do a special kind of induction,
   called Löb induction. The formal statement is `□ (▷ P -∗ P) -∗ P`.
   Intuitively, this is a form of course of value induction, where we
   say that if given that `P` holds for executions strictly smaller than n
   steps we can prove that `P` holds for n steps, then `P` holds for
   all steps.
 
-  We can use principle to prove properties of recursive programs. To see
-  this in action, we will define a simple recursive program that
-  increments a counter.
+  We can use this principle to prove many properties of recursive
+  programs. To see this in action, we will define a simple recursive
+  program that increments a counter.
 *)
 
 Definition count : val :=
@@ -65,7 +65,7 @@ Definition count : val :=
 
 (**
   This program never terminates, as it will keep calling itself with
-  larger and larger inputs. To show this we pick the post condition
+  larger and larger inputs. To show this we pick the postcondition
   [False]. We can now use Löb induction, along with [wp_rec], to prove
   this specification.
 *)

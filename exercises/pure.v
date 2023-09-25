@@ -35,7 +35,7 @@ Qed.
 (**
   Iris has a class of propositions we call pure.
   These are the propositions [P] that are bi-entailed by [⌜Φ⌝] for
-  some Φ. Iris has a two typeclasses, [IntoPure] and [FromPure], to
+  some Φ. Iris has two typeclasses, [IntoPure] and [FromPure], to
   identify such propositions.
 *)
 

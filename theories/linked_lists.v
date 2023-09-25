@@ -166,9 +166,6 @@ Proof.
     wp_load.
     wp_store.
     wp_apply (IHxs _ _ (a :: ys) with "[Hl Hhd Hacc]").
-    (**XXX Lars: not sure you have explained why the $ is used on Hl and not
-      on the others *)
-    (**XXX Mathias: Changed it to frame afterwards *)
     {
       iFrame.
       cbn.

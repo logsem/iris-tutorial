@@ -2,7 +2,7 @@ From iris.bi Require Export fixpoint.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (**
-  In this file we present an alternative approach to defining representation
+  In this file, we present an alternative approach to defining representation
   predicates for linked lists, which uses fixpoints of predicates rather than
   Coq's Fixpoint mechanism. 
   The high-level point to notice is that we can define fixpoints of monotone 
@@ -27,10 +27,10 @@ Fixpoint is_list_of (v : val) (xs : list val) : iProp Σ :=
   end.
 
 (**
-  However, sometimes we don't care about the exact list and instead
+  However, sometimes we don't care about the exact list and instead,
   we only want to know that each value of the list satisfies a predicate.
-  This can be captures by using a helper predicate [all] expressing that
-  all elements of a Coq list satisfies a predicate. 
+  This can be captured by using a helper predicate [all] expressing that
+  all elements of a Coq list satisfy a predicate. 
   Using that, we can then simply state that the value is represented by one such
   list.
 *)
@@ -47,7 +47,7 @@ Definition is_list (v : val) (Φ : val → iProp Σ) : iProp Σ :=
 (**
   However, this definition is rather annoying to work with, as it
   requires explicitly finding the list of values. Alternatively, we
-  can define the is_list redicate as the solution to a recursive
+  can define the is_list predicate as the solution to a recursive
   definition. This means defining a function:
     [F : (A → iProp Σ) → (A → iProp Σ)]
   A solution is then a function [f] satisfying [f = F f]. Solutions to
@@ -57,12 +57,12 @@ Definition is_list_pre (Φ : val → iProp Σ) (f : val → iProp Σ) (v : val) 
   ⌜v = NONEV⌝ ∨ ∃ l : loc, ⌜v = SOMEV #l⌝ ∗ ∃ x t, l ↦ (x, t) ∗ Φ x ∗ f t.
 
 (**
-  Recursive definitions can have multiple fixpoints. Of these there
+  Recursive definitions can have multiple fixpoints. Of these, there
   are two special fixpoints: The least fixpoint and the greatest fixpoint.
   The least fixpoint corresponds to an inductively defined predicate,
-  while the greatest corresponds to a coinductively defined predicates.
+  while the greatest corresponds to a coinductively defined predicate.
 
-  These solutions exists when [F] is monotone, as captured by the
+  These solutions exist when [F] is monotone, as captured by the
   typeclass [BiMonoPred].
 *)
 Global Instance is_list_pre_mono Φ : BiMonoPred (is_list_pre Φ).
@@ -88,7 +88,7 @@ Qed.
 
 (** 
   Now that we have proved monotonicity, we can obtain the least fixed point,
-  and lemmas for its unfolding and for induction.
+  and lemmas for its unfolding and an induction principle.
 *)
 
 Definition is_list_rec (v : val) (Φ : val → iProp Σ) := bi_least_fixpoint (is_list_pre Φ) v.

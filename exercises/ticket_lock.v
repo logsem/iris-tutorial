@@ -10,8 +10,8 @@ From iris.heap_lang Require Import lang proofmode notation.
   position next in line to access the critical region. While the
   second counter is the end of the line.
   A thread can acquire the lock by incrementing the second counter and
-  keeping its previous value as a ticket for it's position in the
-  queue. When the first counter reachest this ticket value, the thread
+  keeping its previous value as a ticket for its position in the
+  queue. When the first counter reaches this ticket value, the thread
   gains access to the critical region. The thread can then release the
   lock by incrementing the first counter.
 *)
@@ -34,7 +34,7 @@ Definition release : val :=
 (**
   As a ticket lock is a lock. So we expect it to satisfy the same
   specification as the spin lick. This time you have to find the
-  necessary resource and lock invariant by your self.
+  necessary resource and lock invariant by yourself.
 *)
 
 Definition RA : cmra

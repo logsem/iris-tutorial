@@ -2,8 +2,8 @@ From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(** HeapLang's primitive concurency mechanism is the [Fork] construct. The
-    operation takes an expression [e] as argument and spawns a new thread that
+(** HeapLang's primitive concurrency mechanism is the [Fork] construct. The
+    operation takes an expression [e] as an argument and spawns a new thread that
     executes [e] concurrently. The operation itself returns the unit value on
     the spawning thread.
 
@@ -18,7 +18,7 @@ From iris.heap_lang Require Import lang proofmode notation.
     that we only require the forked-off thread to be safe---we do not care about
     its return value, hence the trivial postcondition.
 
-    We can use the [Fork] construct to implement other common concurency
+    We can use the [Fork] construct to implement other common concurrency
     operators such as [spawn] and [join]. *)
 
 Definition spawn : val :=
@@ -51,7 +51,7 @@ Definition par : val :=
 (** ... and introduce convenient notation that hides the thunks. *)
 Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
-(** Our desired specification for [par] is going look as follows:
+(** Our desired specification for [par] is going to look as follows:
 
     [[
       {{{ P1 }}} e1 {{{ v, RET v; Ψ1 v }}} -∗
@@ -113,7 +113,7 @@ Proof.
 Abort.
 
 (** We need a way to keep track of whether [Ψ w] has been "taken out" of the
-    invariant or not. However we do not have any program state to link it to.
+    invariant or not. However, we do not have any program state to link it to.
     Instead, we will use _ghost state_ instead to track this information. Iris
     supports different kinds of ghost state, but we will only need one property,
     namely that our ghost state is _exclusive_.

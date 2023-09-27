@@ -40,14 +40,14 @@ Let N := nroot .@ "lock".
   We use ghost state to describe that the lock is only ever acquired
   once at a time. To do this we simply need ghost state that is
   exclusive. So naturally we will use the exclusive camera. This
-  camera is generic over state, however we don't need this feature. So
-  we will instatiate it with unit.
+  camera is generic over state, however, we don't need this feature. So
+  we will instantiate it with the unit type.
 *)
 Context `{!inG Σ (exclR unitO)}.
 
 (**
   We will think of the name of our ghost state as the name of the
-  lock. It's invariant will be that l maps to a boolean b, and if
+  lock. Its invariant will be that l maps to a boolean b, and if
   b is false, meaning the lock is unlocked, then the invariant owns
   both the resource and the critical area protected by the lock.
 *)
@@ -60,7 +60,7 @@ Definition is_lock γ v P : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (lock_inv γ l P).
 
 (**
-  The knowledge that we have acquired the is then represented by
+  The knowledge that we have acquired is then represented by
   ownership of the resource.
 *)
 Definition locked γ : iProp Σ := own γ (Excl ()).
@@ -100,7 +100,7 @@ Proof.
 Qed.
 
 (**
-  Acquirering the lock should result in access to the critical area,
+  Acquiring the lock should result in access to the critical area,
   as well as knowledge that the lock has been locked.
 *)
 Lemma acquire_spec γ v P : {{{ is_lock γ v P }}} acquire v {{{ RET #(); locked γ ∗ P }}}.
@@ -160,8 +160,8 @@ Definition prog : expr :=
   !"x".
 
 (**
-  x can take on the values of 0, 1, and 7. However we should not
-  observe 7, as it is overriden before the lock is released.
+  x can take on the values of 0, 1, and 7. However, we should not
+  observe 7, as it is overridden before the lock is released.
 *)
 Lemma prog_spec : ⊢ WP prog {{ v, ⌜v = #0 ∨ v = #1⌝}}.
 Proof.

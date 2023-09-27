@@ -10,8 +10,8 @@ From iris.heap_lang Require Import lang proofmode notation.
   position next in line to access the critical region. While the
   second counter is the end of the line.
   A thread can acquire the lock by incrementing the second counter and
-  keeping its previous value as a ticket for it's position in the
-  queue. When the first counter reachest this ticket value, the thread
+  keeping its previous value as a ticket for its position in the
+  queue. When the first counter reaches this ticket value, the thread
   gains access to the critical region. The thread can then release the
   lock by incrementing the first counter.
 *)
@@ -34,7 +34,7 @@ Definition release : val :=
 (**
   As a ticket lock is a lock. So we expect it to satisfy the same
   specification as the spin lick. This time you have to find the
-  necessary resource and lock invariant by your self.
+  necessary resource and lock invariant by yourself.
 *)
 
 Definition RA : cmra
@@ -42,9 +42,9 @@ Definition RA : cmra
   (**
     We will use a finite set of numbers to represent the tickets that
     have been issued. This becomes a camera by using the disjoint
-    union as operation.
-    For the first counter we will use an exclusive camera. By wraping
-    them both in an authoratative camera, we can use the authoratative
+    union as an operation.
+    For the first counter, we will use an exclusive camera. By wrapping
+    them both in an authoritative camera, we can use the authoritative
     fragment to bind the values of our counters to the ghost state.
   *)
   := authR (prodUR (optionUR (exclR natO)) (gset_disjR nat)).
@@ -59,9 +59,9 @@ Let N := nroot .@ "ticket_lock".
 Definition lock_inv (γ : gname) (lo ln : loc) (P : iProp Σ) : iProp Σ
 (* BEGIN SOLUTION *)
   (**
-    Our invariant will firstly link the authoratative fragment to the
-    counters. For the second counter this means that all tickets prior
-    to its current value must have been issued.
+    Our invariant will first link the authoritative fragment to the
+    counters. For the second counter, this means that all tickets prior
+    to the counter's current value must have been issued.
     Secondly the lock either contains the current ticket, or access to
     the critical area, as well as ownership of the value of the first
     counter.

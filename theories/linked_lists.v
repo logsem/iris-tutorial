@@ -8,7 +8,7 @@ Context `{!heapGS Σ}.
   so by relating a program value to the Coq list it represents.
 
   Here we use [NONE] and [SOME e] as syntactic sugar for [InjL #()]
-  and [InjR e]. Furthermore, [NONE] is the expresion creating a
+  and [InjR e]. Furthermore, [NONE] is the expression creating a
   [NONEV] value, likewise for [SOMEV], [InjLV] and [InjRV].
 *)
 Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
@@ -77,7 +77,7 @@ END TEMPLATE *)
 
 (**
   The append function recursively descends l1, updating the links.
-  Eventually it reaches the tail, where it will replace it with l2.
+  Eventually, it reaches the tail, where it will replace it with l2.
 *)
 Definition append : val :=
   rec: "append" "l1" "l2" :=
@@ -211,7 +211,7 @@ Definition fold_right : val :=
     end.
 
 (**
-  The following specification has a lot of moving parts, so lets go
+  The following specification has a lot of moving parts, so let's go
   through them one by one.
   - [l] is a linked list representing [xs], as seen by [isList l xs]
     in the precondition.

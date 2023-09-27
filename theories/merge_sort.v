@@ -3,9 +3,9 @@ From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import array lang proofmode notation par.
 
 (**
-  Let us implement a simple multitheaded merge sort on arrays. Merge
+  Let us implement a simple multithreaded merge sort on arrays. Merge
   sort consists of splitting the array in half until we are left with
-  pieces of size 0 or 1. Then each pair of pieces are merged into a
+  pieces of size 0 or 1. Then each pair of pieces is merged into a
   new sorted array.
 *)
 
@@ -23,8 +23,8 @@ Definition merge : val :=
     array_copy_to "b" "a1" "n1"
   else
   (**
-    Otherwise we compare the first elements of a1 and a2. The least is
-    removed and written to b. Rince and repeat.
+    Otherwise, we compare the first elements of a1 and a2. The least is
+    removed and written to b. Rinse and repeat.
   *)
     let: "x1" := !"a1" in
     let: "x2" := !"a2" in
@@ -36,7 +36,7 @@ Definition merge : val :=
       "merge" "a1" "n1" ("a2" +ₗ #1) ("n2" - #1) ("b" +ₗ #1).
 
 (**
-  To sort we simply split the array in half. Sort them on seperate
+  To sort we simply split the array in half. Sort them on separate
   threads. Then the results are merged together and copied back into the array.
 *)
 Definition merge_sort_inner : val :=
@@ -49,8 +49,8 @@ Definition merge_sort_inner : val :=
     merge "b" "n1" ("b" +ₗ "n1") "n2" "a".
 
 (**
-  HeapLang recuires array allocations to contain atleast 1 element. So
-  we need to treat this case seperatly.
+  HeapLang requires array allocations to contain at least 1 element. So
+  we need to treat this case separatly.
 *)
 Definition merge_sort : val :=
   λ: "a" "n",
@@ -69,8 +69,8 @@ Section proofs.
 Context `{!heapGS Σ, !spawnG Σ}.
 
 (**
-  To merge to arrays a1 and a2, we require that they are both already
-  sorted. Furthermore we need the result array b to have enough space,
+  To merge two arrays a1 and a2, we require that they are both already
+  sorted. Furthermore, we need the result array b to have enough space,
   though we don't care what it contains.
 *)
 Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :

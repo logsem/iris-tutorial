@@ -23,7 +23,7 @@ Proof.
   wp_alloc l as "Hl".
   wp_pures.
   (**
-    Fork does not have its own tactic. Instead we use its
+    Fork does not have its own tactic. Instead, we use its
     specification. This specification forces us to split our resources
     between the threads.
   *)
@@ -41,14 +41,14 @@ Abort.
   As the name suggests, invariants are propositions that will remain
   true forever. This allows them to be persistent no matter what [P] is.
   
-  As stated, invariant need a namespace. This allows invariants to be
+  As stated, invariants need a namespace. This allows invariants to be
   used together as long as they are in different namespaces.
 *)
 Let N := nroot .@ "stuff".
 
 (**
-  In this case we want the invariant to incapsulate ownership of [l]
-  as well as its posible values.
+  In this case, we want the invariant to encapsulate ownership of [l]
+  as well as its possible values.
 *)
 Definition prog_inv (l : loc) : iProp Σ :=
   ∃ v, l ↦ v ∗ (⌜v = #0⌝ ∨ ⌜v = #1⌝).
@@ -62,7 +62,7 @@ Proof.
   (**
     To create an invariant we use the lemma
     [inv_alloc : ▷P -∗ |={E}=> inv N P].
-    In order to deal with the udpdate modality, we will use the iMod
+    To deal with the update modality, we will use the [iMod]
     tactic rather than [iPoseProof] or [iDestruct].
   *)
   iMod (inv_alloc N _ (prog_inv l) with "[Hl]") as "#I".
@@ -83,10 +83,10 @@ Proof.
     iInv "I" as "(%v & Hl & _)".
     (**
       Opening invariants have certain restrictions. It is only
-      posible to open invariants over an atomic step, and after this
+      possible to open invariants over an atomic step, and after this
       step, we must reestablish the invariant.
-      Further more, the [@ ⊤ \ ↑N], signifies that the [N] namespace
-      has been opened. As such we wont be able to open it twice at the same step.
+      Furthermore, the [@ ⊤ \ ↑N], signifies that the [N] namespace
+      has been opened. As such we won't be able to open it twice at the same step.
     *)
     wp_store.
     iSplitL; last done.
@@ -109,7 +109,7 @@ End proofs.
 (**
   Let's look at another program. This program will create a thread to
   increment a counter. While the main thread will read the counter at
-  some point. As such, this program should produce some none negative
+  some point. As such, this program should produce some non-negative
   number. However, we will only prove that it returns a number. Later,
   we will see other tools that will allow us to refine this.
 *)
@@ -127,7 +127,7 @@ Context `{!heapGS Σ}.
 Let N := nroot .@ "other stuff".
 
 (**
-  Our invariant wil simply be that the location points to an integer.
+  Our invariant will simply be that the location points to an integer.
 *)
 Definition prog2_inv (l : loc) : iProp Σ :=
   ∃ i : Z, l ↦ #i.
@@ -151,17 +151,17 @@ Proof.
     (** If we now try to open the invariant: *)
     iInv "I" as "[%i Hl]".
     (**
-      We run into something different to earlier. This new subgoal
+      We run into something different from earlier. This new subgoal
       [Atomic] is a typeclass, stating that the program should only
-      consist of a single atomic operation. In this case the typeclass
-      search fails, because the program infact consists of two
+      consist of a single atomic operation. In this case, the typeclass
+      search fails, because the program in fact consists of two
       operations. So it is not atomic.
     *)
     Undo.
     (**
       To get around this, we will use wp_bind to split the program
       into atomic parts.
-      Notice that the [%E] is necesary to use the notation.
+      Notice that the [%E] is necessary to use the notation.
     *)
     wp_bind (! _)%E.
     iInv "I" as "[%i Hl]".

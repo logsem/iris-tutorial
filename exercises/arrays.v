@@ -5,13 +5,13 @@ Context `{heapGS Σ}.
 
 (**
   Thus far we've looked at linked lists as our main list
-  implementation. However heaplang also supports arrays. [AllocN n v]
+  implementation. However, heaplang also supports arrays. [AllocN n v]
   allocates n contiguous copies of v and returns the location of the
-  first element. Then to access a values we can perform offsets
+  first element. Then to access a value we can perform offsets
   [l +ₗ i] and then perform a load.
 
   To see arrays in action, let's implement a function that copies an
-  array, while keeping the origional intact.
+  array, while keeping the original intact.
 *)
 
 Definition copy_to : val :=
@@ -53,7 +53,7 @@ Proof.
     by iApply "HΦ".
   - wp_rec; wp_pures.
     (**
-      For the cons case we can use array_cons to split the array into
+      For the cons case, we can use array_cons to split the array into
       a mapsto on the first location, with the remaining array
       starting at the next location.
     *)
@@ -72,8 +72,8 @@ Proof.
 Qed.
 
 (**
-  When allocating arrays, heaplang requires the size be greater than
-  zero. So we add this to our precondition.
+  When allocating arrays, heaplang requires the size to be greater
+  than zero. So we add this to our precondition.
 *)
 Lemma copy_spec a l :
   {{{a ↦∗ l ∗ ⌜0 < length l⌝}}}
@@ -117,7 +117,7 @@ Proof.
 Admitted.
 
 (**
-  To reverse an array, we will swap the first and last value. Then
+  To reverse an array, we will swap the first and last values. Then
   we'll recursively repeat this process on the remaining array.
 *)
 Definition reverse : val :=

@@ -44,7 +44,7 @@ Definition is_counter2 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (l ↦ #n).
 
 (**
-  However with this definition we have locked the value of the pointer
+  However, with this definition, we have locked the value of the pointer
   to always be n. To fix this we could abstract the value and instead
   only specify its lower bound.
 *)
@@ -72,7 +72,7 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   operations of A. Furthermore, validity of [● x ⋅ ◯ y] is defined as
   [✓ x ∧ y ≼ x].
 
-  With this we can use the max_nat camera whose operation is just the
+  With this, we can use the max_nat camera whose operation is just the
   maximum.
 *)
 Context `{!inG Σ (authR max_natUR)}.
@@ -90,7 +90,7 @@ Global Instance is_counter_persistent v γ n : Persistent (is_counter v γ n) :=
 Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● MaxNat 0) ∗ own γ (◯ MaxNat 0).
 Proof.
   (**
-    Ownership of multiple fragments of state composes into ownership of
+    Ownership of multiple fragments of state amounts to ownership of
     their composite. So we can simply the goal a little.
   *)
   setoid_rewrite <-own_op.
@@ -131,7 +131,7 @@ Proof.
   rewrite -own_op.
   (**
     [own] can be updated using frame-preserving updates. These are
-    updates that will not invalidate any other own that could possibly
+    updates that will not invalidate any other own that could
     exist.
   *)
   iApply (own_update with "H").
@@ -256,9 +256,14 @@ End spec1.
   non-persistent, as we need to aggregate the knowledge to conclude
   the total value.
 
-  As we've seen before, we can use fractions to keep track of pieces
-  of knowledge. So we will use the camera
-  [auth (option (frac * nat))].
+  To this end, we will use fractions. The frac camera consists of
+  non-negative rationals under addition. However, a fraction is only
+  valid if it is less than or equal to 1. This means that all the
+  fractions can at most add up to 1. Combining frac with other cameras
+  allows us to keep track of how much of the resource we own, meaning
+  we can do the exact kind of aggregation we need. So this time we
+  will use the camera [auth (option (frac * nat))], where nat is the
+  natural numbers under addition.
 *)
 
 Module spec2.
@@ -270,6 +275,11 @@ Let N := nroot .@ "counter".
 Definition is_counter (v : val) (γ : gname) (n : nat) (q : Qp) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ Some (q, n)) ∗ inv N (∃ m : nat, l ↦ #m ∗ own γ (● Some (1%Qp, m))).
 
+(*
+  With this definition, we can now decompose access to the counter, by
+  splitting the fraction, as well as splitting the knowledge of how
+  much the counter has been incremented.
+*)
 Lemma is_counter_add (c : val) (γ : gname) (n m : nat) (p q : Qp) :
   is_counter c γ (n + m) (p + q) ⊣⊢ is_counter c γ n p ∗ is_counter c γ m q.
 Proof.
@@ -293,7 +303,7 @@ Qed.
 Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● Some (1%Qp, 0)) ∗ own γ (◯ Some (1%Qp, 0)).
 Proof.
   setoid_rewrite <-own_op.
-  apply own_alloc.
+  iApply own_alloc.
   apply auth_both_valid_discrete.
   split.
   - reflexivity.
@@ -306,6 +316,10 @@ Proof.
       done.
 Qed.
 
+(*
+  The fragments of natural numbers add up to the full value, meaning
+  that in particular, they must all be less than or equal to the auth.
+*)
 Lemma state_valid γ (n m : nat) (q : Qp) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (q, m)) -∗ ⌜m ≤ n⌝.
 Proof.
   iIntros "Hγ Hγ'".
@@ -320,6 +334,11 @@ Proof.
   done.
 Qed.
 
+(*
+  However, when a fragment has the entire fraction it becomes,
+  then there can't be any other fragments. So the count stored in the
+  fragment must be equal to the one in the auth.
+*)
 Lemma state_valid_full γ (n m : nat) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (1%Qp, m)) -∗ ⌜m = n⌝.
 Proof.
   iIntros "Hγ Hγ'".
@@ -335,6 +354,10 @@ Proof.
   - done.
 Qed.
 
+(*
+  Finally, when we have both the auth and a fragment, we can increment
+  both.
+*)
 Lemma update_state γ n m (q : Qp) : own γ (● Some (1%Qp, n)) ∗ own γ (◯ Some (q, m)) ==∗ own γ (● Some (1%Qp, S n)) ∗ own γ (◯ Some (q, S m)).
 Proof.
   iIntros "H".

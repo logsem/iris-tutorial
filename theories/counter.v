@@ -28,6 +28,10 @@ Context `{heapGS Σ}.
   We are going to keep the fact that our counter is built on a pointer
   as an implementation detail. Instead, we will define a predicate
   describing when a value is a counter.
+
+  Note that [#n] uses an implicit coercion from [nat] to [Z] called
+  [Z.of_nat]. So if you have trouble applying lemmas that should work,
+  it is likely because there is a hidden coercion in the way.
 *)
 
 Definition is_counter1 (v : val) (n : nat) : iProp Σ :=
@@ -69,7 +73,7 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   element represents the whole of the resource, while the fragments
   act as the pieces. To achieve this the authoritative element acts
   like the exclusive camera, while the fragment inherits all the
-  operations of A. Furthermore, validity of [● x ⋅ ◯ y] is defined as
+  operations of [A]. Furthermore, validity of [● x ⋅ ◯ y] is defined as
   [✓ x ∧ y ≼ x].
 
   With this, we can use the max_nat camera whose operation is just the

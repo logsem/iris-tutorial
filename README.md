@@ -39,21 +39,21 @@ opam install . --deps-only
 Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/editor.md) describes how to set up your favorite editor.
 
 ## Overview
-- [base](/theories/base.v) - Introduction to the Iris Proof Mode
-  - [pure](/theories/pure.v) - Distinction between the Coq context and the Iris context
-  - [persistently](/theories/persistently.v) - The 3rd context
-- [lang](/theories/lang.v) - Introduction to HeapLang
-  - [later](/theories/later.v) - Recursive functions
-- [linked_lists](/theories/linked_lists.v) - Linked lists
-  - [fixpoint](/theories/fixpoint.v) - Fixpoints of propositions
-- [arrays](/theories/arrays.v) - Arrays in HeapLang
-  - [merge_sort](/theories/merge_sort.v) - Merge sort
-- [invariants](/theories/invariants.v) - Invariants
-  - [counter](/theories/counter.v) - The authoritative camera
-  - [spin_lock](/theories/spin_lock.v) - Specification of a spin lock
-  - [threads](/theories/threads.v) - Disjoint concurrency 
-  - [ticket_lock](/theories/ticket_lock.v) - Specification of a ticket lock
-- [adequacy](/theories/adequacy.v) - Adequacy
+- [base](/exercises/base.v) - Introduction to the Iris Proof Mode
+  - [pure](/exercises/pure.v) - Distinction between the Coq context and the Iris context
+  - [persistently](/exercises/persistently.v) - The 3rd context
+- [lang](/exercises/lang.v) - Introduction to HeapLang
+  - [later](/exercises/later.v) - Recursive functions
+- [linked_lists](/exercises/linked_lists.v) - Linked lists
+  - [fixpoint](/exercises/fixpoint.v) - Fixpoints of propositions
+- [arrays](/exercises/arrays.v) - Arrays in HeapLang
+  - [merge_sort](/exercises/merge_sort.v) - Merge sort
+- [invariants](/exercises/invariants.v) - Invariants
+  - [counter](/exercises/counter.v) - The authoritative camera
+  - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
+  - [threads](/exercises/threads.v) - Disjoint concurrency 
+  - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
+- [adequacy](/exercises/adequacy.v) - Adequacy
 
 ## Exercises
 To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`. 

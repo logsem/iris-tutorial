@@ -206,6 +206,10 @@ Definition parallel_add : expr :=
   !"r".
 
 Section parallel_add.
+(**
+  The par operator needs more resources than are available in
+  [heapGS]. So to use it we also need to add [spawnG Σ].
+*)
 Context `{!heapGS Σ, !spawnG Σ}.
 
 (** The invariant is thus that r points to an even integer. *)

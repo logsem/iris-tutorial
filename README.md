@@ -49,6 +49,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [arrays](/exercises/arrays.v) - Arrays in HeapLang
   - [merge_sort](/exercises/merge_sort.v) - Merge sort
 - [invariants](/exercises/invariants.v) - Invariants
+- [resource_algebra](/exercises/resource_algebra.v) - Introduction to cameras.
   - [counter](/exercises/counter.v) - The authoritative camera
   - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
   - [threads](/exercises/threads.v) - Disjoint concurrency 

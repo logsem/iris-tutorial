@@ -239,11 +239,10 @@ Proof.
       iApply "HΦ".
       by iExists (i :: xs).
   - iIntros "%_ (Hl & %ys & %H & ->)".
-    apply fmap_inj in H.
-    + subst ys.
-      by iApply "HΦ".
-    + intros x1 x2 Hx.
-      by injection Hx.
+    assert (Hinj:Inj eq eq (λ x : Z, #x)) by congruence.
+    apply (inj _) in H.
+    subst ys.
+    by iApply "HΦ".
 Qed.
 
 End linked_lists.

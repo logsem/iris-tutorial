@@ -147,9 +147,9 @@ Proof.
     statement as follows.
   *)
   unfold "~~>".
-  setoid_rewrite <- cmra_discrete_valid_iff.
+  setoid_rewrite <-cmra_discrete_valid_iff.
   intros _ mz H.
-  by destruct s, mz.
+  by destruct s, mz as [[| |]|].
 Qed.
 
 Section proofs.

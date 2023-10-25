@@ -146,7 +146,8 @@ Proof.
     As we are working with a discrete cmra we can simplify this
     statement as follows.
   *)
-  change (nat → ∀ mz, ✓ (s ⋅? mz) → ✓ (Final ⋅? mz)).
+  unfold "~~>".
+  setoid_rewrite <-cmra_discrete_valid_iff.
   intros _ mz H.
   by destruct s, mz as [[| |]|].
 Qed.

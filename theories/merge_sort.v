@@ -246,7 +246,8 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
   }
   clear H.
   rewrite app_length in Hlen.
-  rewrite app_length Nat.sub_add'.
+  rewrite app_length.
+  replace (length l1 + length l2 - length l1) with (length l2) by lia.
   rewrite fmap_app !array_app fmap_length.
   iDestruct "Ha" as "[Ha1 Ha2]".
   iDestruct "Hb" as "[Hb1 Hb2]".

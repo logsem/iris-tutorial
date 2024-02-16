@@ -51,11 +51,9 @@ CoFixpoint fun2stream (f : nat → nat) : stream :=
   SCons (f 0) (fun2stream (f ∘ S)).
 
 Lemma fun2stream_nth (f : nat → nat) (n : nat) : nth (fun2stream f) n = f n.
-(* SOLUTION *) Proof.
-  induction n in f |- *; simpl.
-  - done.
-  - apply IHn.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 Section ofe.
 
@@ -93,32 +91,8 @@ Local Instance stream_dist_instance : Dist stream := λ n s1 s2,
 Lemma stream_ofe_mixin : OfeMixin stream.
 Proof.
   split.
-(* BEGIN SOLUTION *)
-  - intros s1 s2.
-    split.
-    + intros H n i Hi.
-      apply H.
-    + intros H i.
-      by apply (H i).
-  - intros n.
-    split.
-    + intros s i Hi.
-      done.
-    + intros s1 s2 H i Hi.
-      symmetry.
-      by apply H.
-    + intros s1 s2 s3 H1 H2 i Hi.
-      trans (nth s2 i).
-      * by apply H1.
-      * by apply H2.
-  - intros n m s1 s2 H Hm i Hi.
-    apply H.
-    lia.
-Qed.
-(* END SOLUTION BEGIN TEMPLATE
   (* exercise *)
 Admitted.
-END TEMPLATE *)
 
 (*
   We can now package this together into an OFE.
@@ -240,12 +214,9 @@ Fixpoint sapp (l : list nat) (s : stream) : stream :=
   definition of [dist], by using what we have proved so far.
 *)
 Global Instance sapp_ne (l : list nat) : NonExpansive (sapp l).
-(* SOLUTION *) Proof.
-  intros n s1 s2 H.
-  induction l as [|x l IH]; simpl.
-  - done.
-  - by f_equiv.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 Global Instance sapp_proper (l : list nat) : Proper ((≡) ==> (≡)) (sapp l).
 Proof. apply ne_proper, _. Qed.
@@ -410,19 +381,14 @@ Qed.
 
 Lemma stream_map_nth (f : nat → nat) (s : stream) (n : nat) :
   nth (stream_map f s) n = f (nth s n).
-(* SOLUTION *) Proof.
-  induction n in s |- *; simpl.
-  - done.
-  - apply IHn.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 Global Instance stream_map_ne (f : nat → nat) : NonExpansive (stream_map f).
-(* SOLUTION *) Proof.
-  intros n s1 s2 H m Hm.
-  rewrite !stream_map_nth.
-  f_equal.
-  apply H, Hm.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 (*
   If we now wanted to create a stream of all the powers of 2, we would
@@ -450,14 +416,9 @@ Definition power2 : stream :=
 *)
 Lemma power2_helper_unfold (n : nat) :
   power2_helper n ≡ SCons n (stream_map (λ n, n * 2) (power2_helper n)).
-(* SOLUTION *) Proof.
-  intros [|i]; simpl.
-  { done. }
-  rewrite stream_map_nth.
-  induction i in n |- *; simpl.
-  - done.
-  - done.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 Lemma power2_unfold :
   power2 ≡ SCons 1 (stream_map (λ n, n * 2) power2).

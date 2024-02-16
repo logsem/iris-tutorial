@@ -55,6 +55,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
   - [threads](/exercises/threads.v) - Disjoint concurrency 
   - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
 - [adequacy](/exercises/adequacy.v) - Adequacy
+- [ofe](/exercises/ofe.v) - Detailed introduction to OFEs
 
 ## Exercises
 To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`. 

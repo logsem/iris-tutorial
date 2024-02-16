@@ -1,11 +1,6 @@
 From iris.algebra Require Export ofe.
 
 (**
-  Introduce non-expansiveness and contractiveness via an example of integer streams.
-  Then relate back to Iris propositions. Mention that WP is constructed via guarded recursion.
-*)
-
-(**
   In this file, we will go into the details of OFEs, non-expansiveness,
   and, contractiveness. We will do this using streams of natural
   numbers. Streams are not important to the understanding of Iris.

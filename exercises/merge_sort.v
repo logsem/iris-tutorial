@@ -1,5 +1,4 @@
 From stdpp Require Export sorting.
-From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import array lang proofmode notation par.
 
 (**

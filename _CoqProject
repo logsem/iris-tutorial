@@ -3,32 +3,46 @@
 -docroot iris-tutorial
 -arg -async-proofs-cache -arg force
 
-theories/base.v
+theories/basics.v
 theories/pure.v
-theories/persistently.v
 theories/lang.v
+theories/specifications.v
+theories/resources.v
+theories/later.v
+theories/persistently.v
+theories/concurrency.v
 theories/linked_lists.v
 theories/fixpoint.v
 theories/arrays.v
 theories/merge_sort.v
+theories/resource_algebra.v
+theories/custom_ra.v
 theories/invariants.v
 theories/counter.v
-theories/spin_lock.v
 theories/threads.v
+theories/spin_lock.v
 theories/ticket_lock.v
 theories/adequacy.v
+theories/ofe.v
 
-exercises/base.v
+exercises/basics.v
 exercises/pure.v
-exercises/persistently.v
 exercises/lang.v
+exercises/specifications.v
+exercises/resources.v
+exercises/later.v
+exercises/persistently.v
+exercises/concurrency.v
 exercises/linked_lists.v
 exercises/fixpoint.v
 exercises/arrays.v
 exercises/merge_sort.v
+exercises/resource_algebra.v
+exercises/custom_ra.v
 exercises/invariants.v
 exercises/counter.v
-exercises/spin_lock.v
 exercises/threads.v
+exercises/spin_lock.v
 exercises/ticket_lock.v
 exercises/adequacy.v
+exercises/ofe.v

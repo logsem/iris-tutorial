@@ -5,13 +5,13 @@ Section proofs.
 Context {Σ : gFunctors}.
 
 (**
-  Thus far we've seen the pure context (the coq context) and the
+  Thus far we've seen the pure context (the Coq context) and the
   spatial context. The Iris proofmode has a third context, called the
   intuitionistic context or (for [iProp]) the persistent context.
   These are propositions that act like propositions in an
   intuitionistic logic. Namely, they are reusable. These propositions
-  need not, however, be pure as their validity can still depend on resources. Just
-  like the pure modality, we also have a persistently modality [□ P].
+  need not, however, be pure as their validity can still depend on resources.
+  Just like the pure modality, we also have a persistently modality [□ P].
   It turns an arbitrary Iris proposition into a weaker persistent
   proposition. Persistent propositions are thus those [P] such that
   [P ⊢ □ P]. Iris identifies these propositions using the typeclass

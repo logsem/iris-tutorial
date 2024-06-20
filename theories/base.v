@@ -22,7 +22,7 @@ From iris.proofmode Require Import proofmode.
   All proofs in Iris are done in a context with a [Σ: gFunctors]. It
   is used as a parameter in [iProp Σ], the type of iris propositions, to
   specify available resources. The details of Σ will come later. For
-  now, just remember to work inside a section with a Σ in it's context.
+  now, just remember to work inside a section with a Σ in its context.
   Keep in mind that [Σ] has type [gFunctors] plural, not [gFunctor]
   singular. There is a coercion from gFunctor to gFunctors, so
   everything will seem to work until Σ becomes relevant if you 

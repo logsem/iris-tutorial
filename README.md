@@ -13,21 +13,20 @@ It is recommended that you go through the tutorial in the order specified in [Ov
 ## Setup
 This version is known to compile with
 
-- Coq 8.17.1
-- Iris 4.0.0
+- Coq 8.19.1
+- Iris 4.2.0
 
 The recommended way to install the dependencies is through [opam](https://opam.ocaml.org/doc/Install.html).
 
 1. Install [opam](https://opam.ocaml.org/doc/Install.html) if not already installed (a version greater than 2.0 is required).
 2. Install a new switch and link it to the project.
 ```
-opam switch create iris_tutorial 4.14.0
+opam switch create iris_tutorial 5.2.0
 opam switch link iris_tutorial .
 ```
-3. Add the Coq and Iris opam repositories.
+3. Add the Coq opam repository.
 ```
 opam repo add coq-released https://coq.inria.fr/opam/released
-opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
 opam update
 ```
 4. Install the right version of the dependencies as specified in the `iris-tutorial.opam` file.

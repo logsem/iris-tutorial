@@ -167,7 +167,7 @@ Proof.
     wp_store.
     wp_apply (IHxs _ _ (a :: ys) with "[Hl Hhd Hacc]").
     {
-      iFrame.
+      iFrame "Hl".
       cbn.
       iExists hd, acc.
       by iFrame.
@@ -267,7 +267,7 @@ Proof.
     wp_apply ("Hf" with "[$P0 $I]").
     iIntros "%r' I".
     iApply "HΦ".
-    iFrame.
+    iFrame "I".
     iExists hd, l'.
     by iFrame.
 Qed.

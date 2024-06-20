@@ -179,7 +179,7 @@ Lemma reverse_spec a l :
     change (v1 :: ?l) with ([v1] ++ l) at 2.
     rewrite !rev_app_distr app_length Nat2Z.inj_add /=.
     rewrite !array_cons !array_app !array_singleton.
-    rewrite rev_length loc_add_assoc.
+    rewrite rev_length Loc.add_assoc.
     iDestruct "Ha" as "(Hv1 & Hl & Hv2)".
     wp_pures.
     wp_load.

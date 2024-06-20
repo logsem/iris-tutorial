@@ -124,7 +124,7 @@ Proof.
     iIntros "!> %v [->|(%l & -> & %x & %t & Hl & HΦ & %xs & Ht & Hxs)]".
     + by iExists [].
     + iExists (x :: xs); cbn.
-      iFrame.
+      iFrame "HΦ Hxs".
       iExists l.
       iSplitR; first done.
       iExists t.

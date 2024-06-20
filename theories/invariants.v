@@ -157,7 +157,7 @@ Proof.
       search fails, because the program in fact consists of two
       operations. So it is not atomic.
     *)
-    Undo.
+    Undo. (* TODO: Undo not supported by VsCoq2 *)
     (**
       To get around this, we will use wp_bind to split the program
       into atomic parts.

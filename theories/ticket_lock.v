@@ -148,7 +148,7 @@ Lemma wait_spec γ l P x : {{{ is_lock γ l P ∗ issued γ x }}} wait #x l {{{ 
       rewrite bool_decide_eq_true_2 //.
       wp_pures.
       iApply "HΦ".
-      iFrame.
+      iFrame "HP".
       by iExists o.
     + iPoseProof (own_valid_2 with "Hx Ho") as "%H".
       rewrite auth_frag_valid /= in H.

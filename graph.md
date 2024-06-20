@@ -23,8 +23,8 @@ graph TD;
   later --> fix[fixpoint];
   linklist --> fix[fixpoint];
 
-  linklist --> array;
-  array --> merge[merge sort];
+  linklist --> arrays;
+  arrays --> merge[merge sort];
   conc --> merge;
 
   ofe;

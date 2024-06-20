@@ -38,21 +38,25 @@ opam install . --deps-only
 Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/editor.md) describes how to set up your favorite editor.
 
 ## Overview
-- [base](/exercises/base.v) - Introduction to the Iris Proof Mode
+- [basics](/exercises/basics.v) - Introduction to the Iris Proof Mode
   - [pure](/exercises/pure.v) - Distinction between the Coq context and the Iris context
-  - [persistently](/exercises/persistently.v) - The 3rd context
 - [lang](/exercises/lang.v) - Introduction to HeapLang
-  - [later](/exercises/later.v) - Recursive functions
+- [specifications](/exercises/specifications.v) - Hoare Triples and Weakest pre-condition
+- [resources](/exercises/resources.v) - Introduction to the points-to predicate
+- [persistently](/exercises/persistently.v) - The persistently modality
+- [concurrency](/exercises/concurrency.v) - Reasoning about concurrent programs 
+- [later](/exercises/later.v) - The later modality and recursive functions
 - [linked_lists](/exercises/linked_lists.v) - Linked lists
   - [fixpoint](/exercises/fixpoint.v) - Fixpoints of propositions
 - [arrays](/exercises/arrays.v) - Arrays in HeapLang
   - [merge_sort](/exercises/merge_sort.v) - Merge sort
+- [resource_algebra](/exercises/resource_algebra.v) - Introduction to resources algebras
+  - [custom_ra](/exercises/custom_ra.v) - Defining resources algebras from scratch
 - [invariants](/exercises/invariants.v) - Invariants
-- [resource_algebra](/exercises/resource_algebra.v) - Introduction to cameras.
-  - [counter](/exercises/counter.v) - The authoritative camera
-  - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
-  - [threads](/exercises/threads.v) - Disjoint concurrency 
-  - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
+- [counter](/exercises/counter.v) - The authoritative camera
+- [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
+- [threads](/exercises/threads.v) - Disjoint concurrency 
+- [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
 - [adequacy](/exercises/adequacy.v) - Adequacy
 - [ofe](/exercises/ofe.v) - Detailed introduction to OFEs
 

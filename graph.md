@@ -1,26 +1,31 @@
 ```mermaid
 graph TD;
-  base --> pure;
-  pure --> pers[persistent];
+  basics --> pure;
+  pure --> specs[specifications];
+  lang --> specs;
+  specs --> resources;
+  resources --> pers[persistently];
+  resources --> later;
+  pers --> conc[concurrency];
+  conc --> ra[resource algebra];
+  later --> invariants;
+  ra --> cst_ra[custom resource algebra];
+  ra --> invariants;
 
-  pers --> lang;
-  lang --> later;
+  invariants --> counter;
+  invariants --> threads;
+  invariants --> spinlock;
 
-  lang --> linklist[linked list];
-  linklist --> fix[fixpoint];
+  spinlock --> ticketlock;
+  spinlock --> adequacy;
+
+  resources --> linklist[linked list];
   later --> fix[fixpoint];
+  linklist --> fix[fixpoint];
+
   linklist --> array;
   array --> merge[merge sort];
-
-  later --> inv[invariant];
-  inv --> ra[resource algebra];
-
-  ra --> counter;
-  ra --> spinlock;
-  ra --> theads;
-  spinlock --> ticketlock;
-
-  spinlock --> adequacy;
+  conc --> merge;
 
   ofe;
 ```

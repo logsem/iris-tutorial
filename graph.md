@@ -6,16 +6,14 @@ graph TD;
   specs --> resources;
   resources --> pers[persistently];
   resources --> later;
-  pers --> conc[concurrency];
-  conc --> ra[resource algebra];
+  pers -->  ra[resource algebra];
   later --> invariants;
   ra --> cst_ra[custom resource algebra];
   ra --> invariants;
-
-  invariants --> counter;
-  invariants --> threads;
-  invariants --> spinlock;
-
+  invariants --> conc[concurrency];
+  
+  conc --> counter;
+  conc --> spinlock;
   spinlock --> ticketlock;
   spinlock --> adequacy;
 

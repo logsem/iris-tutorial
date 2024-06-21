@@ -44,7 +44,6 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [specifications](/exercises/specifications.v) - Hoare Triples and Weakest pre-condition
 - [resources](/exercises/resources.v) - Introduction to the points-to predicate
 - [persistently](/exercises/persistently.v) - The persistently modality
-- [concurrency](/exercises/concurrency.v) - Reasoning about concurrent programs 
 - [later](/exercises/later.v) - The later modality and recursive functions
 - [linked_lists](/exercises/linked_lists.v) - Linked lists
   - [fixpoint](/exercises/fixpoint.v) - Fixpoints of propositions
@@ -55,7 +54,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [invariants](/exercises/invariants.v) - Invariants
 - [counter](/exercises/counter.v) - The authoritative camera
 - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
-- [threads](/exercises/threads.v) - Disjoint concurrency 
+- [concurrency](/exercises/concurrency.v) - Reasoning about concurrent programs
 - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
 - [adequacy](/exercises/adequacy.v) - Adequacy
 - [ofe](/exercises/ofe.v) - Detailed introduction to OFEs

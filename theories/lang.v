@@ -1,5 +1,19 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
+(*########## CONTENTS PLAN ##########
+- THIS FILE SHOULD ONLY INTRODUCE THE LANGUAGE
+- POSSIBLY UTILISE THE HEAPLANG INTERPRETER FOR SOME EXAMPLES
+- INTRODUCE BASIC CONSTRUCTS
+  + EXAMPLES
+- INTRODUCE HEAP
+  + STORE
+  + LOAD
+  + CAS
+  + EXAMPLES
+- INTRODUCE CONCURRENCY PRIMITIVE (fork)
+  + MENTION THAT MORE COMPLEX CONCURRENCY CONSTRUCTIONS ARE DERIVED FROM FORK, e.g. |||
+#####################################*)
+
 (** HeapLang is a programming language with an accompanying Iris program
   logic defined on top of Iris base logic. HeapLang is an untyped
   higher-order functional programming language with dynamically

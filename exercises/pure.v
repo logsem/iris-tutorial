@@ -5,18 +5,17 @@ Section proofs.
 Context {Σ : gFunctors}.
 
 (**
-  Turnstyle can be used as a unary operator to ask whether a
-  proposition follows from the empty context. Here we locally specify
-  that we want to talk about Iris propositions over [Σ].
-  This is useful when stating lemmas that don't depend on generic Iris
-  propositions.
+  Turnstyle can be used as a unary operator to ask whether a proposition
+  follows from the empty context. Here we locally specify that we want
+  to talk about Iris propositions over [Σ]. This is useful when stating
+  lemmas that do not depend on generic Iris propositions.
 *)
 Local Notation "⊢ P" := (⊢@{iPropI Σ} P).
 
 (**
   Coq propositions can be embedded into Iris using the pure modality
   [⌜Φ⌝]. Such propositions can be introduced using [iPureIntro]. This
-  will exit the Iris proofmode, throwing away the Iris context. Pure
+  will exit the Iris proofmode, throwing away the spatial context. Pure
   propositions can be eliminated using the introduction pattern "%_".
 *)
 Lemma eq_5_5 : ⊢ ⌜5 = 5⌝.
@@ -33,10 +32,10 @@ Proof.
 Qed.
 
 (**
-  Iris has a class of propositions we call pure.
-  These are the propositions [P] that are bi-entailed by [⌜Φ⌝] for
-  some Φ. Iris has two typeclasses, [IntoPure] and [FromPure], to
-  identify such propositions.
+  Iris has a class of propositions we call pure. These are the
+  propositions [P] that are bi-entailed by [⌜Φ⌝] for some [Φ]. Iris has
+  two typeclasses, [IntoPure] and [FromPure], to identify such
+  propositions.
 *)
 
 Lemma true_intro : ⊢ True.
@@ -58,14 +57,10 @@ Proof.
 Qed.
 
 (**
-  The pure modality allows us to state an important property,
-  namely soundness. 
-
-  Soundness is proved in the [uPred_primitive.pure_soundness] lemma
-  stating: [∀ φ, (True ⊢ ⌜φ⌝) → φ]
-
-  This means that anything proved inside the Iris logic is as true as
-  anything proved in Coq.
+  The pure modality allows us to state an important property, namely
+  soundness. Soundness is proved in the [uPred_primitive.pure_soundness]
+  lemma stating: [∀ φ, (True ⊢ ⌜φ⌝) → φ]. This means that anything
+  proved inside the Iris logic is as true as anything proved in Coq.
 *)
 
 (**
@@ -78,7 +73,7 @@ Proof.
   (* exercise *)
 Admitted.
 
-Lemma pure_adj2 (P : iProp Σ) : ⌜⊢P⌝ -∗ P.
+Lemma pure_adj2 (P : iProp Σ) : ⌜⊢ P⌝ -∗ P.
 Proof.
   (* exercise *)
 Admitted.

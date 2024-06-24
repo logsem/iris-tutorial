@@ -18,15 +18,15 @@ Local Notation "Q ⊢ P" := (Q ⊢@{iPropI Σ} P).
 (** 
   The implementation of Iris in Coq has a unique class of propositions
   called `pure'. This class arises from the fact that Coq propositions
-  can be embedded into the logic of Iris. Any Coq propostion [P : Prop]
+  can be embedded into the logic of Iris. Any Coq propostion [φ : Prop]
   can be turned into an Iris proposition through the pure modality
-  [⌜P⌝ : iProp Σ]. This allows us to piggyback on much of the
+  [⌜φ⌝ : iProp Σ]. This allows us to piggyback on much of the
   functionality and theory developed for the logic of Coq. The
-  proposition [⌜P⌝] is thus an Iris proposition, and we can use it as we
+  proposition [⌜φ⌝] is thus an Iris proposition, and we can use it as we
   would any other Iris proposition.
 *)
 
-Lemma asm_pure (P : Prop) : ⌜P⌝ ⊢ ⌜P⌝.
+Lemma asm_pure (φ : Prop) : ⌜φ⌝ ⊢ ⌜φ⌝.
 Proof.
   iIntros "H".
   iApply "H".
@@ -34,7 +34,7 @@ Qed.
 
 (**
   A pure proposition is then any Iris proposition [P] for which there
-  exists a Coq proposition [Φ], such that [P ⊣⊢ ⌜Φ⌝].
+  exists a Coq proposition [φ], such that [P ⊣⊢ ⌜φ⌝].
 
   Pure propositions can be introduced using [iPureIntro]. This exits the
   Iris Proof Mode, throwing away the spatial context and turns the
@@ -50,7 +50,7 @@ Qed.
   To eliminate a pure proposition, we can use the specialization pattern
   "%_". This adds the proposition to the non-spatial context as a Coq
   proposition.
- *)
+*)
 Lemma eq_elm {A} (P : A → iProp Σ) (x y : A) : ⌜x = y⌝ -∗ P x -∗ P y.
 Proof.
   iIntros "%Heq HP".
@@ -67,32 +67,38 @@ Qed.
   pure propositions.
 *)
 
+(** [True] is pure. *)
 Lemma true_intro : ⊢ True.
 Proof.
-  iPureIntro. (* [True] is pure *)
+  iPureIntro.
   constructor.
 Qed.
 
+(** Conjunction preserves pureness. *)
 Lemma and_pure : ⊢ ⌜5 = 5⌝ ∧ ⌜8 = 8⌝.
 Proof.
-  iPureIntro. (* [∧] preserves pureness *)
+  iPureIntro.
   split; reflexivity.
 Qed.
 
+(** Separating conjunction preserves pureness. *)
 Lemma sep_pure : ⊢ ⌜5 = 5⌝ ∗ ⌜8 = 8⌝.
 Proof.
-  iPureIntro. (* [∗] preserves pureness *)
+  iPureIntro.
   split; reflexivity.
 Qed.
 
-(* TODO: FINISH EXAMPLE *)
-Lemma wand_pure : ⊢ ⌜x = y⌝ -∗ ⌜y = x⌝.
+(** Wand preserves pureness. *)
+Lemma wand_pure {A} (x y : A) : ⊢ ⌜x = y⌝ -∗ ⌜y = x⌝.
 Proof.
-  iPureIntro. (* [∗] preserves pureness *)
-  split; reflexivity.
+  iPureIntro.
+  intros Heq.
+  symmetry.
+  assumption.
 Qed.
 
-Lemma abstr_not_pure (P : iProp Σ): ⊢ P -∗ ⌜8 = 8⌝.
+(** Arbitrary Iris propositions are not pure. *)
+Lemma abstr_not_pure (P : iProp Σ) : ⊢ P -∗ ⌜8 = 8⌝.
 Proof.
   Fail iPureIntro. (* [P] is not pure *)
   iIntros "HP".

@@ -1,4 +1,5 @@
-From iris.heap_lang Require Import lang proofmode notation.
+From iris.heap_lang Require Import lang notation spawn par.
+From iris.unstable.heap_lang Require Import interpreter.
 
 (*########## CONTENTS PLAN ##########
 - THIS FILE SHOULD ONLY INTRODUCE THE LANGUAGE
@@ -14,204 +15,186 @@ From iris.heap_lang Require Import lang proofmode notation.
   + MENTION THAT MORE COMPLEX CONCURRENCY CONSTRUCTIONS ARE DERIVED FROM FORK, e.g. |||
 #####################################*)
 
-(** HeapLang is a programming language with an accompanying Iris program
-  logic defined on top of Iris base logic. HeapLang is an untyped
-  higher-order functional programming language with dynamically
-  allocated references and concurrency, in the form of dynamically
-  allocated threads that can share memory access. The evaluation
-  order is right to left and it is a call-by-value language.
+(* ################################################################# *)
+(** * HeapLang *)
 
-  The program logic for HeapLang uses connectives describing locations.
-  These connectives require that certain resources are available. To
-  ensure this, we use the typeclass [heapGS]. This typeclass ensures
-  that Σ contains at least the necessary resources for HeapLang. Later on,
-  we will explain what resources are.
+(* ================================================================= *)
+(** ** Introduction *)
+
+(**
+  HeapLang is a concurrent programming language with a heap. It is an
+  ML-like language, sporting many of the usual constructs such as
+  let-expressions, λ-abstractions, and recursive functions. It also
+  supports higher-order functions. The evaluation order is right to left
+  and it is a call-by-value language.
+
+  The syntax for HeapLang is fairly standard, but there are some quirks
+  as we are working inside Coq. As the features of HeapLang are fairly
+  standard, the focus in this file is manly on showcasing the syntax
+  through simple examples for each of the basic constructs.
 *)
+
 Section heaplang.
-Context `{!heapGS Σ}.
 
-(**
-  To see how we can reason about programs written in HeapLang,
-  let us define a small toy program.
-*)
-Definition prog : expr :=
-  (** Allocate the number 1 on the heap *)
-  let: "x" := ref #1 in
-  (** Increment x by 2 *)
-  "x" <- !"x" + #2;;
-  (** Read the value of x *)
-  !"x".
+(* ================================================================= *)
+(** ** Pure Constructs *)
 
-(**
-  This program should evaluate to 3. To prove this we'll use the
-  weakest precondition [WP]. This lets us specify a postcondition we
-  expect to hold if the program halts.
-*)
-Lemma wp_prog : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
-Proof.
-  rewrite /prog.
-  (**
-    HeapLang has a set of tactics for reasoning about the evaluation of the
-    language. The initial step of prog is to allocate a reference
-    containing the value 1. We can symbolically execute this step of prog by
-    using the [wp_alloc] tactic with a name for the
-    location and a name for the knowledge that the location stores the
-    value 1.
-  *)
-  wp_alloc l as "Hl".
-  (**
-    The next step of prog is a purely functional reduction step, and 
-    and thus we can use [wp_pures] to continue symbolic execution.
-  *)
-  wp_pures.
-  (**
-    Next, we load from the location [l] using the knowledge that it
-    currently stores the value 1.
-  *)
-  wp_load.
-  (** Then we evaluate the addition *)
-  wp_pures.
-  (**
-    Storing is handled by [wp_store].
-    Notice that this updates [Hl]. This only works because we are
-    working in a separation logic.
-  *)
-  wp_store.
-  (** Finally we use [wp_load] again *)
-  wp_load.
-  (**
-    Now that the program has concluded, we are left with a fancy update
-    modality. You can usually ignore this modality and simply introduce
-    it. We will explain its uses as we go along.
-  *)
-  iModIntro.
-  (** Now we are left with a trivial proof that 1 + 2 = 3 *)
-  done.
-Qed.
+Example arith : expr :=
+  #1 + #2 * #3.
 
-(**
-  The full list of symbolic evaluation tactics can be found at
-  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md
-*)
+Compute (exec 10 arith).
 
-(**
-  Let us use the property we just proved for prog to 
-  prove a specification for a larger program.
-*)
-Lemma wp_prog_add_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
-Proof.
-  iStartProof.
-  (**
-    The first part of this program is to evaluate [prog]. So we can
-    separate the program into 2 parts. First, we evaluate [prog], then
-    we take the result and add 2 to it. To do this we can use [wp_bind].
-  *)
-  wp_bind prog.
-  (**
-    Now we have the problem that our postcondition doesn't match the
-    one we proved. To fix this we can use the monotonicity of WP.
-  *)
-  iApply wp_mono.
-  2: { iApply wp_prog. }
-  iIntros "%_ ->".
-  (** And now we can evaluate the rest of the program *)
-  wp_pures.
-  (** This postcondition is again trivial *)
-  done.
-Qed.
+Example bools : expr :=
+  #1 + #2 * #3 = #7.
 
-(**
-  The previous proof worked, but it is not very ergonomic.
-  To fix this, we'll make [wp_prog] generic on its postcondition.
-*)
-Lemma wp_prog_2 (Φ : val → iProp Σ) :
-  (∀ v, ⌜v = #3⌝ -∗ Φ v) -∗ WP prog {{v, Φ v}}.
-Proof.
-  iIntros "HΦ".
-  rewrite /prog.
-  wp_alloc l as "Hl".
-  wp_load.
-  wp_store.
-  wp_load.
-  by iApply "HΦ".
-Qed.
+Compute (exec 10 bools).
 
-(** Now the other proof becomes much simpler. *)
-Lemma wp_prog_add_2_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
-Proof.
-  wp_bind prog.
-  (** Now the proof is on the exact form required by [wp_prog_2] *)
-  iApply wp_prog_2.
-  (** And the proof proceeds as before *)
-  iIntros "%_ ->".
-  by wp_pures.
-Qed.
+Example if_then_else : expr :=
+  if: #1 + #2 * #3 = #7 then #() else #false.
 
-(**
-  Hoare triples are an extended version of a WP with a 
-  precondition. They are defined as
-  [∀ Φ, Pre -∗ (▷ ∀ r0 .. rn, Post -∗ Φ v) -∗ WP e {{v, Φ v}}].
-  This may seem like a very long and complicated definition, so let's
-  look at it's parts.
+Compute (exec 10 if_then_else).
 
-  As in the example above, Hoare triples are parameterized on the post conditions
-  satisfied by Post. This allows us to further specialize the
-  possible return values by specifying them as a pattern quantified over
-  arbitrary parameters. The implication of the postcondition is
-  hidden under a later modality (▷), signifying that the program takes at least one
-  step. This modality will be described in the following file.
-  Finally, we have a precondition Pre.
+Example lets : expr :=
+  let: "a" := #4 in
+  let: "b" := #2 in
+  "a" + "b".
 
-  The syntax for Hoare triples is as follows:
-  [{{{ Pre }}} e {{{ r0 .. rn, RET v; Post }}}]
-  - [Pre]: the precondition that is assumed to hold before the
-    program runs.
-  - [e]: the program to run.
-  - [r0 .. rn]: the parameters used to define the return value.
-  - [v]: an expression specifying the shape of the return value.
-  - [Post]: the postcondition is satisfied after the program has halted.
+Compute (exec 10 lets).
+
+Example pairs : expr :=
+  let: "p" := (#40, #1 + #1) in
+  Fst "p" + Snd "p".
+
+Compute (exec 10 pairs).
+
+Example tuples : expr :=
+  let: "t1" := (#1, #2, #3, #4) in
+  let: "t2" := (((#1, #2), #3), #4) in
+  (Snd (Fst (Fst "t1")) = Snd (Fst (Fst "t2"))).
+
+Compute (exec 10 tuples).
+
+Example sums : expr :=
+  let: "r" := InjR #1 in
+  match: "r" with
+    InjL "_" => #0
+  | InjR "n" => "n" + #1
+  end.
+
+Compute (exec 10 sums).
+
+Example lambda : expr :=
+  (λ: "x", "x" + #5) #5.
+
+Compute (exec 10 lambda).
+
+Example recursion : expr :=
+  let: "fac" :=
+    rec: "f" "n" := if: "n" = #0 then #1 else "n" * "f" ("n" - #1)
+  in
+  ("fac" #4, "fac" #5).
+
+Compute (exec 25 recursion).
+
+
+(* ================================================================= *)
+(** ** References *)
+
+(** 
+  References are dyncamically allocated through the [ref] instruction.
+  Given a value, [ref] allocates a fresh cell on the heap, and stores
+  the value in said cell. The location of the cell is returned.
 *)
 
-(** Let's consider a function that swaps 2 values. *)
-Definition swap : val :=
-  λ: "x" "y",
-  let: "v" := !"x" in
-  "x" <- !"y";;
-  "y" <- "v".
+Example alloc : expr :=
+  let: "l1" := ref (#0) in
+  let: "l2" := ref (#0) in
+  ("l1", "l2").
 
-(** To specify this program we can use a Hoare triple. *)
-Lemma wp_swap (l1 l2 : loc) (v1 v2 : val) :
-  {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
-    swap #l1 #l2
-  {{{RET #(); l1 ↦ v2 ∗ l2 ↦ v1}}}.
-Proof.
-  iIntros "%Φ [H1 H2] HΦ".
-  rewrite /swap.
-  wp_pures.
-  wp_load.
-  wp_load.
-  wp_store.
-  wp_store.
-  iApply "HΦ".
-  by iFrame.
-Qed.
+Compute (exec 10 alloc).
 
-(**
-  And we can use this specification to prove the correctness of the
-  client code.
+Example load : expr :=
+  let: "l" := ref #5 in
+  !"l".
+
+Compute (exec 10 load).
+
+Example store : expr :=
+  let: "l" := ref #5 in
+  "l" <- #6 ;;
+  !"l".
+
+Compute (exec 10 store).
+
+Example cas : expr :=
+  let: "l" := ref #5 in
+  CAS "l" #6 #7 ;;  (* If "l" contains 6, set "l" to 7 *)
+  let: "a" := !"l" in
+  CAS "l" #5 #7 ;;  (* If "l" contains 5, set "l" to 7 *)
+  let: "b" := !"l" in
+  ("a", "b").
+
+Compute (exec 10 cas).
+
+(* ================================================================= *)
+(** ** Concurrency *)
+
+(** 
+  HeapLang has only one primitive for concurrencty: [Fork]. The
+  instruction [Fork e] creates a new thread which executes [e]. The
+  invoking thread continues execution after creating the thread. If the
+  computation of [e] terminates, then the resulting value is simply
+  thrown away. Hence, [e] is only run for its side-effects.
 *)
-Lemma swap_swap (l1 l2 : loc) (v1 v2 : val) :
-  {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
-    swap #l1 #l2;; swap #l1 #l2
-  {{{RET #(); l1 ↦ v1 ∗ l2 ↦ v2}}}.
-Proof.
-  iIntros "%Φ [H1 H2] HΦ".
-  wp_bind (swap _ _).
-  iApply (wp_swap with "[$H1 $H2]").
-  iIntros "!> [H1 H2]".
-  wp_pures.
-  iApply (wp_swap with "[$H1 $H2]").
-  done.
-Qed.
+
+Example fork : expr :=
+  let: "l" := ref #5 in
+  Fork ("l" <- #7) ;;
+  !"l".
+
+(** 
+  Unfortunately, in its current state, the interpreter does not support
+  concurrency; the forked thread never executes its expression. Hence,
+  the above program will always return [5]. Of course, this is only a
+  limitation of this specific interpreter – HeapLang is still a
+  concurrent programming language, and we still have to reason about
+  forked threads inside the Iris logic.
+*)
+
+Compute (exec 10 fork).
+
+(** 
+  From the [Fork] primitive, we can implement several other
+  constructions for concurrency. HeapLang ships with two such
+  constructions, [spawn] and [par], which we will implement and prove
+  correct later.
+*)
+
+(** 
+  [spawn] takes a thunked experssions, and creates a new thread which
+  executes said expression. Additionally, [spawn] returns a handle,
+  which we can use in conjunction with [join] to wait for the result of
+  the computation.
+*)
+Example spawn : expr :=
+  let: "l" := ref #5 in
+  let: "handle" := spawn (λ: "_", "l" <- #6;; #2) in
+  let: "res" := spawn.join "handle" in
+  let: "v" := !"l" in
+  ("res", "v").
+  (* Evaluates to [(2, 6)]. *)
+
+(** 
+  Using the [spawn] construct, we can define [par] which runs two
+  expressions in parallell. We define the notation [e1 ||| e2] for
+  [par], which states that [e1] and [e2] are run in parallel. Once both
+  expressions have terminated, the resulting values are returned in a
+  pair.
+*)
+Example par : expr :=
+  let: "l" := ref #5 in
+  let: "res" := (!"l" + #1) ||| (!"l" + #2) in
+  Fst "res" + Snd "res". 
+  (* Evaluates to [13]. *)
 
 End heaplang.

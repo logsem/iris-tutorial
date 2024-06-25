@@ -1,5 +1,13 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
+(*########## CONTENTS PLAN ##########
+- SHOW SOME EXAMPLES WITH HOARE-TRIPLES
+- TIMELESS PROPOSITIONS AND STRIPPING LATERS
+  + USUALLY DONE WHEN INTRODUCING PROPOSTIIONS VIA '>'
+  + SHOW EXAMPLES
+- EXPAND ON LÖB INDUCTION
+#####################################*)
+
 Section proofs.
 Context `{!heapGS Σ}.
 

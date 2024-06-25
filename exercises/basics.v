@@ -95,8 +95,8 @@ Lemma asm (P : iProp Σ) : P ⊢ P.
 Proof.
   (**
     To enter the Iris Proof Mode, we can use the tactic [iStartProof].
-    However, most Iris tactics will automatically start the Iris proof
-    mode for you, so we can directly introduce [P].
+    However, most Iris tactics will automatically start the Iris Proof
+    Mode for you, so we can directly introduce [P].
   *)
   iIntros "H".
   (**

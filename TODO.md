@@ -1,3 +1,7 @@
+# Versioning
+- coq-iris-unstable requires development versions of coq-iris and
+  coq-iris-heaplang.
+
 # Possible future topics
 - Remaining  examples from ILN
   - Ch. 16 - fixpoints

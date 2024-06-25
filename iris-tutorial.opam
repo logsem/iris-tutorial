@@ -10,7 +10,7 @@ bug-reports: "https://github.com/logsem/iris-tutorial/issues"
 build: [make "-j%{jobs}%"]
 install: []
 depends: [
-  "coq" { (= "8.19.1") }
+  "coq" { (= "8.19.2") }
   "coq-iris" { (= "4.2.0") }
   "coq-iris-heap-lang" { (= "4.2.0") }
 ]

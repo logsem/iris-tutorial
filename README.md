@@ -13,7 +13,7 @@ It is recommended that you go through the tutorial in the order specified in [Ov
 ## Setup
 This version is known to compile with
 
-- Coq 8.19.1
+- Coq 8.19.2
 - Iris 4.2.0
 
 The recommended way to install the dependencies is through [opam](https://opam.ocaml.org/doc/Install.html).

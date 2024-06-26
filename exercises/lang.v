@@ -1,19 +1,4 @@
 From iris.heap_lang Require Import lang notation spawn par.
-From iris.unstable.heap_lang Require Import interpreter.
-
-(*########## CONTENTS PLAN ##########
-- THIS FILE SHOULD ONLY INTRODUCE THE LANGUAGE
-- POSSIBLY UTILISE THE HEAPLANG INTERPRETER FOR SOME EXAMPLES
-- INTRODUCE BASIC CONSTRUCTS
-  + EXAMPLES
-- INTRODUCE HEAP
-  + STORE
-  + LOAD
-  + CAS
-  + EXAMPLES
-- INTRODUCE CONCURRENCY PRIMITIVE (fork)
-  + MENTION THAT MORE COMPLEX CONCURRENCY CONSTRUCTIONS ARE DERIVED FROM FORK, e.g. |||
-#####################################*)
 
 (* ################################################################# *)
 (** * HeapLang *)
@@ -24,7 +9,7 @@ From iris.unstable.heap_lang Require Import interpreter.
 (**
   HeapLang is a concurrent programming language with a heap. It is an
   ML-like language, sporting many of the usual constructs such as
-  let-expressions, λ-abstractions, and recursive functions. It also
+  let expressions, lambda abstractions, and recursive functions. It also
   supports higher-order functions. The evaluation order is right to left
   and it is a call-by-value language.
 
@@ -34,45 +19,112 @@ From iris.unstable.heap_lang Require Import interpreter.
   through simple examples for each of the basic constructs.
 *)
 
-Section heaplang.
+(* ================================================================= *)
+(** ** The HeapLang Interpreter (Optional) *)
+
+(** 
+  HeapLang is primarily made to be reasoned about using Iris. However,
+  there is a rudimentary interpreter for HeapLang located in
+  [iris.unstable.heap_lang]. The interpreter provides the function
+  [exec], which takes some fuel and an expression as input. The
+  expression is then executed until it terminates at a value [v], the
+  execution runs out fuel, or the program gets stuck. In case of
+  termination, [inl v] is returned, and otherwise [inr err] is returned,
+  with [err] describing the error.
+*)
+(**
+  By default, the interpreter is not installed as it can only be used
+  with development versions of Iris. The interpreter is not required in
+  this tutorial, but it can optionally be installed for this file. To
+  install it, run
+    [opam install coq-iris-unstable].
+  This also updates Iris to a development version. To access the
+  interpreter, uncomment the import below.
+*)
+(* From iris.unstable.heap_lang Require Import interpreter. *)
+(**
+  To return to a release version of Iris compatible with the rest of the
+  tutorial, run
+    [opam install . --deps-only].
+  This also uninstalls the interpreter.
+*)
 
 (* ================================================================= *)
 (** ** Pure Constructs *)
 
+Section heaplang.
+
+(**
+  HeapLang has native support for integers and booleans. With these, we
+  can do basic arithmetic and control flow, using [if] statements.
+  Values in HeapLang are prefixed by a [#].
+*)
+
 Example arith : expr :=
   #1 + #2 * #3.
 
-Compute (exec 10 arith).
+(** 
+  If the interpreter was installed, the expression can now be executed
+  using [(exec 10 arith)], where [10] is the amount of fuel. To evaluate
+  the execution inside Coq, we can use the [Compute] command. Uncomment
+  the command below to see this in action.
+*)
+(* Compute (exec 10 arith). *)
+(** Evaluates to [inl #7] *)
 
 Example bools : expr :=
-  #1 + #2 * #3 = #7.
+  (arith = #7) && #true || (#true = #false).
 
-Compute (exec 10 bools).
+(* Compute (exec 10 bools). *)
+(** Evaluates to [inl #true] *)
 
 Example if_then_else : expr :=
-  if: #1 + #2 * #3 = #7 then #() else #false.
+  if: bools then #() else #false.
 
-Compute (exec 10 if_then_else).
+(* Compute (exec 10 if_then_else). *)
+(** Evaluates to [inl #()] *)
+
+(**
+  Heaplang supports let expressions. Technically, let expressions are
+  not native to HeapLang. We get let expressions from the [notation]
+  package, which defines them in terms of lambda abstractions.
+  
+  Note that variables in HeapLang are strings.
+*)
 
 Example lets : expr :=
   let: "a" := #4 in
   let: "b" := #2 in
   "a" + "b".
 
-Compute (exec 10 lets).
+(* Compute (exec 10 lets). *)
+(** Evaluates to [inl #6] *)
+
+(**
+  HeapLang has native support for pairs, with tuples being notation for
+  nested pairs.
+*)
 
 Example pairs : expr :=
   let: "p" := (#40, #1 + #1) in
   Fst "p" + Snd "p".
 
-Compute (exec 10 pairs).
+(* Compute (exec 10 pairs). *)
+(** Evaluates to [inl #42] *)
 
 Example tuples : expr :=
   let: "t1" := (#1, #2, #3, #4) in
   let: "t2" := (((#1, #2), #3), #4) in
   (Snd (Fst (Fst "t1")) = Snd (Fst (Fst "t2"))).
 
-Compute (exec 10 tuples).
+(* Compute (exec 10 tuples). *)
+(** Evaluates to [inl #true] *)
+
+(** 
+  We can also do pattern matching using sums. A common usecase of sums
+  is to define the `option' construction. The [notation] package has us
+  covered here as well.
+*)
 
 Example sums : expr :=
   let: "r" := InjR #1 in
@@ -81,12 +133,35 @@ Example sums : expr :=
   | InjR "n" => "n" + #1
   end.
 
-Compute (exec 10 sums).
+(* Compute (exec 10 sums). *)
+(** Evaluates to [inl #2] *)
+
+Example option : expr :=
+  let: "r" := SOME #1 in
+  match: "r" with
+    NONE => #0
+  | SOME "n" => "n" + #1
+  end.
+
+(* Compute (exec 10 option). *)
+(** Evaluates to [inl #2] *)
+
+(**
+  Finally, we have lambda absractions and recursive functions. As with
+  let expressions, lambda abstractions are also a derived construct –
+  they are simply recursive functions that do not recurse. In HeapLang,
+  functions are first-class citizens, which gives support for
+  higher-order functions.
+*)
 
 Example lambda : expr :=
-  (λ: "x", "x" + #5) #5.
+  let: "add5" := (λ: "x", "x" + #5) in
+  let: "double" := (λ: "x", "x" * #2) in
+  let: "compose" := (λ: "f" "g", λ: "x", "g" ("f" "x")) in
+  ("compose" "add5" "double") #5.
 
-Compute (exec 10 lambda).
+(* Compute (exec 10 lambda). *)
+(** Evaluates to [inl #20] *)
 
 Example recursion : expr :=
   let: "fac" :=
@@ -94,8 +169,8 @@ Example recursion : expr :=
   in
   ("fac" #4, "fac" #5).
 
-Compute (exec 25 recursion).
-
+(* Compute (exec 25 recursion). *)
+(** Evaluates to [inl (#24, #120)] *)
 
 (* ================================================================= *)
 (** ** References *)
@@ -111,30 +186,70 @@ Example alloc : expr :=
   let: "l2" := ref (#0) in
   ("l1", "l2").
 
-Compute (exec 10 alloc).
+(* Compute (exec 10 alloc). *)
+(** Evaluates to [inl (#(Loc 1), #(Loc 2))] *)
+
+(** 
+  After allocation, we can read and update the value at the returned
+  location [l] with [!l] and [l <- v], respectively.
+*)
 
 Example load : expr :=
   let: "l" := ref #5 in
   !"l".
 
-Compute (exec 10 load).
+(* Compute (exec 10 load). *)
+(** Evaluates to [inl #5] *)
 
 Example store : expr :=
   let: "l" := ref #5 in
   "l" <- #6 ;;
   !"l".
 
-Compute (exec 10 store).
+(* Compute (exec 10 store). *)
+(** Evaluates to [inl #6] *)
+
+(**
+  To allow for synchronisation between threads, HeapLang provides a
+  single primitive called compare-and-exchange, written
+  [CmpXchg l v1 v2]. This instructions atomically reads the contents of
+  [l], checks if it is equal to [v1], and, in case of equality, updates
+  [l] to contain [v2]. The instruction returns a pair [(v', b)], with
+  [v'] being the original value stored at [l], and [b] indicating
+  whether the location was updated.
+
+  The [notation] package defines a variant called compare-and-set,
+  written [CAS l v1 v2], which only returns the boolean [b].
+*)
+
+Example cmpxhcg_fail : expr :=
+  let: "l" := ref #5 in
+  CmpXchg "l" #6 #7.
+
+(* Compute (exec 10 cmpxhcg_fail). *)
+(** Evaluates to [inl (#5, #false)] *)
+
+Example cmpxhcg_succ : expr :=
+  let: "l" := ref #5 in
+  CmpXchg "l" #5 #7.
+
+(* Compute (exec 10 cmpxhcg_succ). *)
+(** Evaluates to [inl (#5, #true)] *)
 
 Example cas : expr :=
   let: "l" := ref #5 in
-  CAS "l" #6 #7 ;;  (* If "l" contains 6, set "l" to 7 *)
-  let: "a" := !"l" in
-  CAS "l" #5 #7 ;;  (* If "l" contains 5, set "l" to 7 *)
-  let: "b" := !"l" in
-  ("a", "b").
+  if: CAS "l" #6 #7 then
+    #()
+  else
+    let: "a" := !"l" in
+    if: CAS "l" #5 #7 then
+      let: "b" := !"l" in
+      ("a", "b")
+    else
+      #().
 
-Compute (exec 10 cas).
+(* Compute (exec 10 cas). *)
+(** Evaluates to [inl (#5, #7)] *)
 
 (* ================================================================= *)
 (** ** Concurrency *)
@@ -153,17 +268,18 @@ Example fork : expr :=
   !"l".
 
 (** 
-  Unfortunately, in its current state, the interpreter does not support
-  concurrency; the forked thread never executes its expression. Hence,
-  the above program will always return [5]. Of course, this is only a
-  limitation of this specific interpreter – HeapLang is still a
+  Unfortunately, in its current state, the HeapLang interpreter does not
+  support concurrency; the forked thread never executes its expression.
+  Hence, the above program will always return [5]. Of course, this is
+  only a limitation of this specific interpreter – HeapLang is still a
   concurrent programming language, and we still have to reason about
   forked threads inside the Iris logic.
 *)
 
-Compute (exec 10 fork).
+(* Compute (exec 10 fork). *)
+(** Evaluates to [inl #5] *)
 
-(** 
+(**
   From the [Fork] primitive, we can implement several other
   constructions for concurrency. HeapLang ships with two such
   constructions, [spawn] and [par], which we will implement and prove
@@ -182,7 +298,8 @@ Example spawn : expr :=
   let: "res" := spawn.join "handle" in
   let: "v" := !"l" in
   ("res", "v").
-  (* Evaluates to [(2, 6)]. *)
+
+(* Evaluates to [(2, 6)]. *)
 
 (** 
   Using the [spawn] construct, we can define [par] which runs two
@@ -194,7 +311,8 @@ Example spawn : expr :=
 Example par : expr :=
   let: "l" := ref #5 in
   let: "res" := (!"l" + #1) ||| (!"l" + #2) in
-  Fst "res" + Snd "res". 
-  (* Evaluates to [13]. *)
+  Fst "res" + Snd "res".
+
+(* Evaluates to [13]. *)
 
 End heaplang.

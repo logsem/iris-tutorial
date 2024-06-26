@@ -15,7 +15,7 @@ Local Notation "Q ⊢ P" := (Q ⊢@{iPropI Σ} P).
 (* ################################################################# *)
 (** * Pure Propositions *)
 
-(** 
+(**
   The implementation of Iris in Coq has a unique class of propositions
   called `pure'. This class arises from the fact that Coq propositions
   can be embedded into the logic of Iris. Any Coq propostion [φ : Prop]

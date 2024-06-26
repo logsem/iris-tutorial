@@ -2,6 +2,12 @@ From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
+(*########## CONTENTS PLAN ##########
+- SHOW 'NATIVE' CLIENT OF FORK
+- SHOW SPAWN AND PAR
+- MOVE parallel_add FROM invariants.v TO concurrency.v
+#####################################*)
+
 (** HeapLang's primitive concurrency mechanism is the [Fork] construct. The
     operation takes an expression [e] as an argument and spawns a new thread that
     executes [e] concurrently. The operation itself returns the unit value on

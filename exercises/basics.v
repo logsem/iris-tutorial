@@ -83,7 +83,7 @@ Context {Σ: gFunctors}.
   work natively with the spatial context. These new tactics start with
   'i', and since many of them simply 'lift' the regular tactics to also
   work with the spatial context, they borrow the regular names but with
-  the 'i' prefixed. For instance, instead of [intros H] we use 
+  the 'i' prefixed. For instance, instead of [intros H] we use
   [iIntros "H"], and instead of [apply H] we use [iApply "H"]. Note that
   identifiers for hypotheses in the spatial context are strings, instead
   of the usual Coq identifiers.
@@ -261,7 +261,7 @@ Qed.
 Lemma wand_adj_1 (P Q R : iProp Σ) : (P -∗ Q -∗ R) ∗ P ∗ Q ⊢ R.
 Proof.
   iIntros "(H & HP & HQ)".
-  (** 
+  (**
     When applying "H", we get the subgoals [P] and [Q]. To specify that
     we want to use "HP" to prove the first subgoal, and "HQ" the second,
     we add "HP" in the first square bracket, and "HQ" in the second.
@@ -271,7 +271,7 @@ Proof.
   - iApply "HQ".
 Qed.
 
-(** 
+(**
   Hypotheses that fit arguments exactly can be supplied directly without
   a square bracket to avoid trivial subgoals, as in the above. Try this
   in following exercise.

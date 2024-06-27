@@ -3,9 +3,8 @@ graph TD;
   basics --> pure;
   pure --> specs[specifications];
   lang --> specs;
-  specs --> resources;
-  resources --> pers[persistently];
-  resources --> later;
+  specs -->  pers[persistently];
+  specs --> later;
   pers -->  ra[resource algebra];
   later --> invariants;
   ra --> cst_ra[custom resource algebra];
@@ -17,7 +16,7 @@ graph TD;
   spinlock --> ticketlock;
   spinlock --> adequacy;
 
-  resources --> linklist[linked list];
+  specs --> linklist[linked list];
   later --> fix[fixpoint];
   linklist --> fix[fixpoint];
 

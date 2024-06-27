@@ -7,7 +7,6 @@ theories/basics.v
 theories/pure.v
 theories/lang.v
 theories/specifications.v
-theories/resources.v
 theories/later.v
 theories/persistently.v
 theories/linked_lists.v
@@ -28,7 +27,6 @@ exercises/basics.v
 exercises/pure.v
 exercises/lang.v
 exercises/specifications.v
-exercises/resources.v
 exercises/later.v
 exercises/persistently.v
 exercises/linked_lists.v

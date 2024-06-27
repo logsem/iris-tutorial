@@ -38,11 +38,12 @@ opam install . --deps-only
 Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/editor.md) describes how to set up your favorite editor.
 
 ## Overview
-- [basics](/exercises/basics.v) - Introduction to the Iris Proof Mode
+- [basics](/exercises/basics.v) - Introduction to the separation
+  logic and the Iris Proof Mode
   - [pure](/exercises/pure.v) - Distinction between the Coq context and the Iris context
 - [lang](/exercises/lang.v) - Introduction to HeapLang
-- [specifications](/exercises/specifications.v) - Hoare Triples and Weakest pre-condition
-- [resources](/exercises/resources.v) - Introduction to the points-to predicate
+- [specifications](/exercises/specifications.v) - Weakest precondition,
+  basic resources, and Hoare triples
 - [persistently](/exercises/persistently.v) - The persistently modality
 - [later](/exercises/later.v) - The later modality and recursive functions
 - [linked_lists](/exercises/linked_lists.v) - Linked lists

@@ -2,30 +2,146 @@ From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
 - INTRODUCE WEAKEST-PRECONDITIONS
-  + EXAMPLES WITH BASIC ARITHMETIC
+  + EXAMPLES WITH PURE EXPRESSIONS
+- INTRODUCE RESOURCE OF HEAPS
+  + POINTS-TO PREDICATE
+  + EXAMPLES WITH ALLOC, STORE, LOAD, CMPXCHG
 - INTRODUCE HOARE-TRIPLES
   + EXAMPLES
   + RELATIONSHIP TO WP
   + CONVENTION: HT FOR SPECS, WP FOR PROOFS
-- POSSIBLY MERGE SPECIFICATIONS AND RESOURCES
-  + THEN HAVE EXAMPLES WITH POINTS-TO PREDICATE
 #####################################*)
 
-(** HeapLang is a programming language with an accompanying Iris program
-  logic defined on top of Iris base logic. HeapLang is an untyped
-  higher-order functional programming language with dynamically
-  allocated references and concurrency, in the form of dynamically
-  allocated threads that can share memory access. The evaluation
-  order is right to left and it is a call-by-value language.
+(* ################################################################# *)
+(** * Specifications *)
 
-  The program logic for HeapLang uses connectives describing locations.
-  These connectives require that certain resources are available. To
-  ensure this, we use the typeclass [heapGS]. This typeclass ensures
-  that Σ contains at least the necessary resources for HeapLang. Later on,
-  we will explain what resources are.
+(* ================================================================= *)
+(** ** Introduction *)
+
+(**
+  Now that we have seen basic separation logic in Iris and introduced a
+  suitable language, HeapLang, we are finally ready to start reasoning
+  about programs. HeapLang ships with a program logic defined using
+  Iris. We can access the logic through the [proofmode] package, which
+  also defines tactics to aliviate working with the logic. The logic
+  provides constructs that allow us to specify the behaviour of HeapLang
+  programs. These specifications can then be proven by using the rules
+  associated with the constructs. The tactics provided by the
+  [proofmode] package essentially just apply these rules.
+
+  The program logic for HeapLang relies on a basic notion of a resource
+  – the resource of heaps. Recall that [Σ] specifies the available
+  resources. To make the resource of heaps available, we have to specify
+  that [Σ] should contain the it. The typeclass [heapGS] does exactly
+  this. Using [heapGS] and the [Context] command, we can assume that [Σ]
+  contains the resource of heaps throughout the [specifications]
+  section.
 *)
-Section heaplang.
+
+Section specifications.
 Context `{!heapGS Σ}.
+
+(* ================================================================= *)
+(** ** Weakest Precondition *)
+
+(**
+  The first construct for specifying program behaviour that we shall use
+  is the `weakest precondition'. To motivate it, let us consider a
+  simple example.
+*)
+
+Example arith : expr :=
+  #1 + #2 * #3 + #4 + #5.
+
+(**
+  This program should evaluate to [16]. We can express this in the logic
+  with a weakest precondition. In general, a weakest precondition has
+  the form [WP e {{v, Φ v}}]. This asserts that, if the HeapLang program
+  [e] terminates at some value [v], then [v] satisfies the predicate
+  [Φ]. The double curly brackets [{{v, Φ v}}] is called the
+  `postcondition'. For the case of [arith], we would express its
+  behaviour using the following weakest precondition.
+*)
+
+Lemma arith_spec : ⊢ WP arith {{ v, ⌜v = #16⌝ }}.
+Proof.
+  rewrite /arith.
+  (**
+    To prove this weakest precondition, we can use the tactics provided
+    by [proofmode]. The initial step of the program is to multiply [#2]
+    by [#3]. The tactic [wp_binop] symbolically executes this expression
+    using the underlying rules of the logic.
+  *)
+  wp_binop.
+  (**
+    Note that the expression [#2 * #3] turned into [#(2 * 3)] – the Coq
+    expression [2 * 3] is treated as a value in HeapLang.
+    
+    The next step of the program is to add [#1] to [#(2 * 3)]. We could
+    again use [wp_binop] to symbolically execute this, but instead we
+    shall use the [wp_pure] tactic. This tactic can symbolically execute
+    all pure expressions.
+  *)
+  wp_pure.
+  (** 
+    If there are several pure steps in a row, we can use the [wp_pures]
+    tactic, which repeatedly applies [wp_pure].
+  *)
+  wp_pures.
+  (**
+    When the expression in a weakest precondition turns into a value,
+    the goal becomes to prove the postcondition with said value.
+    Technically, the goal is to prove the postcondition behind a `fancy
+    update modality'. This functionality is related to resources and
+    invaraints, so we skip it for now. We can always remove a fancy
+    update modality in the goal with [iModIntro].
+  *)
+  iModIntro.
+  iPureIntro.
+  reflexivity.
+Qed.
+
+(**
+  Let us look at another example of a pure program. The `lambda' program
+  from lang.v constists of only let expressions, lambdas, applications,
+  and arithmetic.
+*)
+
+Example lambda : expr :=
+  let: "add5" := (λ: "x", "x" + #5) in
+  let: "double" := (λ: "x", "x" * #2) in
+  let: "compose" := (λ: "f" "g", (λ: "x", "g" ("f" "x"))) in
+  ("compose" "add5" "double") #5.
+
+(**
+  The program logic for HeapLang provides specific tactics to
+  symbolically execute these kinds of expressions, e.g. [wp_let] for let
+  expressions, [wp_lam] for applications, and [wp_op] for arithmetic. A list
+  of all tactics for HeapLang expressions can be found at
+  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md#tactics.
+
+  Exercise: prove the following specification for the lambda program.
+*)
+Lemma lambda_spec : ⊢ WP lambda {{ v, ⌜v = #20⌝ }}.
+Proof.
+  rewrite /lambda.
+  (* exercise *)
+Admitted.
+
+(* ================================================================= *)
+(** ** Resources *)
+
+(*########## CONTENTS PLAN ##########
+- RE-INTRODUCE THAT PROPOSITIONS DESCRIBES RESOURCES
+- IN IRIS, USER CAN DEFINE THEIR OWN NOTION (resource_algebra.v)
+- A BASIC NOTION IS THAT OF POINTS-TO PREDICATES (resource for heaps)
+- EXAMPLES
+- EXCLUSIVITY
+- EXAMPLES
+- HOARE TRIPLES FOR HEAPLANG HEAP INSTRUCTIONS (STORE, READ, CAS)
+#####################################*)
+
+(* TODO: UPDATE SECTION TO FIT ABOVE *)
 
 (**
   To see how we can reason about programs written in HeapLang,
@@ -91,6 +207,11 @@ Qed.
   https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md
 *)
 
+(* ================================================================= *)
+(** ** Composing Programs and Proofs *)
+
+(* TODO: UPDATE SECTION *)
+
 (**
   Let us use the property we just proved for prog to 
   prove a specification for a larger program.
@@ -143,6 +264,11 @@ Proof.
   iIntros "%_ ->".
   by wp_pures.
 Qed.
+
+(* ================================================================= *)
+(** ** Hoare Triples *)
+
+(* TODO: UPDATE SECTION *)
 
 (**
   Hoare triples are an extended version of a WP with a 
@@ -211,4 +337,4 @@ Proof.
   done.
 Qed.
 
-End heaplang.
+End specifications.

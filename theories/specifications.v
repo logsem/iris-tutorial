@@ -176,18 +176,6 @@ END TEMPLATE *)
 (* ================================================================= *)
 (** ** Resources *)
 
-(*########## CONTENTS PLAN ##########
-- RE-INTRODUCE THAT PROPOSITIONS DESCRIBE RESOURCES
-- IN IRIS, USER CAN DEFINE THEIR OWN NOTION (resource_algebra.v)
-- A BASIC NOTION IS THAT OF POINTS-TO PREDICATES (resource for heaps)
-- EXAMPLES
-- EXCLUSIVITY
-- EXAMPLES
-- HOARE TRIPLES FOR HEAPLANG HEAP INSTRUCTIONS (STORE, READ, CAS)
-#####################################*)
-
-(* TODO: UPDATE SECTION TO FIT ABOVE *)
-
 (**
   In this section, we introduce our first notion of a resource: the
   resource of heaps. As mentioned in basics.v, propositions in Iris
@@ -211,7 +199,7 @@ Definition prog : expr :=
   This program should evaluate to 3. We express this with a weakest
   precondition.
 *)
-Lemma wp_prog : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
+Lemma prog_spec : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
 Proof.
   rewrite /prog.
   (**
@@ -238,26 +226,22 @@ Proof.
   wp_op.
   (**
     Storing is handled by [wp_store]. As with loading, we must have the
-    associated points-to predicate in the context. This updates [Hl].
+    associated points-to predicate in the context. [wp_store] updates
+    the points-to predicate to reflect the store.
   *)
   wp_store.
-  (* TODO: CONTINUE FROM HERE *)
-  (** Finally we use [wp_load] again *)
+  (** Finally, we use [wp_load] again. *)
   wp_load.
-  (**
-    Now that the program has concluded, we are left with a fancy update
-    modality. You can usually ignore this modality and simply introduce
-    it. We will explain its uses as we go along.
-  *)
+  (** Now we are left with a trivial proof that [1 + 2 = 3]. *)
   iModIntro.
-  (** Now we are left with a trivial proof that 1 + 2 = 3 *)
   done.
 Qed.
 
-(**
-  The full list of symbolic evaluation tactics can be found at
-  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md
-*)
+(* TODO: MAYBE DISCUSS EXCLUSIVITY HERE *)
+
+(* TODO: EXAMPLE WITH CAS *)
+
+(* TODO: HAVE AN EXERCISE *)
 
 (* ================================================================= *)
 (** ** Composing Programs and Proofs *)
@@ -268,7 +252,7 @@ Qed.
   Let us use the property we just proved for prog to 
   prove a specification for a larger program.
 *)
-Lemma wp_prog_add_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
+Lemma prog_add_2_spec : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
 Proof.
   iStartProof.
   (**
@@ -282,7 +266,7 @@ Proof.
     one we proved. To fix this we can use the monotonicity of WP.
   *)
   iApply wp_mono.
-  2: { iApply wp_prog. }
+  2: { iApply prog_spec. }
   iIntros "%_ ->".
   (** And now we can evaluate the rest of the program *)
   wp_pures.
@@ -292,9 +276,9 @@ Qed.
 
 (**
   The previous proof worked, but it is not very ergonomic.
-  To fix this, we'll make [wp_prog] generic on its postcondition.
+  To fix this, we'll make [prog_spec] generic on its postcondition.
 *)
-Lemma wp_prog_2 (Φ : val → iProp Σ) :
+Lemma prog_spec_2 (Φ : val → iProp Σ) :
   (∀ v, ⌜v = #3⌝ -∗ Φ v) -∗ WP prog {{v, Φ v}}.
 Proof.
   iIntros "HΦ".
@@ -307,11 +291,11 @@ Proof.
 Qed.
 
 (** Now the other proof becomes much simpler. *)
-Lemma wp_prog_add_2_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
+Lemma prog_add_2_spec_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
 Proof.
   wp_bind prog.
-  (** Now the proof is on the exact form required by [wp_prog_2] *)
-  iApply wp_prog_2.
+  (** Now the proof is on the exact form required by [prog_spec_2] *)
+  iApply prog_spec_2.
   (** And the proof proceeds as before *)
   iIntros "%_ ->".
   by wp_pures.
@@ -355,7 +339,7 @@ Definition swap : val :=
   "y" <- "v".
 
 (** To specify this program we can use a Hoare triple. *)
-Lemma wp_swap (l1 l2 : loc) (v1 v2 : val) :
+Lemma swap_spec (l1 l2 : loc) (v1 v2 : val) :
   {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
     swap #l1 #l2
   {{{RET #(); l1 ↦ v2 ∗ l2 ↦ v1}}}.
@@ -375,17 +359,17 @@ Qed.
   And we can use this specification to prove the correctness of the
   client code.
 *)
-Lemma swap_swap (l1 l2 : loc) (v1 v2 : val) :
+Lemma swap_swap_spec (l1 l2 : loc) (v1 v2 : val) :
   {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
     swap #l1 #l2;; swap #l1 #l2
   {{{RET #(); l1 ↦ v1 ∗ l2 ↦ v2}}}.
 Proof.
   iIntros "%Φ [H1 H2] HΦ".
   wp_bind (swap _ _).
-  iApply (wp_swap with "[$H1 $H2]").
+  iApply (swap_spec with "[$H1 $H2]").
   iIntros "!> [H1 H2]".
   wp_pures.
-  iApply (wp_swap with "[$H1 $H2]").
+  iApply (swap_spec with "[$H1 $H2]").
   done.
 Qed.
 

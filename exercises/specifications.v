@@ -1,17 +1,5 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*########## CONTENTS PLAN ##########
-- INTRODUCE WEAKEST-PRECONDITIONS
-  + EXAMPLES WITH PURE EXPRESSIONS
-- INTRODUCE RESOURCE OF HEAPS
-  + POINTS-TO PREDICATE
-  + EXAMPLES WITH ALLOC, STORE, LOAD, CMPXCHG
-- INTRODUCE HOARE-TRIPLES
-  + EXAMPLES
-  + RELATIONSHIP TO WP
-  + CONVENTION: HT FOR SPECS, WP FOR PROOFS
-#####################################*)
-
 (* ################################################################# *)
 (** * Specifications *)
 
@@ -326,40 +314,51 @@ Qed.
 (* ================================================================= *)
 (** ** Composing Programs and Proofs *)
 
-(* TODO: UPDATE SECTION *)
-
 (**
-  Let us use the property we just proved for prog to 
-  prove a specification for a larger program.
+  Let us use the specification we proved for [prog] in the previous
+  section to prove a specification for a larger program.
 *)
-Lemma prog_add_2_spec : ⊢ WP prog + #2 {{ v, ⌜v = #5⌝}}.
+Lemma prog_add_2_spec : ⊢ WP prog + #2 {{ v, ⌜v = #5⌝ }}.
 Proof.
   iStartProof.
   (**
-    The first part of this program is to evaluate [prog]. So we can
-    separate the program into 2 parts. First, we evaluate [prog], then
-    we take the result and add 2 to it. To do this we can use [wp_bind].
+    The first part of this program is to evaluate [prog]. We already
+    have a specification that tell us how this sub-expression behaves,
+    [prog_spec]. To apply it, we must change the goal to match the
+    specification. Using the wp-bind rule presented earlier, we can
+    focus in on the [prog] expression. Iris provides the tactic
+    [wp_bind] for this purpose.
   *)
   wp_bind prog.
   (**
-    Now we have the problem that our postcondition doesn't match the
-    one we proved. To fix this we can use the monotonicity of WP.
+    The expression now matches the [prog_spec] specification, but the
+    postcondition still does not match. To fix this we can use
+    monotonicity of WP. That is,
+      [WP e {{ Φ }} ∗ (∀ v, Φ v -∗ Ψ v) ⊢ WP e {{ Ψ }}].
+    With this it suffices to prove that the postcondition of [prog_spec]
+    implies the postcondition in our current goal. This is achieved with
+    the [wp_wand] tactic, which generates two subgoals, one
+    corresponding to [WP e {{ Φ }}] and one to [(∀ v, Φ v -∗ Ψ v)].
   *)
-  iApply wp_mono.
-  2: { iApply prog_spec. }
-  iIntros "%_ ->".
-  (** And now we can evaluate the rest of the program *)
-  wp_pures.
-  (** This postcondition is again trivial *)
+  iApply wp_wand; simpl.
+  { iApply prog_spec. }
+  simpl.
+  (**
+    When introducing equalities, we can immediately rewrite using it
+    with [->] or [<-], depening on which direction we want to rewrite.
+  *)
+  iIntros "%w ->".
+  (** And now we can evaluate the rest of the program. *)
+  wp_pure.
   done.
 Qed.
 
 (**
-  The previous proof worked, but it is not very ergonomic.
-  To fix this, we'll make [prog_spec] generic on its postcondition.
+  The previous proof worked, but it is not very ergonomic. To fix this,
+  we will make [prog_spec] generic on its postcondition.
 *)
 Lemma prog_spec_2 (Φ : val → iProp Σ) :
-  (∀ v, ⌜v = #3⌝ -∗ Φ v) -∗ WP prog {{v, Φ v}}.
+  (∀ v, ⌜v = #3⌝ -∗ Φ v) -∗ WP prog {{ v, Φ v }}.
 Proof.
   iIntros "HΦ".
   rewrite /prog.
@@ -370,61 +369,86 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-(** Now the other proof becomes much simpler. *)
-Lemma prog_add_2_spec_2 : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
+(** Now, the other proof becomes simpler. *)
+Lemma prog_add_2_spec' : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
 Proof.
   wp_bind prog.
-  (** Now the proof is on the exact form required by [prog_spec_2] *)
+  (** The goal is now on the exact form required by [prog_spec_2] *)
   iApply prog_spec_2.
   (** And the proof proceeds as before *)
-  iIntros "%_ ->".
-  by wp_pures.
+  iIntros "%w ->".
+  wp_pure.
+  done.
+Qed.
+
+(**
+  We can even simplify this proof further by using the [wp_apply]
+  tactic which automatically applies [wp_bind] for us.
+*)
+Lemma prog_add_2_spec'' : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
+  wp_apply prog_spec_2.
+  iIntros "%w ->".
+  wp_pure.
+  done.
 Qed.
 
 (* ================================================================= *)
 (** ** Hoare Triples *)
 
-(* TODO: UPDATE SECTION *)
-
 (**
-  Hoare triples are an extended version of a WP with a 
-  precondition. They are defined as
-  [∀ Φ, Pre -∗ (▷ ∀ r0 .. rn, Post -∗ Φ v) -∗ WP e {{v, Φ v}}].
-  This may seem like a very long and complicated definition, so let's
-  look at it's parts.
-
-  As in the example above, Hoare triples are parameterized on the post conditions
-  satisfied by Post. This allows us to further specialize the
-  possible return values by specifying them as a pattern quantified over
-  arbitrary parameters. The implication of the postcondition is
-  hidden under a later modality (▷), signifying that the program takes at least one
-  step. This modality will be described in the following file.
-  Finally, we have a precondition Pre.
+  Having studied weakest preconditions, we shift our focus onto another
+  construct for specifying program behaviour: Hoare triples. The weakest
+  precondition does not explicitly specify which conditions must be met
+  before executing the program. It only talks about which conditions are
+  met after – the postcondition. Hoare triples build on weakest
+  preconditions by requiring us to explicitly mention the the conditions
+  that must hold before running the program – the precondition.
 
   The syntax for Hoare triples is as follows:
-  [{{{ Pre }}} e {{{ r0 .. rn, RET v; Post }}}]
-  - [Pre]: the precondition that is assumed to hold before the
-    program runs.
+    [{{{ P }}} e {{{ r0 .. rn, RET v; Q v }}}]
+  - [P]: the precondition that is assumed to hold before the program runs.
   - [e]: the program to run.
-  - [r0 .. rn]: the parameters used to define the return value.
-  - [v]: an expression specifying the shape of the return value.
-  - [Post]: the postcondition is satisfied after the program has halted.
+  - [r0 .. rn]: optional, forall quantified variables.
+  - [v]: the return value.
+  - [Q]: the postcondition which holds after the program terminates.
+
+  In Iris, Hoare triples are actually defined in terms of weakest
+  preconditions. The definition is as follows:
+    [□( ∀ Φ, P -∗ ▷ (∀ r0 .. rn, Q -∗ Φ v) -∗ WP e {{v, Φ v }})].
+  This is quite a lengthy defintion, so let us break it down.
+  Firstly, inspired by the [prog_spec_2] example from the previous
+  section, this definition makes the postcondition generic.
+  Next, the precondition [P] implies the generic weakest precondition,
+  signifying that we must first prove [P] before we can apply
+  specification for [e].
+  Finally, the definition uses two modalities that we have yet to cover.
+  The persistently modality [□] signifies that the specification can be
+  freely duplicated, meaning we can reuse Hoare triples.
+  The later modality [▷] signifies that the program takes at least one
+  step. The reason for including this is purely technical, and can for
+  the most part be ignored.
+  We will get back to both modalities later. For now, let us look at
+  an example. Consider a function that swaps two values.
 *)
 
-(** Let's consider a function that swaps 2 values. *)
 Definition swap : val :=
   λ: "x" "y",
   let: "v" := !"x" in
   "x" <- !"y";;
   "y" <- "v".
 
-(** To specify this program we can use a Hoare triple. *)
+(** We will use a Hoare triple to specify this programs behaviour. *)
 Lemma swap_spec (l1 l2 : loc) (v1 v2 : val) :
-  {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
+  {{{ l1 ↦ v1 ∗ l2 ↦ v2 }}}
     swap #l1 #l2
-  {{{RET #(); l1 ↦ v2 ∗ l2 ↦ v1}}}.
+  {{{ RET #(); l1 ↦ v2 ∗ l2 ↦ v1 }}}.
 Proof.
+  (**
+    When introducing a Hoare triple, we use the definition above to turn
+    the goal into a weakest precondition.
+  *)
   iIntros "%Φ [H1 H2] HΦ".
+  (** We can now prove the specification as we have done previously. *)
   rewrite /swap.
   wp_pures.
   wp_load.
@@ -436,21 +460,33 @@ Proof.
 Qed.
 
 (**
-  And we can use this specification to prove the correctness of the
-  client code.
+  Since Hoare triples are generic in the postcondition `under the hood',
+  specifications written using Hoare triples can be easily used by
+  clients, as demonstrated in the previous section. We demonstrate it
+  here again with a client of [spec].
 *)
 Lemma swap_swap_spec (l1 l2 : loc) (v1 v2 : val) :
-  {{{l1 ↦ v1 ∗ l2 ↦ v2}}}
+  {{{ l1 ↦ v1 ∗ l2 ↦ v2 }}}
     swap #l1 #l2;; swap #l1 #l2
-  {{{RET #(); l1 ↦ v1 ∗ l2 ↦ v2}}}.
+  {{{ RET #(); l1 ↦ v1 ∗ l2 ↦ v2 }}}.
 Proof.
-  iIntros "%Φ [H1 H2] HΦ".
-  wp_bind (swap _ _).
-  iApply (swap_spec with "[$H1 $H2]").
-  iIntros "!> [H1 H2]".
-  wp_pures.
-  iApply (swap_spec with "[$H1 $H2]").
+  iIntros "%Φ H HΦ".
+  wp_apply (swap_spec with "H").
+  iIntros "H".
+  wp_seq.
+  wp_apply (swap_spec with "H").
   done.
 Qed.
+
+(**
+  A convention in Iris is to write specifictions using Hoare triples,
+  but prove them by converting them to weakest preconditions as in the
+  examples above. There are several reasons for this. Firstly, it
+  ensures that all specifications are generic in the postcondition.
+  Secondly, specifications written in terms of Hoare triples are usually
+  easier to read, as they name explicitly what must be obtained before
+  the program can be executed. Finally, proving Hoare triples directly
+  can be quite awkward and burdensome, especially in Coq.
+*)
 
 End specifications.

@@ -1,6 +1,14 @@
 From iris.base_logic Require Import iprop.
 From iris.proofmode Require Import proofmode.
 
+(*########## CONTENTS PLAN ##########
+- MENTION THAT HT AND WP ARE PERSISTENT
+  + SHOW EXAMPLE OF USEFULNESS (two invocations of some function)
+- INTRODUCE PERSISTENT POINTS-TO PREDICATE (for read-only memory)
+- HINT TO USEFULNESS FOR CONCURRENT PROGRAMS
+- PRESERVED BY QUANTIFICATIONS AND CONNECTIVES
+#####################################*)
+
 Section proofs.
 Context {Σ : gFunctors}.
 

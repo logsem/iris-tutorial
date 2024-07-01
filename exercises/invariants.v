@@ -2,6 +2,17 @@ From iris.algebra Require Export excl_auth frac_auth.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation par.
 
+(*########## CONTENTS PLAN ##########
+- MORE BASIC INTRODUCTION TO INVARIANTS
+  + THEIR PURPOSE
+  + PERSISTENCY
+  + OPEN ONCE BEFORE CLOSING
+  + INVARIANT NAMES (namespaces)
+  + MASKS AND UPDATE MODALITY
+- SHOW EXISTING EXAMPLES AFTERWARDS
+- MOVE parallel_add to concurrency.v
+#####################################*)
+
 (**
   Let's make a simple multi-threaded program. We can use [Fork e] to
   create a new thread to run [e]. As such the following program will

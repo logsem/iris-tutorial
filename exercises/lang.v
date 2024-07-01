@@ -228,11 +228,11 @@ Example cmpxhcg_fail : expr :=
 (* Compute (exec 10 cmpxhcg_fail). *)
 (** Evaluates to [inl (#5, #false)] *)
 
-Example cmpxhcg_succ : expr :=
+Example cmpxhcg_suc : expr :=
   let: "l" := ref #5 in
   CmpXchg "l" #5 #7.
 
-(* Compute (exec 10 cmpxhcg_succ). *)
+(* Compute (exec 10 cmpxhcg_suc). *)
 (** Evaluates to [inl (#5, #true)] *)
 
 Example cas : expr :=

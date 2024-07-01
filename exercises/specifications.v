@@ -172,8 +172,8 @@ Admitted.
   In this section, we introduce our first notion of a resource: the
   resource of heaps. As mentioned in basics.v, propositions in Iris
   describe/assert ownership of resources. To describe resources in the
-  resource of heaps, we use the `points-to' predicate, written [l ↦ #v].
-  Intuitively, this describes all heap fragments that has value [#v]
+  resource of heaps, we use the `points-to' predicate, written [l ↦ v].
+  Intuitively, this describes all heap fragments that has value [v]
   stored at location [l]. The proposition [l1 ↦ #1 ∗ l2 ↦ #2] then
   describes all heap fragments that map [l1] to [#1] and [l2] to [#2].
 
@@ -229,11 +229,99 @@ Proof.
   done.
 Qed.
 
-(* TODO: MAYBE DISCUSS EXCLUSIVITY HERE *)
+(**
+  HeapLang also provides the CmpXchg instruction to interact with the
+  heap. The [wp_cmpxchg] symbolically executes an instruction on the
+  form [CmpXchg l v1 v2]. As with [wp_load] and [wp_store], [wp_cmpxchg]
+  also requires the associated points-to predicate [l ↦ v]. If this is
+  present in the context, then [wp_cmpxchg as H1 | H2] will generate two
+  subgoals. The first corresponds to the case where the CmpXchg
+  instruction succeeded. Thus, we get to assume [H1 : v = v1], and our
+  points-to predicate for [l] is updated to [l ↦ v2]. The second
+  coresponds to case where CmpXchg failed. We instead get [H2 : v ≠ v1],
+  and our points-to predicate for [l] is unchanged.
 
-(* TODO: EXAMPLE WITH CAS *)
+  Let us demonstrate this with a simple example program which simply
+  checks if a given location contains the number 0 and, if it does,
+  updates it to 10.
+*)
 
-(* TODO: HAVE AN EXERCISE *)
+Example cmpXchg_0_to_10 (l : loc) : expr := (CmpXchg #l #0 #10).
+
+Lemma cmpXchg_0_to_10_spec (l : loc) (v : val) :
+  l ↦ v -∗
+  WP (cmpXchg_0_to_10 l) {{ u, (⌜v = #0⌝ ∗ l ↦ #10) ∨
+                               (⌜v ≠ #0⌝ ∗ l ↦ v) }}.
+Proof.
+  iIntros "Hl".
+  wp_cmpxchg as H1 | H2.
+  - (* CmpXchg succeeded *)
+    iLeft.
+    by iFrame.
+  - (* CmpXchg failed *)
+    iRight.
+    by iFrame.
+Qed.
+
+(**
+  If it is clear that a CmpXchg instruction will succeed, then we can
+  apply the [wp_cmpxchg_suc] tactic which will immidiately discharge
+  the case where CmpXchg fails. Similarly, we can use [wp_cmpxchg_fail]
+  when a CmpXchg instruction will clearly fail.
+
+  Recall the [cas] example from lang.v
+*)
+
+Example cas : expr :=
+  let: "l" := ref #5 in
+  if: CAS "l" #6 #7 then
+    #()
+  else
+    let: "a" := !"l" in
+    if: CAS "l" #5 #7 then
+      let: "b" := !"l" in
+      ("a", "b")
+    else
+      #().
+
+(**
+  The result of both CAS instructions are predetermined. Hence, we can
+  use the [wp_cmpxchg_suc] and [wp_cmpxchg_fail] tactics to symbolically
+  execute them (remember that [CAS l v1 v2] is syntactic sugar for 
+  [Snd (CmpXchg l v1 v2)]).
+  Exercise: finish the proof of the specification for [cas].
+*)
+
+Lemma cas_spec : ⊢ WP cas {{ v, ⌜v = (#5, #7)%V⌝ }}.
+Proof.
+  rewrite /cas.
+  wp_alloc l as "Hl".
+  wp_let.
+  wp_cmpxchg_fail.
+  wp_proj.
+  wp_if.
+  (* exercise *)
+Admitted.
+
+(**
+  We finish this section with a final remark about the points-to
+  predicate. An essential property of the points-to predicate is that it
+  is not duplicable. That is, for every location [l], there can only
+  exist one points-to predicate associated with it [l ↦ v]. This is
+  captured by the following lemma.
+*)
+Lemma pt_not_dupl (l : loc) (v v' : val) : l ↦ v ∗ l ↦ v' ⊢ False.
+Proof.
+  (**
+    The proof of this lemma is not important here. It relies on details
+    of the underlying implementation of the resource of heaps. We will
+    return to this when we treat resources in general later in the
+    tutorial.
+  *)
+  iIntros "[Hlv Hlv']".
+  iCombine "Hlv Hlv'" gives "[%H _]".
+  contradiction.
+Qed.
 
 (* ================================================================= *)
 (** ** Composing Programs and Proofs *)
@@ -244,7 +332,7 @@ Qed.
   Let us use the property we just proved for prog to 
   prove a specification for a larger program.
 *)
-Lemma prog_add_2_spec : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
+Lemma prog_add_2_spec : ⊢ WP prog + #2 {{ v, ⌜v = #5⌝}}.
 Proof.
   iStartProof.
   (**

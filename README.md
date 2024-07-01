@@ -27,6 +27,7 @@ opam switch link iris_tutorial .
 3. Add the Coq opam repository.
 ```
 opam repo add coq-released https://coq.inria.fr/opam/released
+opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
 opam update
 ```
 4. Install the right version of the dependencies as specified in the `iris-tutorial.opam` file.

@@ -18,7 +18,7 @@ From iris.proofmode Require Import proofmode.
   Secondly, a separation logic is a logic used to reason about programs
   by introducing a notion of resource ownership. The idea is that one
   must own a resource before one can interact with it. Ownership is
-  exclusive but can be transfered. To support this notion, separation
+  exclusive but can be transferred. To support this notion, separation
   logic introduces a new connective called separating conjunction,
   written [P ∗ Q]. This asserts ownership of the resources described by
   propositions [P] and [Q], and, in particular, [P] and [Q] describe
@@ -55,7 +55,7 @@ From iris.proofmode Require Import proofmode.
 (** ** Iris in Coq *)
 
 (**
-  The type of propisitions in Iris is [iProp Σ]. All proofs in Iris are
+  The type of propositions in Iris is [iProp Σ]. All proofs in Iris are
   performed in a context with a [Σ: gFunctors], used to specify
   available resources. The details of [Σ] will come later when we
   introduce resource algebras. For now, just remember to work inside a
@@ -203,7 +203,7 @@ Proof.
 Qed.
 
 (**
-  Separating conjuction has an analogue to implication which, instead
+  Separating conjunction has an analogue to implication which, instead
   of introducing the antecedent to the assumptions with conjunction,
   introduces it with separating conjunction. This connective is written
   as [P -∗ Q] and pronounced `magic wand' or simply `wand'. Separation

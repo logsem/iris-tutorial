@@ -75,14 +75,14 @@ Example arith : expr :=
 (* Compute (exec 10 arith). *)
 (** Evaluates to [inl #7] *)
 
-Example bools : expr :=
+Example booleans : expr :=
   (arith = #7) && #true || (#true = #false).
 
-(* Compute (exec 10 bools). *)
+(* Compute (exec 10 booleans). *)
 (** Evaluates to [inl #true] *)
 
 Example if_then_else : expr :=
-  if: bools then #() else #false.
+  if: booleans then #() else #false.
 
 (* Compute (exec 10 if_then_else). *)
 (** Evaluates to [inl #()] *)
@@ -123,7 +123,7 @@ Example tuples : expr :=
 (** Evaluates to [inl #true] *)
 
 (**
-  We can also do pattern matching using sums. A common usecase of sums
+  We can also do pattern matching using sums. A common use case of sums
   is the `option' construction. The [notation] package has us covered
   here as well.
 *)
@@ -178,7 +178,7 @@ Example recursion : expr :=
 (** ** References *)
 
 (**
-  References are dyncamically allocated through the [ref] instruction.
+  References are dynamically allocated through the [ref] instruction.
   Given a value, [ref] finds a fresh location on the heap and stores the
   value there. The location is then returned.
 *)
@@ -292,7 +292,7 @@ Example fork : expr :=
 *)
 
 (**
-  [spawn] takes a thunked experssion and creates a new thread which
+  [spawn] takes a thunked expression and creates a new thread which
   executes said expression. Additionally, [spawn] returns a handle,
   which we can use in conjunction with [join] to wait for the result of
   the computation.

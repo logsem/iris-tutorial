@@ -11,7 +11,7 @@ From iris.heap_lang Require Import lang proofmode notation.
   suitable language, HeapLang, we are finally ready to start reasoning
   about programs. HeapLang ships with a program logic defined using
   Iris. We can access the logic through the [proofmode] package, which
-  also defines tactics to aliviate working with the logic. The logic
+  also defines tactics to alleviate working with the logic. The logic
   provides constructs that allow us to specify the behaviour of HeapLang
   programs. These specifications can then be proven by using rules
   associated with the constructs. The tactics provided by the
@@ -113,7 +113,7 @@ Proof.
     the goal becomes proving the postcondition with said value
     (essentially applying wp-val). Technically, the goal is to prove the
     postcondition behind a `fancy update modality'. This functionality
-    is related to resources and invaraints, so we skip it for now. We
+    is related to resources and invariants, so we skip it for now. We
     can always remove a fancy update modality in the goal with
     [iModIntro].
   *)
@@ -124,7 +124,7 @@ Qed.
 
 (**
   Let us look at another example of a pure program. The `lambda' program
-  from lang.v constists of only let expressions, lambdas, applications,
+  from lang.v consists of only let expressions, lambdas, applications,
   and arithmetic.
 *)
 
@@ -235,7 +235,7 @@ Qed.
   subgoals. The first corresponds to the case where the [CmpXchg]
   instruction succeeded. Thus, we get to assume [H1 : v = v1], and our
   points-to predicate for [l] is updated to [l ↦ v2]. The second
-  coresponds to case where [CmpXchg] failed. We instead get
+  corresponds to case where [CmpXchg] failed. We instead get
   [H2 : v ≠ v1], and our points-to predicate for [l] is unchanged.
 
   Let us demonstrate this with a simple example program which simply
@@ -262,7 +262,7 @@ Qed.
 
 (**
   If it is clear that a [CmpXchg] instruction will succeed, then we can
-  apply the [wp_cmpxchg_suc] tactic which will immidiately discharge the
+  apply the [wp_cmpxchg_suc] tactic which will immediately discharge the
   case where [CmpXchg] fails. Similarly, we can use [wp_cmpxchg_fail]
   when a [CmpXchg] instruction will clearly fail.
 
@@ -374,7 +374,7 @@ Proof.
   simpl.
   (**
     When introducing equalities, we can immediately rewrite using it
-    with [->] or [<-], depening on which direction we want to rewrite.
+    with [->] or [<-], depending on which direction we want to rewrite.
   *)
   iIntros "%w ->".
   (** And now we can evaluate the rest of the program. *)
@@ -508,7 +508,7 @@ Proof.
 Qed.
 
 (**
-  A convention in Iris is to write specifictions using Hoare triples,
+  A convention in Iris is to write specifications using Hoare triples,
   but prove them by converting them to weakest preconditions as in the
   examples above. There are several reasons for this. Firstly, it
   ensures that all specifications are generic in the postcondition.

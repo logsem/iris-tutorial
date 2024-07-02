@@ -18,7 +18,7 @@ Local Notation "Q ⊢ P" := (Q ⊢@{iPropI Σ} P).
 (**
   The implementation of Iris in Coq has a unique class of propositions
   called `pure'. This class arises from the fact that Coq propositions
-  can be embedded into the logic of Iris. Any Coq propostion [φ : Prop]
+  can be embedded into the logic of Iris. Any Coq proposition [φ : Prop]
   can be turned into an Iris proposition through the pure modality
   [⌜φ⌝ : iProp Σ]. This allows us to piggyback on much of the
   functionality and theory developed for the logic of Coq. The

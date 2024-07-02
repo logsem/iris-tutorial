@@ -1,122 +1,119 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
+(* ################################################################# *)
+(** * Case Study: Linked Lists *)
+
 Section linked_lists.
 Context `{!heapGS Σ}.
 
 (**
-  Let us define what we mean by a linked list in HeapLang. We will do
-  so by relating a program value to the Coq list it represents.
-
-  Here we use [NONE] and [SOME e] as syntactic sugar for [InjL #()]
-  and [InjR e]. Furthermore, [NONE] is the expression creating a
-  [NONEV] value, likewise for [SOMEV], [InjLV] and [InjRV].
+  In this file, we will study several functions on linked lists. To do
+  this, we must first agree on what a linked list is. In HeapLang, we
+  can implement linked lists as chains of pointers. We define this
+  formally with a predicate, which we denote [isList]. This predicate
+  turns a list of values [xs] into a predicate describing the structure
+  of the linked list.
 *)
 Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
   match xs with
   | [] => ⌜l = NONEV⌝
-  | x :: xs => ∃ (hd : loc) l', ⌜l = SOMEV #hd⌝ ∗ hd ↦ (x, l') ∗ isList l' xs
+  | x :: xs => ∃ (hd : loc) l', ⌜l = SOMEV (#hd)⌝ ∗ hd ↦ (x, l') ∗ isList l' xs
   end.
+(**
+  Here, [NONEV] and [SOMEV v] are the value equivalents of [NONE] and
+  [SOME e].
+*)
 
 (**
-  Now we can define HeapLang functions that act on lists, such as
-  inc. The inc function recursively increments all the values of a
-  list by 1.
+  Now we can define HeapLang functions that act on lists, such as [inc].
+  The [inc] function recursively increments all the values of a list.
 *)
 Definition inc : val :=
   rec: "inc" "l" :=
     match: "l" with
       NONE => #()
-    | SOME "p" =>
-        let: "h" := Fst (! "p") in
-        let: "t" := Snd (! "p") in
-        "p" <- ("h" + #1, "t");;
-        "inc" "t"
+    | SOME "hd" =>
+        let: "x" := Fst (! "hd") in
+        let: "l'" := Snd (! "hd") in
+        "hd" <- ("x" + #1, "l'");;
+        "inc" "l'"
     end.
 
 (**
-  Here we want the input list to be a list of integers. To capture
-  this we take a list of integers and map the elements to values using
-  [# _]. When the function is done, we expect all the elements in the
-  list to have been incremented. So we again use a map to express
-  this.
+  Intuitively, the specification we give for this function should state
+  that the linked list should only contain integers, and that, after
+  executing the function, each integer has been incremented. As such, we
+  parametrise the specification not by a list of values, but by a list
+  of integers. We then map each integer to a HeapLang value using [# _],
+  allowing us to use the [isList] predicate.
 *)
 Lemma inc_spec (l : val) (xs : list Z) :
-  {{{isList l ((λ x : Z, #x) <$> xs)}}}
+  {{{ isList l ((λ x : Z, #x) <$> xs) }}}
     inc l
-  {{{ RET #(); isList l ((λ x, #(x + 1)%Z) <$> xs)}}}.
+  {{{ RET #(); isList l ((λ x, #(x + 1)) <$> xs)}}}.
 Proof.
-  (*
-    To prove this we'll use structural induction on the list. However,
-    the list we will be looking at will change with each iteration.
+  (**
+    The proof proceeds by structural induction in [xs]. As [l] changes
+    in each iteration, we must forall quantify it to strengthen the
+    induction hypothesis.
   *)
   revert l.
-  induction xs.
-  all: simpl.
-  (* exercise *)
+  induction xs as [|x xs' IH]; simpl.
+  - (* Base Case: xs = [] *)
+    iIntros (l) "%Φ -> HΦ".
+    wp_rec.
+    wp_pures.
+    by iApply "HΦ".
+  - (* Induction step: xs = x :: xs' *)
+    (* exercise *)
 Admitted.
 
 (**
-  The append function recursively descends l1, updating the links.
-  Eventually, it reaches the tail, where it will replace it with l2.
+  The append function recursively descends [l1], updating the links.
+  Eventually, it reaches the tail, [NONE], where it will replace it with
+  [l2].
 *)
 Definition append : val :=
   rec: "append" "l1" "l2" :=
     match: "l1" with
       NONE => "l2"
-    | SOME "p" =>
-        let: "h" := Fst (! "p") in
-        let: "t" := Snd (! "p") in
-        "p" <- ("h", "append" "t" "l2");;
-        SOME "p"
+    | SOME "hd" =>
+        let: "x" := Fst (!"hd") in
+        let: "l1'" := Snd (!"hd") in
+        let: "r" := "append" "l1'" "l2" in
+        "hd" <- ("x", "r");;
+        SOME "hd"
     end.
 
 (**
-  If l1 and l2 represent the lists xs and ys respectively, then we expect
-  that append l1 l2 will return a list representing [xs ++ ys].
+  If [l1] and [l2] represent the lists [xs] and [ys] respectively, then
+  we expect that [append l1 l2] will return a list representing 
+  [xs ++ ys].
 *)
 Lemma append_spec (l1 l2 : val) (xs ys : list val) :
-  {{{isList l1 xs ∗ isList l2 ys}}}
+  {{{ isList l1 xs ∗ isList l2 ys }}}
     append l1 l2
-  {{{l, RET l; isList l (xs ++ ys)}}}.
+  {{{ l, RET l; isList l (xs ++ ys) }}}.
 Proof.
   revert ys l1 l2.
-  induction xs.
-  all: simpl.
-  (* Exercise start *)
-  - iIntros (ys l1 l2) "%Φ [-> H2] HΦ".
-    wp_rec.
-    wp_pures.
-    by iApply "HΦ".
-  - iIntros (ys l1 l2) "%Φ [(%hd & %l' & -> & Hhd & H1) H2] HΦ".
-    wp_rec.
-    wp_pures.
-    wp_load.
-    wp_load.
-    wp_pures.
-    wp_apply (IHxs with "[$H1 $H2]").
-    iIntros "%l Hl".
-    wp_store.
-    wp_pures.
-    iApply "HΦ".
-    iModIntro.
-    iExists hd, l.
-    by iFrame.
-Qed.
+  induction xs as [| x xs' IH]; simpl.
+  (* exercise *)
+Admitted.
 
 (**
-  We will implement reverse using a helper function, called reverse_append,
-  which takes two arguments, [l] and [acc], and returns the list
-  [rev l ++ acc].
+  We will implement reverse using a helper function, called
+  reverse_append, which takes two arguments, [l] and [acc], and returns
+  the list [rev l ++ acc].
 *)
 Definition reverse_append : val :=
   rec: "reverse_append" "l" "acc" :=
     match: "l" with
       NONE => "acc"
-    | SOME "p" =>
-        let: "h" := Fst (! "p") in
-        let: "t" := Snd (! "p") in
-        "p" <- ("h", "acc");;
-        "reverse_append" "t" "l"
+    | SOME "hd" =>
+        let: "x" := Fst (! "hd") in
+        let: "l'" := Snd (! "hd") in
+        "hd" <- ("x", "acc");;
+        "reverse_append" "l'" "l"
     end.
 
 (**
@@ -124,27 +121,26 @@ Definition reverse_append : val :=
   of [l].
 *)
 Definition reverse : val :=
-  rec: "reverse" "l" := reverse_append "l" NONE.
+  λ: "l", reverse_append "l" NONE.
 
 Lemma reverse_append_spec (l acc : val) (xs ys : list val) :
-  {{{isList l xs ∗ isList acc ys}}}
+  {{{ isList l xs ∗ isList acc ys }}}
     reverse_append l acc
-  {{{v, RET v; isList v (rev xs ++ ys)}}}.
+  {{{ v, RET v; isList v (rev xs ++ ys) }}}.
 Proof.
   revert l acc ys.
-  induction xs.
-  all: simpl.
+  induction xs as [| x xs' IH]; simpl.
   (* exercise *)
 Admitted.
 
 (**
-  Now we use the specification of reverse_append to prove the specification
-  of reverse.
+  Now we use the specification of [reverse_append] to prove the specification
+  of [reverse].
 *)
 Lemma reverse_spec (l : val) (xs : list val) :
-  {{{isList l xs}}}
+  {{{ isList l xs }}}
     reverse l
-  {{{v, RET v; isList v (rev xs)}}}.
+  {{{ v, RET v; isList v (rev xs) }}}.
 Proof.
   (* exercise *)
 Admitted.
@@ -157,44 +153,46 @@ Definition fold_right : val :=
   rec: "fold_right" "f" "v" "l" :=
     match: "l" with
       NONE => "v"
-    | SOME "p" =>
-        let: "h" := Fst (! "p") in
-        let: "t" := Snd (! "p") in
-        "f" "h" ("fold_right" "f" "v" "t")
+    | SOME "hd" =>
+        let: "x" := Fst (! "hd") in
+        let: "l'" := Snd (! "hd") in
+        "f" "x" ("fold_right" "f" "v" "l'")
     end.
 
 (**
-  The following specification has a lot of moving parts, so let's go
+  The following specification has a lot of moving parts, so let us go
   through them one by one.
-  - [l] is a linked list representing [xs], as seen by [isList l xs]
-    in the precondition.
-  - [P] is a predicate which all the values in xs should satisfy.
-    This is written as [[∗ list] x ∈ xs, P x]. It is a recursively
-    defined predicate, defined as follows:
+  - [l] is a linked list representing [xs], as seen by [isList l xs] in
+    the precondition.
+  - [P] is a predicate which all the values in [xs] should satisfy. This
+    is written as [[∗ list] x ∈ xs, P x]. It is a recursively defined
+    predicate, defined as follows:
       [[∗ list] x ∈ [], P x := True]
       [[∗ list] x ∈ x0 :: xs, P x := P x0 ∗ [∗ list] x ∈ xs, P x]
-  - [I] is a predicate (think [I] for invariant) describing the 
-    relation between a list and the result of the fold.
-  - [a] is the base value, so fold will return a for the empty list;
+  - [I] is a predicate (think [I] for invariant) describing the relation
+    between a list and the result of the fold.
+  - [a] is the base value, so fold will return [a] for the empty list;
     this is captured by [I [] a].
   - [f] is the folding function, which we assume satisfies:
-      [{{{ P x ∗ I ys a'}}} f x a' {{{ r, RET; I (x :: ys) r }}}].
-    Intuitively, this says that if [f] is applied to an argument from the
-    list (hence satisfying [P]) and [a'] is the result of folding [ys],
-    captured by [I ys a'], then the result [r] will be the result of
-    folding f over [x :: ys], captured by [I (x :: ys) r] in the postcondition.
-  - The result [r] must then satisfy [I xs r].
-  - Importantly, we don't change the original list. So we put
+      [{{{ P x ∗ I ys a' }}} f x a' {{{ r, RET; I (x :: ys) r }}}].
+    Intuitively, this says that if [f] is applied to an argument from
+    the list (hence satisfying [P]) and [a'] is the result of folding
+    [ys], captured by [I ys a'], then the result [r] will be the result
+    of folding f over [x :: ys], captured by [I (x :: ys) r] in the
+    postcondition.
+  - The result [r] of folding must then satisfy [I xs r].
+  - Importantly, we do not change the original list. So we put
     [isList l xs] in the postcondition.
 
   Note that Hoare triples are persistent and persistent predicates are
-  closed under universal quantification, so, in the proof, the assumption for
-  [f] will move into the persistent context!
+  closed under universal quantification. Hence, in the proof, the
+  assumption for [f] will move into the persistent context.
 *)
 Lemma fold_right_spec P I (f a l : val) xs :
   {{{
     isList l xs ∗ ([∗ list] x ∈ xs, P x) ∗ I [] a ∗
-    (∀ (x a' : val) ys, {{{ P x ∗ I ys a' }}} f x a' {{{ r, RET r; I (x :: ys) r }}})
+    (∀ (x a' : val) ys,
+      {{{ P x ∗ I ys a' }}} f x a' {{{ r, RET r; I (x :: ys) r }}})
   }}}
     fold_right f a l
   {{{ r, RET r; isList l xs ∗ I xs r}}}.
@@ -205,7 +203,11 @@ Proof.
   (* exercise *)
 Admitted.
 
-(** We can now sum over a list simply by folding an addition function over it. *)
+(** 
+  We can now sum over a list simply by folding an addition function over
+  it.
+*)
+
 Definition sum_list : val :=
   λ: "l",
     let: "f" := (λ: "x" "y", "x" + "y") in
@@ -214,13 +216,13 @@ Definition sum_list : val :=
 Lemma sum_list_spec l xs :
   {{{isList l ((λ x : Z, #x) <$> xs)}}}
     sum_list l
-  {{{RET #(foldr Z.add 0%Z xs); isList l ((λ x : Z, #x) <$> xs)}}}.
+  {{{RET #(foldr Z.add 0 xs); isList l ((λ x : Z, #x) <$> xs)}}}.
 Proof.
   iIntros (Φ) "Hl HΦ".
   wp_rec; wp_pures.
   wp_apply (fold_right_spec
     (λ x, ∃ i : Z, ⌜x = #i⌝)%I
-    (λ xs y, ∃ ys, ⌜xs = (λ x : Z, #x) <$> ys⌝ ∗ ⌜y = #(foldr Z.add 0%Z ys)⌝)%I
+    (λ xs y, ∃ ys, ⌜xs = (λ x : Z, #x) <$> ys⌝ ∗ ⌜y = #(foldr Z.add 0 ys)⌝)%I
     with "[Hl]"
   ).
   - iFrame.

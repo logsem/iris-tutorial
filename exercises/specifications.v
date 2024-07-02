@@ -371,7 +371,7 @@ Proof.
 Qed.
 
 (** Now, the other proof becomes simpler. *)
-Lemma prog_add_2_spec' : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
+Lemma prog_add_2_spec' : ⊢ WP prog + #2 {{ v, ⌜v = #5⌝ }}.
 Proof.
   wp_bind prog.
   (** The goal is now on the exact form required by [prog_spec_2] *)
@@ -386,7 +386,7 @@ Qed.
   We can even simplify this proof further by using the [wp_apply]
   tactic which automatically applies [wp_bind] for us.
 *)
-Lemma prog_add_2_spec'' : ⊢ WP prog + #2 {{v, ⌜v = #5⌝}}.
+Lemma prog_add_2_spec'' : ⊢ WP prog + #2 {{ v, ⌜v = #5⌝ }}.
   wp_apply prog_spec_2.
   iIntros "%w ->".
   wp_pure.
@@ -409,7 +409,8 @@ Qed.
     [{{{ P }}} e {{{ r0 .. rn, RET v; Q v }}}]
   - [P]: the precondition that is assumed to hold before the program runs.
   - [e]: the program to run.
-  - [r0 .. rn]: optional, forall quantified variables.
+  - [r0 .. rn]: optional, forall quantified variables used for abstract
+    return values.
   - [v]: the return value.
   - [Q]: the postcondition which holds after the program terminates.
 

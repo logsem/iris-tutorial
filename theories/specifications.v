@@ -70,27 +70,27 @@ Proof.
     some sub-expression [e], which is the next part to be evaluated
     according to some evaluation context [K]. The rule is as follows:
 
-              [WP e {{v, WP K[v] {{Φ}} }} ⊢ WP K[e] {{Φ}}]
+              [WP e {{ w, WP K[w] {{ v, Φ v }} }} ⊢ WP K[e] {{ v, Φ v }}]
 
     This allows us to change the goal from
     [WP (#1 + #2 * #3 + #4 + #5) {{ v, ⌜v = #16⌝ }}] 
     to
-    [WP #2 * #3 {{ v, WP (#1 + [] + #4 + #5)[v] {{ v, ⌜v = #16⌝ }} }}]
+    [WP #2 * #3 {{ w, WP (#1 + [] + #4 + #5)[w] {{ v, ⌜v = #16⌝ }} }}]
 
     Next, the wp-op rule symbolically executes a single arithmetic
     operation, [⊚].
 
-                        [v = v₁ ⊚ v₂]
-                --------------------------------
-                [WP v {{Φ}} ⊢ WP v₁ ⊚ v₂ {{Φ}}]
+                              [v = v₁ ⊚ v₂]
+                -------------------------------------------
+                [WP v {{ v, Φ v }} ⊢ WP v₁ ⊚ v₂ {{ v, Φ v }}]
 
     We can thus perform the multiplication and change the goal to
-    [WP #(2 * 3) {{ v, WP (#1 + [] + #4 + #5)[v] {{ v, ⌜v = #16⌝ }} }}]
+    [WP #(2 * 3) {{ w, WP (#1 + [] + #4 + #5)[w] {{ v, ⌜v = #16⌝ }} }}]
     
     Finally, wp-val states that we can prove a weakest precondition of a
     value by proving the postcondition specialised to that value.
 
-                      [Φ(v) ⊢ WP v {{Φ}}]
+                          [Φ(v) ⊢ WP v {{ w, Φ w }}]
 
     The goal is changed to
     [WP #1 + #(2 * 3) + #4 + #5 {{ v, ⌜v = #16⌝ }}]
@@ -110,7 +110,7 @@ Proof.
   wp_pures.
   (**
     When the expression in a weakest precondition turns into a value,
-    the goal becomes to prove the postcondition with said value
+    the goal becomes proving the postcondition with said value
     (essentially applying wp-val). Technically, the goal is to prove the
     postcondition behind a `fancy update modality'. This functionality
     is related to resources and invaraints, so we skip it for now. We
@@ -176,15 +176,15 @@ END TEMPLATE *)
   To see this in action, let us consider a simple program.
 *)
 Definition prog : expr :=
-  (** Allocate the number 1 on the heap *)
+  (** Allocate the number [1] on the heap *)
   let: "x" := ref #1 in
-  (** Increment x by 2 *)
+  (** Increment [x] by [2] *)
   "x" <- !"x" + #2;;
-  (** Read the value of x *)
+  (** Read the value of [x] *)
   !"x".
 
 (**
-  This program should evaluate to 3. We express this with a weakest
+  This program should evaluate to [3]. We express this with a weakest
   precondition.
 *)
 Lemma prog_spec : ⊢ WP prog {{ v, ⌜v = #3⌝ }}.
@@ -192,9 +192,9 @@ Proof.
   rewrite /prog.
   (**
     The initial step of [prog] is to allocate a reference containing the
-    value 1. We can symbolically execute this step of [prog] using the
+    value [1]. We can symbolically execute this step of [prog] using the
     [wp_alloc] tactic. As a result of the allocation, we get the
-    existence of some location [l] which points-to 1, [l ↦ #1]. The
+    existence of some location [l] which points-to [1], [l ↦ #1]. The
     [wp_alloc] tactic requires that we give names to the location and the
     proposition.
   *)
@@ -206,8 +206,9 @@ Proof.
   wp_let.
   (**
     Next, we load from location [l]. Loading from a location requires
-    the associated points-to predicate in the context. Since we have
-    [Hl], we can perform the load using the [wp_load] tactic.
+    the associated points-to predicate in the context. The predicate
+    then governs the result of the load. Since we have [Hl], we can
+    perform the load using the [wp_load] tactic.
   *)
   wp_load.
   (** Then we evaluate the addition. *)
@@ -226,16 +227,16 @@ Proof.
 Qed.
 
 (**
-  HeapLang also provides the CmpXchg instruction to interact with the
+  HeapLang also provides the [CmpXchg] instruction to interact with the
   heap. The [wp_cmpxchg] symbolically executes an instruction on the
   form [CmpXchg l v1 v2]. As with [wp_load] and [wp_store], [wp_cmpxchg]
-  also requires the associated points-to predicate [l ↦ v]. If this is
+  requires the associated points-to predicate [l ↦ v]. If this is
   present in the context, then [wp_cmpxchg as H1 | H2] will generate two
-  subgoals. The first corresponds to the case where the CmpXchg
+  subgoals. The first corresponds to the case where the [CmpXchg]
   instruction succeeded. Thus, we get to assume [H1 : v = v1], and our
   points-to predicate for [l] is updated to [l ↦ v2]. The second
-  coresponds to case where CmpXchg failed. We instead get [H2 : v ≠ v1],
-  and our points-to predicate for [l] is unchanged.
+  coresponds to case where [CmpXchg] failed. We instead get
+  [H2 : v ≠ v1], and our points-to predicate for [l] is unchanged.
 
   Let us demonstrate this with a simple example program which simply
   checks if a given location contains the number 0 and, if it does,
@@ -260,10 +261,10 @@ Proof.
 Qed.
 
 (**
-  If it is clear that a CmpXchg instruction will succeed, then we can
-  apply the [wp_cmpxchg_suc] tactic which will immidiately discharge
-  the case where CmpXchg fails. Similarly, we can use [wp_cmpxchg_fail]
-  when a CmpXchg instruction will clearly fail.
+  If it is clear that a [CmpXchg] instruction will succeed, then we can
+  apply the [wp_cmpxchg_suc] tactic which will immidiately discharge the
+  case where [CmpXchg] fails. Similarly, we can use [wp_cmpxchg_fail]
+  when a [CmpXchg] instruction will clearly fail.
 
   Recall the [cas] example from lang.v
 *)
@@ -281,7 +282,7 @@ Example cas : expr :=
       #().
 
 (**
-  The result of both CAS instructions are predetermined. Hence, we can
+  The result of both [CAS] instructions are predetermined. Hence, we can
   use the [wp_cmpxchg_suc] and [wp_cmpxchg_fail] tactics to symbolically
   execute them (remember that [CAS l v1 v2] is syntactic sugar for 
   [Snd (CmpXchg l v1 v2)]).
@@ -321,10 +322,10 @@ END TEMPLATE *)
 
 (**
   We finish this section with a final remark about the points-to
-  predicate. An essential property of the points-to predicate is that it
-  is not duplicable. That is, for every location [l], there can only
-  exist one points-to predicate associated with it [l ↦ v]. This is
-  captured by the following lemma.
+  predicate. One of its essential properties is that it is not
+  duplicable. That is, for every location [l], there can only exist one
+  points-to predicate associated with it [l ↦ v]. This is captured by
+  the following lemma.
 *)
 Lemma pt_not_dupl (l : loc) (v v' : val) : l ↦ v ∗ l ↦ v' ⊢ False.
 Proof.
@@ -351,7 +352,7 @@ Proof.
   iStartProof.
   (**
     The first part of this program is to evaluate [prog]. We already
-    have a specification that tell us how this sub-expression behaves,
+    have a specification that tells us how this sub-expression behaves:
     [prog_spec]. To apply it, we must change the goal to match the
     specification. Using the wp-bind rule presented earlier, we can
     focus in on the [prog] expression. Iris provides the tactic
@@ -360,12 +361,12 @@ Proof.
   wp_bind prog.
   (**
     The expression now matches the [prog_spec] specification, but the
-    postcondition still does not match. To fix this we can use
+    postcondition still does not match. To fix this, we can use
     monotonicity of WP. That is,
       [WP e {{ Φ }} ∗ (∀ v, Φ v -∗ Ψ v) ⊢ WP e {{ Ψ }}].
     With this it suffices to prove that the postcondition of [prog_spec]
     implies the postcondition in our current goal. This is achieved with
-    the [wp_wand] tactic, which generates two subgoals, one
+    the [wp_wand] lemma, which generates two subgoals, one
     corresponding to [WP e {{ Φ }}] and one to [(∀ v, Φ v -∗ Ψ v)].
   *)
   iApply wp_wand; simpl.
@@ -443,7 +444,7 @@ Qed.
   In Iris, Hoare triples are actually defined in terms of weakest
   preconditions. The definition is as follows:
     [□( ∀ Φ, P -∗ ▷ (∀ r0 .. rn, Q -∗ Φ v) -∗ WP e {{v, Φ v }})].
-  This is quite a lengthy defintion, so let us break it down.
+  This is quite a lengthy definition, so let us break it down.
   Firstly, inspired by the [prog_spec_2] example from the previous
   section, this definition makes the postcondition generic.
   Next, the precondition [P] implies the generic weakest precondition,
@@ -465,7 +466,7 @@ Definition swap : val :=
   "x" <- !"y";;
   "y" <- "v".
 
-(** We will use a Hoare triple to specify this programs behaviour. *)
+(** We will use a Hoare triple to specify this program's behaviour. *)
 Lemma swap_spec (l1 l2 : loc) (v1 v2 : val) :
   {{{ l1 ↦ v1 ∗ l2 ↦ v2 }}}
     swap #l1 #l2
@@ -491,7 +492,7 @@ Qed.
   Since Hoare triples are generic in the postcondition `under the hood',
   specifications written using Hoare triples can be easily used by
   clients, as demonstrated in the previous section. We demonstrate it
-  here again with a client of [spec].
+  here again with a client of [swap].
 *)
 Lemma swap_swap_spec (l1 l2 : loc) (v1 v2 : val) :
   {{{ l1 ↦ v1 ∗ l2 ↦ v2 }}}

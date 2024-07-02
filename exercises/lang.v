@@ -32,6 +32,7 @@ From iris.heap_lang Require Import lang notation spawn par.
   termination, [inl v] is returned. Otherwise [inr err] is returned,
   with [err] describing the error.
 *)
+
 (**
   By default, the interpreter is not installed as it can only be used
   with development versions of Iris. The interpreter is not required for
@@ -41,7 +42,9 @@ From iris.heap_lang Require Import lang notation spawn par.
   This also updates Iris to a development version. To access the
   interpreter, uncomment the import below.
 *)
+
 (* From iris.unstable.heap_lang Require Import interpreter. *)
+
 (**
   To return to a release version of Iris known to be compatible with the
   rest of the tutorial, run:
@@ -176,8 +179,8 @@ Example recursion : expr :=
 
 (**
   References are dyncamically allocated through the [ref] instruction.
-  Given a value, [ref] allocates finds a fresh location on the heap and
-  stores the value there. The location is then returned.
+  Given a value, [ref] finds a fresh location on the heap and stores the
+  value there. The location is then returned.
 *)
 
 Example alloc : expr :=
@@ -211,29 +214,32 @@ Example store : expr :=
 (**
   To allow for synchronisation between threads, HeapLang provides a
   single primitive called compare-and-exchange, written
-  [CmpXchg l v1 v2]. This instructions atomically reads the contents of
+  [CmpXchg l v1 v2]. This instruction atomically reads the contents of
   location [l], checks if it is equal to [v1], and, in case of equality,
   updates [l] to contain [v2]. The instruction returns a pair [(v, b)],
-  with [v] being the original value stored at [l], and [b] indicating
-  whether the location was updated.
-
-  The [notation] package defines a variant called compare-and-set,
-  written [CAS l v1 v2], which only returns the boolean [b].
+  with [v] being the original value stored at [l], and [b] a boolean
+  indicating whether the location was updated.
 *)
 
-Example cmpxhcg_fail : expr :=
+Example cmpxchg_fail : expr :=
   let: "l" := ref #5 in
   CmpXchg "l" #6 #7.
 
-(* Compute (exec 10 cmpxhcg_fail). *)
+(* Compute (exec 10 cmpxchg_fail). *)
 (** Evaluates to [inl (#5, #false)] *)
 
-Example cmpxhcg_suc : expr :=
+Example cmpxchg_suc : expr :=
   let: "l" := ref #5 in
   CmpXchg "l" #5 #7.
 
-(* Compute (exec 10 cmpxhcg_suc). *)
+(* Compute (exec 10 cmpxchg_suc). *)
 (** Evaluates to [inl (#5, #true)] *)
+
+(**
+  The [notation] package defines a variant of [CmpXchg] called
+  compare-and-set, written [CAS l v1 v2]. The only difference is that
+  [CAS] only returns the boolean [b].
+*)
 
 Example cas : expr :=
   let: "l" := ref #5 in

@@ -12,13 +12,13 @@ From iris.proofmode Require Import proofmode.
   framework'. That is quite a mouthful, so let us break it down.
 
   Firstly, the `framework' part means that Iris is not tied to any
-  single programming language -- it consists of a base logic and can be
+  single programming language – it consists of a base logic and can be
   instantiated with any language one sees fit.
 
   Secondly, a separation logic is a logic used to reason about programs
   by introducing a notion of resource ownership. The idea is that one
   must own a resource before one can interact with it. Ownership is
-  exclusive, but can be transfered. To support this notion, separation
+  exclusive but can be transfered. To support this notion, separation
   logic introduces a new connective called separating conjunction,
   written [P ∗ Q]. This asserts ownership of the resources described by
   propositions [P] and [Q], and, in particular, [P] and [Q] describe
@@ -88,7 +88,8 @@ Context {Σ: gFunctors}.
   identifiers for hypotheses in the spatial context are strings, instead
   of the usual Coq identifiers.
 
-  To see this in action we will prove the statement [P ⊢ P], for all [P].
+  To see this in action we will prove the statement [P ⊢ P], for all
+  [P].
 *)
 
 Lemma asm (P : iProp Σ) : P ⊢ P.
@@ -168,9 +169,10 @@ Definition and_success (P Q : iProp Σ) := (P ∧ Q)%I.
         ----------------------
           P1 ∗ P2 ⊢ Q1 ∗ Q2
 
-  That is, we must decide which of our owned resources we use to prove
-  [Q1] and which we use to prove [Q2]. To see this in action, let us
-  prove that separating conjunction is commutative.
+  That is, if we want to prove [Q1 ∗ Q2], we must decide which of our
+  owned resources we use to prove [Q1] and which we use to prove [Q2].
+  To see this in action, let us prove that separating conjunction is
+  commutative.
 *)
 Lemma sep_comm (P Q : iProp Σ) : P ∗ Q ⊢ Q ∗ P.
 Proof.
@@ -184,8 +186,8 @@ Proof.
     Unlike [∧], [∗] is not idempotent. Specifically, there are Iris
     propositions for which [¬(P ⊢ P ∗ P)]. Because of this, it is
     generally not possible to use [iSplit] to introduce [∗]. The
-    [iSplit] tactic would duplicate the Iris context, and is therefore
-    not available when the context is non-empty.
+    [iSplit] tactic would duplicate the spatial context, and is
+    therefore not available when the context is non-empty.
   *)
   Fail iSplit.
   (**
@@ -201,7 +203,7 @@ Proof.
 Qed.
 
 (**
-  Separating conjuction has an analogue to implication, which, instead
+  Separating conjuction has an analogue to implication which, instead
   of introducing the antecedent to the assumptions with conjunction,
   introduces it with separating conjunction. This connective is written
   as [P -∗ Q] and pronounced `magic wand' or simply `wand'. Separation
@@ -223,8 +225,8 @@ Admitted.
   patterns. In fact, like Coq, Iris supports patterns of the form
   [(H1 & .. & H2 & H3)] as a shorthand for [[H1 .. [H2 H3] ..]].
 
-  Try to use an introduction with a pattern of parentheses to prove
-  associativity for [∗].
+  Exercise: try to use an introduction with a pattern of parentheses to
+  prove associativity for [∗].
 *)
 Lemma sep_assoc_1 (P Q R : iProp Σ) : P ∗ Q ∗ R ⊢ (P ∗ Q) ∗ R.
 Proof.
@@ -306,7 +308,8 @@ Admitted.
 
 (**
   Separating conjunction distributes over disjunction (for the same
-  reason as ordinary conjunction). *)
+  reason as ordinary conjunction).
+*)
 Lemma sep_or_distr (P Q R : iProp Σ) : P ∗ (Q ∨ R) ⊣⊢ P ∗ Q ∨ P ∗ R.
 Proof.
   (* exercise *)
@@ -319,7 +322,8 @@ Admitted.
   through the pattern "[%_ _]" or as part of a "(_&..&_)" with a "%" in
   front of the existential variable.
 *)
-Lemma sep_ex_distr {A} (P : iProp Σ) (Φ : A → iProp Σ) : (P ∗ ∃ x, Φ x) ⊣⊢ ∃ x, P ∗ Φ x.
+Lemma sep_ex_distr {A} (P : iProp Σ) (Φ : A → iProp Σ) :
+  (P ∗ ∃ x, Φ x) ⊣⊢ ∃ x, P ∗ Φ x.
 Proof.
   iSplit.
   - iIntros "(HP & %x & HΦ)".
@@ -332,10 +336,11 @@ Admitted.
   Likewise, forall quantification works almost as in Coq. To introduce
   universally quantified variables, you can either use [iIntros (x y z)]
   or [iIntros "%x %y %z"]. These patterns are interchangeable. To
-  specify the parameters of hypotheses, we write [iApply ("H" $! x y
-  z)].
+  specify the parameters of hypotheses, we write 
+  [iApply ("H" $! x y z)]
 *)
-Lemma sep_all_distr {A} (P Q : A → iProp Σ) : (∀ x, P x) ∗ (∀ x, Q x) -∗ (∀ x, P x ∗ Q x).
+Lemma sep_all_distr {A} (P Q : A → iProp Σ) :
+  (∀ x, P x) ∗ (∀ x, Q x) -∗ (∀ x, P x ∗ Q x).
 Proof.
   (* exercise *)
 Admitted.

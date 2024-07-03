@@ -1,4 +1,4 @@
-From iris.heap_lang Require Import lang proofmode notation.
+From iris.heap_lang Require Import lang proofmode notation par.
 
 (* ################################################################# *)
 (** * Specifications *)
@@ -517,6 +517,110 @@ Qed.
   easier to read, as they name explicitly what must be obtained before
   the program can be executed. Finally, proving Hoare triples directly
   can be quite awkward and burdensome, especially in Coq.
+*)
+
+(* ================================================================= *)
+(** ** Concurrency *)
+
+(**
+  We finish this chapter with a final example that utilises the theory
+  presented in the previous sections. The example gives a specifications
+  for a concurrent program, which illustrates how ownership of resources
+  (in particular points-to predicates) can be transferred between
+  threads. The program is as follows.
+*)
+
+Example par_client : expr :=
+  let: "l1" := ref #0 in
+  let: "l2" := ref #0 in
+  (("l1" <- #21) ||| ("l2" <- #2)) ;;
+  let: "life" := !"l1" * !"l2" in
+  ("l1", "l2", "life").
+
+(**
+  The program uses parallel composition (e1 ||| e1) from the [par]
+  package. Note that the two threads operate on separate locations;
+  there is no possibility for a data race. The [par] package provides a
+  specification for parallel composition called [wp_par]. This
+  specification relies on a notion of resources different from the
+  resource of heaps. The details of the resources are irrelevant for our
+  example, but we must still assume that [Σ] contains the resources.
+*)
+
+Context `{spawnG Σ}.
+
+(**
+  We specify the behaviour of [par_client] with a Hoare triple.
+*)
+
+Lemma par_client_spec :
+  {{{ True }}} 
+    par_client
+  {{{ l1 l2 life, RET (#l1, #l2, #life); l1 ↦ #21 ∗ l2 ↦ #2 ∗ ⌜life = 42⌝ }}}.
+Proof.
+  iIntros (Φ _) "HΦ".
+  rewrite /par_client.
+  (** 
+    The program starts by creating two fresh location, [l1] and [l2].
+  *)
+  wp_alloc l1 as "Hl1".
+  wp_let.
+  wp_alloc l2 as "Hl2".
+  wp_let.
+  wp_pures.
+  (** 
+    The specification for [|||] requires us to specify the
+    postconditions for the two threads. Since the threads return unit,
+    the postconditions will just describe the points-to predicates,
+    reflecting the writes.
+  *)
+  set t1_post := (λ v : val, (l1 ↦ #21)%I).
+  set t2_post := (λ v : val, (l2 ↦ #2)%I).
+  (**
+    We can now apply the [wp_par] specification. Note how we transfer
+    ownership of [l1 ↦ #0] to the first thread, and [l2 ↦ #0] to the
+    second. This allows each thread to perform their store operations.
+  *)
+  wp_apply (wp_par t1_post t2_post with "[Hl1] [Hl2]").
+  (**
+    We must now prove WP specifications for each thread, with the
+    postconditions we specified above.
+  *)
+  { wp_store. by iFrame. }
+  { wp_store. by iFrame. }
+  (**
+    Finally, we return to the main thread, and we are allowed to assume
+    the postconditions of both threads. Since the postconditions
+    mentioned the points-to predicates, these are essentially
+    transferred back to the main thread.
+   *)
+  iIntros (r1 r2) "[Hl1 Hl2]".
+  rewrite /t1_post /t2_post.
+  iNext.
+  wp_seq.
+  wp_load.
+  wp_load.
+  wp_pures.
+  iApply ("HΦ" $! l1 l2 (21 * 2)).
+  by iFrame.
+Qed.
+
+(**
+  Food for thought: Imagine a program that has threads operating on the
+  _same_ location in parallel, akin to the following.
+*)
+Example race (l : loc) : expr := ((#l <- #1) ||| (#l <- #2)).
+
+(**
+  Even though the program is non-deterministic, we can still give it a
+  meaningful specification.
+*)
+Definition race_spec (l : loc) (v : val) :=
+  {{{ l ↦ v }}} race l {{{ w, RET w; (l ↦ #1) ∨ (l ↦ #2) }}}.
+
+(**
+  Could we prove this specification similarly to how we proved
+  [par_client]?
 *)
 
 End specifications.

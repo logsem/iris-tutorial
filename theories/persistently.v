@@ -1,28 +1,31 @@
 From iris.base_logic Require Import iprop.
 From iris.proofmode Require Import proofmode.
+From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
+- MOTIVATE PERSISTENTLY FROM POINTS-TO AND CONCURRENCY: READ ONLY MEMORY
+- TALK ABOUT PERSISTENCY IN GENERAL (reuse existing tutorial)
 - MENTION THAT HT AND WP ARE PERSISTENT
   + SHOW EXAMPLE OF USEFULNESS (two invocations of some function)
 - INTRODUCE PERSISTENT POINTS-TO PREDICATE (for read-only memory)
-- HINT TO USEFULNESS FOR CONCURRENT PROGRAMS
+- USEFULNESS FOR CONCURRENT PROGRAMS EXAMPLE
 - PRESERVED BY QUANTIFICATIONS AND CONNECTIVES
 #####################################*)
 
 Section proofs.
-Context {Σ : gFunctors}.
+Context `{!heapGS Σ}.
 
 (**
-  Thus far we've seen the pure context (the Coq context) and the
-  spatial context. The Iris proofmode has a third context, called the
-  intuitionistic context or (for [iProp]) the persistent context.
-  These are propositions that act like propositions in an
-  intuitionistic logic. Namely, they are reusable. These propositions
-  need not, however, be pure as their validity can still depend on resources.
-  Just like the pure modality, we also have a persistently modality [□ P].
-  It turns an arbitrary Iris proposition into a weaker persistent
-  proposition. Persistent propositions are thus those [P] such that
-  [P ⊢ □ P]. Iris identifies these propositions using the typeclass
+  Thus far we've seen the pure context (the Coq context) and the spatial
+  context. The Iris proofmode has a third context, called the
+  intuitionistic context or (for [iProp]) the persistent context. These
+  are propositions that act like propositions in an intuitionistic
+  logic. Namely, they are reusable. These propositions need not,
+  however, be pure as their validity can still depend on resources. Just
+  like the pure modality, we also have a persistently modality [□ P]. It
+  turns an arbitrary Iris proposition into a weaker persistent
+  proposition. Persistent propositions are thus those [P] such that [P ⊢
+  □ P]. Iris identifies these propositions using the typeclass
   [Persistent]. In fact, all pure propositions are persistent.
 *)
 Lemma pers_ex (P Q : iProp Σ) `{!Persistent P} : P -∗ Q -∗ P ∗ Q.
@@ -69,5 +72,34 @@ Check bi.impl_wand.
   [iSplit] to introduce [∗] when one of its arguments is persistent. 
 *)
 
+
+(* TODO: include following exercise *)
+
+Example adder_client (inc : val) : expr :=
+  let: "z1" := inc #0 in
+  let: "z2" := inc "z1" in
+  "z2".
+
+Lemma adder_client_spec (inc : val) :
+  {{{ 
+    ∀(z : Z), {{{ True }}} inc #z {{{ v, RET v; ⌜v = #(z + 1)⌝}}}
+  }}} 
+    adder_client inc
+  {{{ v, RET v; ⌜v = #2⌝ }}}.
+(* SOLUTION *) Proof.
+  iIntros (Φ) "#Hinc_spec HΦ".
+  rewrite /adder_client.
+  wp_apply "Hinc_spec"; first done.
+  iIntros (v ->).
+  wp_let.
+  wp_apply "Hinc_spec"; first done.
+  iIntros (v ->).
+  wp_let.
+  by iApply "HΦ".
+Qed.
+
+(**
+  All top level lemmas are persistent and can hence be reused.
+*)
 
 End proofs.

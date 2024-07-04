@@ -26,12 +26,12 @@ Context `{!heapGS Σ}.
   is because resources are generally exclusive. However, resources do
   not _have_ to be exclusive. A great example of this is `read only
   memory'. There is no danger in letting many threads access the same
-  location simultaneously, if they can only read from it. Hence, it
-  would not make sense to require that ownership of those locations be
+  location simultaneously if they can only read from it. Hence, it would
+  not make sense to require that ownership of those locations be
   exclusive. Motivated by this, we introduce a new modality denoted the
   persistently modality, written [□ P], for propositions [P]. The
   proposition [□ P] describes the same resources as [P], except it does
-  not claim that the resources are exclusive – hence [P] can be
+  not claim that the resources are exclusive – hence [□ P] can be
   duplicated. Persistent propositions hence act like propositions in an
   intuitionistic logic, which is why they are also sometimes referred to
   as intuitionistic.
@@ -42,24 +42,24 @@ Context `{!heapGS Σ}.
   proposition is persistent is usually a matter of showing that the
   mentioned resources are shareable. Which resources are shareable
   depends on the specific notions of resources being used. For the
-  resource of heaps, locations that are never written to after a certain
-  point can be marked as shareable, and the associated points-to
-  predicate hence becomes persistent. We will see an example of this
-  later.
+  resource of heaps, a location can be marked as read-only, making it
+  shareable. The associated points-to predicate hence becomes
+  persistent. We will see an example of this later.
 
   Propositions that do not rely on resources altogether are trivially
   persistent. We have already given those types of propositions a name:
-  _pure_. This is also why we do not have to split the non-spatial context
-  when using [iSplitL]/[iSplitR]; all pure propositions are persistent,
-  hence duplicable.
+  _pure_. This is also why we do not have to split the non-spatial
+  context when using [iSplitL]/[iSplitR]; all pure propositions are
+  persistent, hence duplicable.
 
-  Of course, not all persistent propositions are pure. Thus, the Iris
-  Proof Mode provides a third context just for persistent propositions,
-  called the persistent context. Pure propositions can go in all three
-  contexts. Persistent propositions can go in the spatial context or the
-  persistent context. And all other propositions are limited to the
-  spatial context only. Iris uses the typeclass [Persistent] to identify
-  persistent propositions.
+  Of course, not all persistent propositions are pure (e.g. persistent
+  points-to predicates). Thus, the Iris Proof Mode provides a third
+  context just for persistent propositions, called the persistent
+  context. Pure propositions can go in all three contexts. Persistent
+  propositions can go in the spatial context or the persistent context.
+  And all other propositions are limited to the spatial context only.
+  Iris uses the typeclass [Persistent] to identify persistent
+  propositions.
 *)
 
 Lemma pers_context (P Q : iProp Σ) `{!Persistent P} : P -∗ Q -∗ P ∗ Q.
@@ -114,26 +114,75 @@ Check bi.persistent_and_sep.
 Check bi.impl_wand.
 
 (**
-  The Iris Proof Mode knows these facts and allows [iSplit] to
-  introduce [∗] when one of its arguments is persistent. 
+  The Iris Proof Mode knows these facts and allows [iSplit] to introduce
+  [∗] when one of its arguments is persistent. 
 *)
-(* TODO: Example here *)
 
 
 (* ================================================================= *)
 (** ** Proving Persistency *)
 
-(* TODO: examples with preserving connectives *)
+(**
+  To prove a proposition [□ P], we have to prove [P] without assuming
+  any exclusive resources. In other words, we have to throw away the
+  spatial context when proving [P].
+*)
 
-(* TODO: include following exercise. Write some explaining text for proven
-part of exercise. *)
+Lemma pers_intro (P Q : iProp Σ) `{!Persistent P} : P ∗ Q ⊢ □ P.
+Proof.
+  iIntros "[#HP HQ]".
+  (** 
+    The [iModIntro] tactic introduces a modality in the goal. In this
+    case, since the modality is a [□], it throws away the spatial
+    context.
+  *)
+  iModIntro.
+  iApply "HP".
+Qed.
 
-Lemma pers_sep (P Q : iProp Σ) : □P ∗ □Q ⊣⊢ □(P ∗ Q).
+(**
+  Since the only difference between [□ P] and [P] is that the former
+  does not claim the resources are exclusive, it follows that the
+  persistently modality is idempotent.
+*)
+
+Lemma pers_idemp (P : iProp Σ) : □ □ P ⊣⊢ □ P.
 Proof.
   iSplit.
-  - iIntros "#HPQ".
+  - iIntros "HP".
+    (** 
+      Iris already knows that [□] is idempotent, so it automatically
+      removes all persistently modalities from a proposition when adding
+      it to the persistent context. One may think of all propositions in
+      the persistent context as having an implicit [□] in front.
+    *)
+    iDestruct "HP" as "#HP".
+    done.
+  - iIntros "#HP".
+    (** Similarly, we do not have to introduce [□] before proving it. *)
+    done.
+Qed.
+
+(**
+  Only propositions that are instances of the [Persistent] typeclass can
+  be added to the persistent context. As with the typeclasses for pure,
+  the [Persistent] typeclass can automatically identify most persistent propositions.
+*)
+
+Lemma pers_sep (P Q : iProp Σ) : □ P ∗ □ Q ⊣⊢ □ (P ∗ Q).
+Proof.
+  iSplit.
+  - (** 
+      The [Persistent] typeclass detects that [□ P ∗ □ Q] is persistent. 
+    *)
+    iIntros "#HPQ".
     iDestruct "HPQ" as "[#HP #HQ]".
     iModIntro.
+    (** 
+      By default, [iFrame] will not frame propositions from the
+      persistent context. To make it do so, we have to give it the
+      argument "#".
+    *)
     iFrame "#".
 (* BEGIN SOLUTION *)
   - iIntros "#[HP HQ]".
@@ -144,16 +193,101 @@ Qed.
 Admitted.
 END TEMPLATE *)
 
+(**
+  For simple predicates, such as [myPredicate] below, the [Persistent]
+  typeclass can automatically infer that it is persistent. However, we
+  can still manually make propositions instances of [Persistent].
+*)
 
-(* TODO: Instance of Persistent for custom predicates (example) *)
+Definition myPredicate (x : val) : iProp Σ := ⌜x = #5⌝.
+
+Local Instance myPredicate_persistent x : Persistent (myPredicate x).
+Proof.
+  (**
+    As mentioned in the beginning of the chapter, a proposition [P] is
+    persistent when [P ⊢ □ P]. This is almost what [Persistent] requires
+    us to prove.
+  *)
+  rewrite /Persistent.
+  (**
+    Our actual goal is of the form [P ⊢ <pers> P]. Technically, there is
+    a small discrepancy between [□] and [<pers>], but we will ignore
+    that here.
+
+    As pure propositions are persistent, we quite easily prove this.
+  *)
+  rewrite /myPredicate.
+  iIntros "#H".
+  iModIntro.
+  iApply "H".
+Qed.
+
+(** Iris is quite smart, so we do not have to spell out the proof. *)
+Local Instance myPredicate_persistent' x : Persistent (myPredicate x).
+Proof. apply _. Qed.
+
+(** 
+  For more complicated predicates, such as ones defined as a fixpoint,
+  [Persistent] cannot automatically infer its persistence. The following
+  predicate asserts that all values in a given list is equal to [5].
+*)
+
+Fixpoint myPredFix (xs : list val) : iProp Σ :=
+  match xs with
+  | [] => True
+  | x :: xs' => ⌜x = #5⌝ ∗ myPredFix xs'
+  end.
+
+(**
+  This predicate only consists of pure propositions, so it should of
+  course be persistent, but when we try to add it to the persistent
+  context, Iris complains that it is not `intuitionistic' (i.e.
+  persistent).
+*)
+Lemma first_is_5 (x : val) (xs : list val) :
+  myPredFix (x :: xs) -∗ ⌜x = #5⌝ ∗ myPredFix (x :: xs).
+Proof.
+  Fail iIntros "#H".
+Abort.
+
+(**
+  For such predicates, we have to prove that it is persistent manually,
+  as we did for [myPredicate] above.
+*)
+
+Local Instance myPredFix_persistent xs : Persistent (myPredFix xs).
+Proof.
+  (** We prove it by induction in [xs]. *)
+  induction xs as [| x xs' IH ]. 
+  - (** [True] is persistent *)
+    apply _.
+  - (** 
+      By IH, [myPredFix xs'] is persistent. As ⌜x = #5⌝ is also persistent,
+      it follows that [myPredFix (x :: xs')] is persistent.
+    *)
+    apply _.
+Qed.
+
+(** Now, Iris recognises [myPredFix] as persistent. *)
+
+Lemma first_is_5 (x : val) (xs : list val) :
+  myPredFix (x :: xs) -∗ ⌜x = #5⌝ ∗ myPredFix (x :: xs).
+Proof.
+  iIntros "#H".
+  (** 
+    [iPoseProof] is similar to [iDestruct], but it does not throw away
+    the hypothesis being destructed, if it is persistent.
+  *)
+  iPoseProof "H" as "[Hx _]".
+  iFrame "H Hx".
+Qed.
 
 (* ================================================================= *)
 (** ** Examples of Persistent Propositions *)
 
-(* ----------------------------------------------------------------- *)
-(** *** Pure Propositions *)
-
-(* TODO: do *)
+(** 
+  TODO: intro.
+*)
 
 (* ----------------------------------------------------------------- *)
 (** *** Hoare Triples *)

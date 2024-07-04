@@ -18,17 +18,16 @@ From iris.proofmode Require Import proofmode.
   Secondly, a separation logic is a logic used to reason about programs
   by introducing a notion of resource ownership. The idea is that one
   must own a resource before one can interact with it. Ownership is
-  exclusive but can be transferred. To support this notion, separation
-  logic introduces a new connective called separating conjunction,
-  written [P ∗ Q]. This asserts ownership of the resources described by
-  propositions [P] and [Q], and, in particular, [P] and [Q] describe
-  separate resources.
-  So what is a resource? In Iris, we may define our own notion of
-  resources by creating a so-called `resource algebra', which we discuss
-  later. For languages with a heap, a canonical example of a resource is
-  a heap fragment. Owning a resource then amounts to `controlling' a
-  fragment of the heap, allowing one to read and update the associated
-  locations.
+  generally exclusive but can be transferred. To support this notion,
+  separation logic introduces a new connective called separating
+  conjunction, written [P ∗ Q]. This asserts ownership of the resources
+  described by propositions [P] and [Q], and, in particular, [P] and [Q]
+  describe separate resources. So what is a resource? In Iris, we may
+  define our own notion of resources by creating a so-called `resource
+  algebra', which we discuss later. For languages with a heap, a
+  canonical example of a resource is a heap fragment. Owning a resource
+  then amounts to `controlling' a fragment of the heap, allowing one to
+  read and update the associated locations.
 
   Thirdly, a concurrent separation logic (CSL) extends on the above by
   adding rules supporting concurrent constructions, such as `Fork'. As

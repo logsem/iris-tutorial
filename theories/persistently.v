@@ -285,43 +285,70 @@ Qed.
 (* ================================================================= *)
 (** ** Examples of Persistent Propositions *)
 
-(** 
-  TODO: intro.
+(**
+  Thus far, the only basic persistent propositions we have seen are pure
+  propositions, such as equalities. In this section we introduce two
+  additional examples of persistent propositions: Hoare triples and
+  persistent points-to predicates.
 *)
 
 (* ----------------------------------------------------------------- *)
 (** *** Hoare Triples *)
 
-(* TODO: do *)
+(** 
+  All Hoare triples are persistent. This probably does not come as a
+  surprise, if the reader recalls how we defined Hoare triples in the
+  [specifications] chapter. As a reminder, here is the definition again.
+      [□( ∀ Φ, P -∗ ▷ (∀ r0 .. rn, Q -∗ Φ v) -∗ WP e {{v, Φ v }})]
+  The outermost part of the definition is the persistently modality! As
+  such, Hoare triples can be duplicated and reused.
 
-(* TODO: include following exercise *)
+  Intuitively, we should also expect Hoare triples to be persistent. A
+  Hoare triple [{{{ P }}} e {{{ Φ }}}] does not actually claim ownership
+  of any resources; it merely states that _if_ we own the resources
+  described by [P], then we can safely run [e], and we get the resources
+  described by [Φ] in case of termination. Of course, if we can get
+  ownership of the resources described by [P] multiple times, we should
+  be able to run [e] multiple times.
 
-Example adder_client (inc : val) : expr :=
-  let: "z1" := inc #0 in
-  let: "z2" := inc "z1" in
-  "z2".
+  As an example, consider a function [counter], which is parametrised
+  on an increment function.
+*)
 
-Lemma adder_client_spec (inc : val) :
-  {{{ 
-    ∀(z : Z), {{{ True }}} inc #z {{{ v, RET v; ⌜v = #(z + 1)⌝}}}
-  }}} 
-    adder_client inc
+Example counter (inc : val) : expr :=
+  let: "c" := ref #0 in
+  inc "c" ;;
+  inc "c" ;;
+  !"c".
+
+(**
+  If [inc] is a function which adds [1] to the contents of a given
+  location, we would expect the above program to return [2]. We express
+  this by describing the specification for [inc] in the precondition of
+  the specification for [counter].
+*)
+
+Lemma counter_spec (inc : val) :
+  {{{
+    ∀ (l : loc) (z : Z),
+      {{{ l ↦ #z }}} inc #l {{{ v, RET v; l ↦ #(z + 1) }}}
+  }}}
+    counter inc
   {{{ v, RET v; ⌜v = #2⌝ }}}.
 (* SOLUTION *) Proof.
   iIntros (Φ) "#Hinc_spec HΦ".
-  rewrite /adder_client.
-  wp_apply "Hinc_spec"; first done.
-  iIntros (v ->).
+  rewrite /counter.
+  wp_alloc l as "Hl".
   wp_let.
-  wp_apply "Hinc_spec"; first done.
-  iIntros (v ->).
-  wp_let.
+  wp_apply ("Hinc_spec" with "Hl").
+  iIntros (v) "Hl".
+  wp_seq.
+  wp_apply ("Hinc_spec" with "Hl").
+  iIntros (v') "Hl".
+  wp_seq.
+  wp_load.
   by iApply "HΦ".
 Qed.
-
-(**
-  All top level lemmas are persistent and can hence be reused.
-*)
 
 (* ----------------------------------------------------------------- *)
 (** *** Persistent Points-to *)

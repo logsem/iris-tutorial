@@ -1,16 +1,6 @@
 From iris.base_logic Require Import iprop.
 From iris.proofmode Require Import proofmode.
-From iris.heap_lang Require Import lang proofmode notation.
-
-(*########## CONTENTS PLAN ##########
-- MOTIVATE PERSISTENTLY FROM POINTS-TO AND CONCURRENCY: READ ONLY MEMORY
-- TALK ABOUT PERSISTENCY IN GENERAL (reuse existing tutorial)
-- PRESERVED BY QUANTIFICATIONS AND CONNECTIVES
-- MENTION THAT HT ARE PERSISTENT
-  + SHOW EXAMPLE OF USEFULNESS (two invocations of some function)
-- INTRODUCE PERSISTENT POINTS-TO PREDICATE (for read-only memory)
-- USEFULNESS FOR CONCURRENT PROGRAMS EXAMPLE
-#####################################*)
+From iris.heap_lang Require Import lang proofmode notation par.
 
 (* ################################################################# *)
 (** * Persistently *)
@@ -353,8 +343,154 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (** *** Persistent Points-to *)
 
-(* TODO: do *)
+Context `{spawnG Σ}.
 
+(**
+  The resource of heaps is more sophisticated than what we have been
+  letting on. The general shape of a points-to predicate is actually
+  [l ↦ dq v], where [dq] is a `discarded fraction'. We return to the
+  `discarded' part momentarily, but for now, we assume that [dq] is a
+  fraction in the interval (0; 1]. The predicate [l ↦ v] is a special
+  case, where the fraction [dq] is [1]. The basic idea is that points-to
+  predicates can be split up and recombined, allowing ownership of
+  points-to predicates to be shared.
+*)
 
+Lemma pt_split l v : l ↦ v ⊣⊢ (l ↦{# 1/2 } v) ∗ (l ↦{# 1/2 } v).
+Proof.
+  iSplit.
+  - iIntros "Hl".
+    iDestruct "Hl" as "[Hl1 Hl2]".
+    iFrame.
+  - iIntros "[Hl1 Hl2]".
+    iCombine "Hl1" "Hl2" as "Hl".
+    iFrame.
+Qed.
+
+(**
+  Crucially, a store operation can only take place if the _entire_
+  fraction is owned, i.e. [dq = 1]. However, load operations can occur
+  for any fraction.
+*)
+
+Lemma only_read (l : loc) (v : val) :
+  {{{ l ↦ v }}} #l <- #2 ;; !#l ;; #l <- #3 {{{ w, RET w; l ↦ #3 }}}.
+Proof.
+  iIntros (Φ) "Hl HΦ".
+  wp_store.
+  (** Throw away half of the points-to predicate. *)
+  iDestruct "Hl" as "[Hl1 _]".
+  (** We can still load. *)
+  wp_load.
+  wp_seq.
+  (** But we can no longer update the pointer. *)
+  Fail wp_store.
+Abort.
+
+(**
+  Fractional points-to predicates are especially useful in scenarios
+  where a location is read by multiple threads in parallel, but later
+  only used by a single thread.
+*)
+
+Example par_read_write (l : loc) : expr := 
+  let: "r" := (!#l ||| !#l) in
+  #l <- #5.
+
+Lemma par_read_write_spec (l : loc) (v : val) :
+  {{{ l ↦ v }}}
+    par_read_write l
+  {{{ RET #(); l ↦ #5 }}}.
+Proof.
+  iIntros (Φ) "[Hl1 Hl2] HΦ".
+  rewrite /par_read_write.
+  (**
+    The idea is to give each thread half of the points-to predicate, and
+    assert that both will return their halves afterwards.
+  *)
+  set t_post := (λ w : val, (⌜w = v⌝ ∗ l ↦{#1 / 2} v)%I).
+  wp_pures.
+  wp_apply (wp_par t_post t_post with "[Hl1] [Hl2]").
+  (** 
+    Each thread has a fraction of the points-to predicate, so both can
+    perform the load.
+  *)
+  1, 2: wp_load; by iFrame.
+  (** The threads return their fractions. *)
+  iIntros (v1 v2) "[[-> Hl1] [-> Hl2]] !>".
+  wp_let.
+  (** We combine them, allowing us to perform the store. *)
+  iCombine "Hl1 Hl2" as "Hl".
+  wp_store.
+  by iApply "HΦ".
+Qed.
+
+(**
+  Let us now turn to the `discarded' part. If one owns a fraction of a
+  points-to predicate, one can decide to _discard_ the fraction. This
+  means that it is no longer possible to recombine points-to predicates
+  to get the full fraction. As such, the value in the points-to
+  predicate can never be changed again – the location has become
+  read-only. We write [l ↦□ v] for a points-to predicate whose fraction
+  has been discarded. As the [□] suggests, this predicate is persistent.
+  Persistent points-to predicates are great if your program has a
+  read-only location, as it becomes trivial to give all threads access
+  to the associated points-to predicate, and it ensures that no thread
+  can sneakily update the location.
+  
+  The [pointsto_persist] lemma asserts that we can update any points-to
+  predicate [l ↦{dq} v] into a persistent one [l ↦□ v].
+*)
+
+Check pointsto_persist.
+
+(**
+  There are some caveats as to when we can discard fractions; the
+  proposition [P ==∗ Q] is equivalent to [P -∗ (|==> Q)], where [|==>]
+  is the update modality, the details of which we defer to later. For
+  now, we remark that [iMod] tactic can remove the update modality in
+  many cases. For instance, if the goal is a weakest precondition.
+*)
+
+Lemma pt_persist (l : loc) (v : val) :
+  l ↦ v -∗ WP !#l {{ w , ⌜w = v⌝ ∗ l ↦□ v }}.
+Proof.
+  iIntros "Hl".
+  (** Make the points-to predicate persistent. *)
+  iMod (pointsto_persist with "Hl") as "#Hl".
+  wp_load.
+  by iFrame "#".
+Qed.
+
+(**
+  Exercise: finish the proof of the [par_read_spec] specification.
+*)
+
+Example par_read : expr :=
+  let: "l" := ref #7 in
+  let: "r" := ( (!"l" + #14) ||| (!"l" * #3) ) in
+  Fst "r" + Snd "r".
+
+Lemma par_read_spec :
+  {{{ True }}} par_read {{{ v, RET v; ⌜v = #42⌝ }}}.
+Proof.
+  iIntros (Φ _) "HΦ".
+  rewrite /par_read.
+  (** Both threads have the same postcondition, [t_post]. *)
+  set t_post := (λ v, (⌜v = #21⌝)%I : iProp Σ).
+(* BEGIN SOLUTION *)
+  wp_alloc l as "Hl".
+  iMod (pointsto_persist with "Hl") as "#Hl".
+  wp_pures.
+  wp_apply (wp_par t_post t_post).
+  1, 2: wp_load; wp_pures; done.
+  iIntros (v1 v2) "[-> ->] !>".
+  wp_pures.
+  by iApply "HΦ".
+Qed.
+(* END SOLUTION BEGIN TEMPLATE
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 End persistently.

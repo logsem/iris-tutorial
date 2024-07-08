@@ -96,16 +96,17 @@ Qed.
 
 (**
   Persistent propositions satisfy a lot of nice properties, simply by
-  being duplicable [P ⊢ P ∗ P] For example, [P ∧ Q] and [P ∗ Q]
+  being duplicable [P ⊢ P ∗ P]. For example, [P ∧ Q] and [P ∗ Q]
   coincide, when either [P] or [Q] is persistent. Likewise, [P → Q] and
   [P -∗ Q] coincide, when [P] is persistent.
 *)
+
 Check bi.persistent_and_sep.
 Check bi.impl_wand.
 
 (**
   The Iris Proof Mode knows these facts and allows [iSplit] to introduce
-  [∗] when one of its arguments is persistent. 
+  [∗] when one of its arguments is persistent.
 *)
 
 
@@ -121,7 +122,7 @@ Check bi.impl_wand.
 Lemma pers_intro (P Q : iProp Σ) `{!Persistent P} : P ∗ Q ⊢ □ P.
 Proof.
   iIntros "[#HP HQ]".
-  (** 
+  (**
     The [iModIntro] tactic introduces a modality in the goal. In this
     case, since the modality is a [□], it throws away the spatial
     context.
@@ -140,7 +141,7 @@ Lemma pers_idemp (P : iProp Σ) : □ □ P ⊣⊢ □ P.
 Proof.
   iSplit.
   - iIntros "HP".
-    (** 
+    (**
       Iris already knows that [□] is idempotent, so it automatically
       removes all persistently modalities from a proposition when adding
       it to the persistent context. One may think of all propositions in
@@ -156,19 +157,20 @@ Qed.
 (**
   Only propositions that are instances of the [Persistent] typeclass can
   be added to the persistent context. As with the typeclasses for pure,
-  the [Persistent] typeclass can automatically identify most persistent propositions.
+  the [Persistent] typeclass can automatically identify most persistent
+  propositions.
 *)
 
 Lemma pers_sep (P Q : iProp Σ) : □ P ∗ □ Q ⊣⊢ □ (P ∗ Q).
 Proof.
   iSplit.
-  - (** 
-      The [Persistent] typeclass detects that [□ P ∗ □ Q] is persistent. 
+  - (**
+      The [Persistent] typeclass detects that [□ P ∗ □ Q] is persistent.
     *)
     iIntros "#HPQ".
     iDestruct "HPQ" as "[#HP #HQ]".
     iModIntro.
-    (** 
+    (**
       By default, [iFrame] will not frame propositions from the
       persistent context. To make it do so, we have to give it the
       argument "#".
@@ -182,6 +184,14 @@ Qed.
   - (* exercise *)
 Admitted.
 END TEMPLATE *)
+
+(** Persistency is preserved by quantifications. *)
+
+Lemma pers_all `{A} (P : A -> iProp Σ) : (∀x, □ P x) ⊢ ∀y, P y ∗ P y.
+Proof.
+  iIntros "#Hp %y".
+  iSplitL; iApply ("Hp" $! y).
+Qed.
 
 (**
   For simple predicates, such as [myPredicate] below, the [Persistent]
@@ -216,7 +226,7 @@ Qed.
 Local Instance myPredicate_persistent' x : Persistent (myPredicate x).
 Proof. apply _. Qed.
 
-(** 
+(**
   For more complicated predicates, such as ones defined as a fixpoint,
   [Persistent] cannot automatically infer its persistence. The following
   predicate asserts that all values in a given list is equal to [5].
@@ -248,10 +258,10 @@ Abort.
 Local Instance myPredFix_persistent xs : Persistent (myPredFix xs).
 Proof.
   (** We prove it by induction in [xs]. *)
-  induction xs as [| x xs' IH ]. 
+  induction xs as [| x xs' IH ].
   - (** [True] is persistent *)
     apply _.
-  - (** 
+  - (**
       By IH, [myPredFix xs'] is persistent. As ⌜x = #5⌝ is also persistent,
       it follows that [myPredFix (x :: xs')] is persistent.
     *)
@@ -264,7 +274,7 @@ Lemma first_is_5 (x : val) (xs : list val) :
   myPredFix (x :: xs) -∗ ⌜x = #5⌝ ∗ myPredFix (x :: xs).
 Proof.
   iIntros "#H".
-  (** 
+  (**
     [iPoseProof] is similar to [iDestruct], but it does not throw away
     the hypothesis being destructed, if it is persistent.
   *)
@@ -285,7 +295,7 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (** *** Hoare Triples *)
 
-(** 
+(**
   All Hoare triples are persistent. This probably does not come as a
   surprise, if the reader recalls how we defined Hoare triples in the
   [specifications] chapter. As a reminder, here is the definition again.
@@ -302,7 +312,7 @@ Qed.
   be able to run [e] multiple times.
 
   As an example, consider a function [counter], which is parametrised
-  on an increment function.
+  by an increment function.
 *)
 
 Example counter (inc : val) : expr :=
@@ -393,7 +403,7 @@ Abort.
   only used by a single thread.
 *)
 
-Example par_read_write (l : loc) : expr := 
+Example par_read_write (l : loc) : expr :=
   let: "r" := (!#l ||| !#l) in
   #l <- #5.
 
@@ -411,7 +421,7 @@ Proof.
   set t_post := (λ w : val, (⌜w = v⌝ ∗ l ↦{#1 / 2} v)%I).
   wp_pures.
   wp_apply (wp_par t_post t_post with "[Hl1] [Hl2]").
-  (** 
+  (**
     Each thread has a fraction of the points-to predicate, so both can
     perform the load.
   *)
@@ -437,7 +447,7 @@ Qed.
   read-only location, as it becomes trivial to give all threads access
   to the associated points-to predicate, and it ensures that no thread
   can sneakily update the location.
-  
+
   The [pointsto_persist] lemma asserts that we can update any points-to
   predicate [l ↦{dq} v] into a persistent one [l ↦□ v].
 *)
@@ -448,8 +458,8 @@ Check pointsto_persist.
   There are some caveats as to when we can discard fractions; the
   proposition [P ==∗ Q] is equivalent to [P -∗ (|==> Q)], where [|==>]
   is the update modality, the details of which we defer to later. For
-  now, we remark that [iMod] tactic can remove the update modality in
-  many cases. For instance, if the goal is a weakest precondition.
+  now, we remark that the [iMod] tactic can remove the update modality
+  in many cases. For instance, if the goal is a weakest precondition.
 *)
 
 Lemma pt_persist (l : loc) (v : val) :

@@ -1,21 +1,23 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
-- SHOW SOME EXAMPLES WITH HOARE-TRIPLES
 - TIMELESS PROPOSITIONS AND STRIPPING LATERS
   + USUALLY DONE WHEN INTRODUCING PROPOSTIIONS VIA '>'
   + SHOW EXAMPLES
 - EXPAND ON LÖB INDUCTION
 #####################################*)
 
-Section proofs.
+(* ################################################################# *)
+(** * Later *)
+
+Section later.
 Context `{!heapGS Σ}.
 
 (**
   Iris is a step-indexed logic, meaning it has a built-in notion of
   time. This can be expressed with the later modality [▷ P] signifying
   that [P] holds after one time step. These time steps are linked to the
-  execution steps of our programs in heaplang. Every time we use one
+  execution steps of our programs in HeapLang. Every time we use one
   of the wp tactics, we let time tick forward. To see this, let us look
   at a simple program: [1 + 2 + 3]. This program takes two steps to
   evaluate, so we can prove that if a proposition holds after 2 steps, 
@@ -35,10 +37,10 @@ Qed.
   so the wp tactics can use monotonicity to remove laters from the
   context. Furthermore, later satisfies [P ⊢ ▷ P] and
   [▷ (P ∗ Q) ⊣⊢ ▷ P ∗ ▷ Q]. These rules allow the tactics to ignore
-  hypotheses in the context that don't have a later on them.
+  hypotheses in the context that do not have a later on them.
 
   Instead of applying these rules directly, we can use the tactic
-  `iNext` to introduce a later, while stripping laters from our
+  [iNext] to introduce a later, while stripping laters from our
   hypotheses.
 *)
 Lemma later_impl (P Q : iProp Σ) : P ∗ ▷ (P -∗ Q) -∗ ▷ Q.
@@ -50,8 +52,8 @@ Proof.
 Qed.
 
 (**
-  Alternatively, as later is a modality, you can use `iModIntro` and
-  therefore `iIntros "!>"` to introduce it, making it less verbose to
+  Alternatively, as later is a modality, you can use [iModIntro] and
+  therefore [iIntros "!>"] to introduce it, making it less verbose to
   handle.
 *)
 
@@ -85,4 +87,4 @@ Proof.
   iApply "IH".
 Qed.
 
-End proofs.
+End later.

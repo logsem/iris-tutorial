@@ -45,20 +45,20 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [lang](/exercises/lang.v) - Introduction to HeapLang
 - [specifications](/exercises/specifications.v) - Weakest precondition,
   basic resources, and Hoare triples
-- [persistently](/exercises/persistently.v) - The persistently modality
 - [later](/exercises/later.v) - The later modality and recursive functions
+- [persistently](/exercises/persistently.v) - The persistently modality
 - [linked_lists](/exercises/linked_lists.v) - Linked lists
   - [fixpoint](/exercises/fixpoint.v) - Fixpoints of propositions
 - [arrays](/exercises/arrays.v) - Arrays in HeapLang
-  - [merge_sort](/exercises/merge_sort.v) - Merge sort
 - [resource_algebra](/exercises/resource_algebra.v) - Introduction to resources algebras
   - [custom_ra](/exercises/custom_ra.v) - Defining resources algebras from scratch
 - [invariants](/exercises/invariants.v) - Invariants
+- [concurrency](/exercises/concurrency.v) - Reasoning about concurrent programs
 - [counter](/exercises/counter.v) - The authoritative camera
 - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
-- [concurrency](/exercises/concurrency.v) - Reasoning about concurrent programs
 - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
 - [adequacy](/exercises/adequacy.v) - Adequacy
+- [merge_sort](/exercises/merge_sort.v) - Merge sort
 - [ofe](/exercises/ofe.v) - Detailed introduction to OFEs
 
 ## Exercises

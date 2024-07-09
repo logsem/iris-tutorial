@@ -541,7 +541,7 @@ Proof.
   wp_let.
   wp_pures.
   (** 
-    The specification for [|||] requires us to specify the
+    The specification for [par] requires us to specify the
     postconditions for the two threads. Since the threads return unit,
     the postconditions will just describe the points-to predicates,
     reflecting the writes.
@@ -568,6 +568,12 @@ Proof.
    *)
   iIntros (r1 r2) "[Hl1 Hl2]".
   rewrite /t1_post /t2_post.
+  (** 
+    Note: the [wp_par] specification adds a [▷] to the goal. This
+    actually strengthens [wp_par], but we do not need that strength in
+    this example, so we can simply ignore it. We explain the details of
+    [▷] later. The [▷] can be introduced with [iNext].
+  *)
   iNext.
   wp_seq.
   wp_load.

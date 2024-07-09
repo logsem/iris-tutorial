@@ -33,8 +33,8 @@ Context `{!heapGS Σ}.
 *)
 
 (**
-  The later modality is monotone meaning that if we know that [P ⊢ Q],
-  then we can also conclude [▷ P ⊢ ▷ Q]. This is captured by the [iNext]
+  The later modality is monotone meaning that if we know [P ⊢ Q], then
+  we can also conclude [▷ P ⊢ ▷ Q]. This is captured by the [iNext]
   tactic, which introduces a later, while stripping laters from our
   hypotheses.
 *)
@@ -62,8 +62,10 @@ Proof.
 Qed.
 
 (**
-  TODO: Finish rest of file.
-  Furthermore, later satisfies [P ⊢ ▷ P] and [▷ (P ∗ Q) ⊣⊢ ▷ P ∗ ▷ Q].
+  The later modality weakens propositions; owning resources now is
+  stronger than owning them later. In other words, [P ⊢ ▷ P]. This means
+  that we can always remove a later from the goal, regardless of whether
+  our hypotheses have a later.
 *)
 
 Lemma later_weak (P : iProp Σ) : P ⊢ ▷ P.
@@ -73,18 +75,34 @@ Proof.
   done.
 Qed.
 
+(** 
+  The later modality distributes over [∧], [∨], [∗], and is preserved
+  by [∃] and [∀]. This means that we can destruct these constructs
+  regardless of being prefaced by any laters.
+*)
+
+Lemma later_sep (P Q : iProp Σ) : ▷ (P ∗ Q) ⊣⊢ ▷ P ∗ ▷ Q.
+Proof.
+  iSplit.
+  - iIntros "[HP HQ]".
+    iFrame.
+  - iIntros "[HP HQ] !>".
+    iFrame.
+Qed.
+
 (**
-  These rules allow the tactics to ignore hypotheses in the context that
-  do not have a later on them.
+  As a consequence of monotonicity, weakening, and distribution over
+  [∗], the [iNext] tactic can simply ignore hypotheses in the context
+  that do not have a later on them.
 *)
 
 Lemma later_impl (P Q : iProp Σ) : P ∗ ▷ (P -∗ Q) -∗ ▷ Q.
 (* SOLUTION *) Proof.
-  iIntros "[HP HQ] !>".
+  iIntros "[HP HQ]".
+  iNext.
   iApply "HQ".
   iApply "HP".
 Qed.
-
 
 (* ================================================================= *)
 (** ** Tying Later to Program Steps *)
@@ -93,16 +111,18 @@ Qed.
   A somewhat important clarification is that the later modality exists
   independently of the specific language Iris is instantiated with; the
   later modality is part of the Iris base logic. However, when
-  instantiating Iris with a language, a common choice is to tie a single
-  [▷] to a single program step.
+  instantiating Iris with a language, the obvious choice is to tie a
+  single [▷] to a single program step. This is also the choice that has
+  been made for HeapLang – every time we use one of the `wp' tactics to
+  symbolically execute a single step, we let time tick one unit forward,
+  stripping away a single [▷] from our hypotheses.
 
-  These time steps are linked to the execution steps of our programs in
-  HeapLang. Every time we use one of the wp tactics, we let time tick
-  forward. To see this, let us look at a simple program: [1 + 2 + 3].
+  To see this in action, let us look at a simple program: [1 + 2 + 3].
   This program takes two steps to evaluate, so we can prove that if a
-  proposition holds after 2 steps, then it will hold after the program
+  proposition holds after two steps, then it will hold after the program
   has terminated.
 *)
+
 Lemma take_2_steps (P : iProp Σ) : ▷ ▷ P -∗ WP #1 + #2 + #3 {{_, P}}.
 Proof.
   iIntros "HP".
@@ -112,13 +132,20 @@ Proof.
 Qed.
 
 (**
-  This works because later is monotone. Inside WP there is a later for
-  every step of the program, so the wp tactics can use monotonicity to
-  remove laters from the context.
+  The reason this works is that inside [WP], there is a later for every
+  step of the program. Thus, the `wp' tactics can use the properties
+  mentioned in the previous section to remove laters from the context,
+  similarly to [iNext].
 *)
 
 (* ================================================================= *)
 (** ** Timeless Propositions *)
+
+(* TODO: Write text for section. *)
+
+(**
+  Iris uses the typeclass [Timeless] to identify timeless propositions...
+*)
 
 Lemma later_timeless_strip (P Q : iProp Σ) `{!Timeless P}:
   (P ⊢ ▷ Q) ->
@@ -156,6 +183,8 @@ Qed.
 
 (* ================================================================= *)
 (** ** Löb Induction *)
+
+(* TODO: Update section. *)
 
 (**
   With this later modality, we can do a special kind of induction,

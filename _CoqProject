@@ -16,6 +16,7 @@ theories/merge_sort.v
 theories/resource_algebra.v
 theories/custom_ra.v
 theories/invariants.v
+theories/timeless.v
 theories/counter.v
 theories/concurrency.v
 theories/spin_lock.v
@@ -36,6 +37,7 @@ exercises/merge_sort.v
 exercises/resource_algebra.v
 exercises/custom_ra.v
 exercises/invariants.v
+exercises/timeless.v
 exercises/counter.v
 exercises/concurrency.v
 exercises/spin_lock.v

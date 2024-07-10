@@ -53,6 +53,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [resource_algebra](/exercises/resource_algebra.v) - Introduction to resources algebras
   - [custom_ra](/exercises/custom_ra.v) - Defining resources algebras from scratch
 - [invariants](/exercises/invariants.v) - Invariants
+- [timeless](/exercises/timeless.v) - Timeless propositions
 - [concurrency](/exercises/concurrency.v) - Reasoning about concurrent programs
 - [counter](/exercises/counter.v) - The authoritative camera
 - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock

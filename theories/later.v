@@ -132,54 +132,11 @@ Proof.
 Qed.
 
 (**
-  The reason this works is that inside [WP], there is a later for every
-  step of the program. Thus, the `wp' tactics can use the properties
-  mentioned in the previous section to remove laters from the context,
-  similarly to [iNext].
+  The reason this works is that under the hood of [WP], there is a later
+  for every step of the program. Thus, the `wp' tactics can use the
+  properties mentioned in the previous section to remove laters from the
+  context, similarly to [iNext].
 *)
-
-(* ================================================================= *)
-(** ** Timeless Propositions *)
-
-(* TODO: Write text for section. *)
-
-(**
-  Iris uses the typeclass [Timeless] to identify timeless propositions...
-*)
-
-Lemma later_timeless_strip (P Q : iProp Σ) `{!Timeless P}:
-  (P ⊢ ▷ Q) ->
-  (▷ P ⊢ ▷ Q).
-Proof.
-  intros HPLQ.
-  iIntros ">HP".
-  by iApply HPLQ.
-Qed.
-
-Lemma later_strip_fail (P Q : iProp Σ) :
-  (P ⊢ ▷ Q) ->
-  (▷ P ⊢ ▷ Q).
-Proof.
-  intros HPLQ.
-  Fail iIntros ">HP".
-Abort.
-
-Lemma later_store (l : loc) (v : val) :
-  {{{ ▷ (l ↦ v) }}} #l <- #4 {{{ w, RET w; l ↦ #4 }}}.
-Proof.
-  iIntros (Φ) ">Hl HΦ".
-  wp_store.
-  by iApply "HΦ".
-Qed.
-
-Lemma later_store' (l : loc) (v : val) :
-  {{{ ▷ (l ↦ v) }}} #l <- #4 {{{ w, RET w; l ↦ #4 }}}.
-Proof.
-  iIntros (Φ) "Hl HΦ".
-  wp_store.
-  by iApply "HΦ".
-Qed.
-
 
 (* ================================================================= *)
 (** ** Löb Induction *)

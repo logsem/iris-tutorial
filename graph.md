@@ -10,7 +10,8 @@ graph TD;
 
   ra --> cst_ra[custom resource algebra];
   ra --> invariants;
-  invariants --> conc[concurrency];
+  invariants --> timeless;
+  timeless --> conc[concurrency];
   
   conc --> counter;
   conc --> spinlock;

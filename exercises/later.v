@@ -1,12 +1,5 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*########## CONTENTS PLAN ##########
-- TIMELESS PROPOSITIONS AND STRIPPING LATERS
-  + USUALLY DONE WHEN INTRODUCING PROPOSITIONS VIA '>'
-  + SHOW EXAMPLES
-- EXPAND ON LÖB INDUCTION
-#####################################*)
-
 (* ################################################################# *)
 (** * Later *)
 
@@ -75,7 +68,7 @@ Proof.
   done.
 Qed.
 
-(** 
+(**
   The later modality distributes over [∧], [∨], [∗], and is preserved
   by [∃] and [∀]. This means that we can destruct these constructs
   regardless of being prefaced by any laters.
@@ -138,33 +131,46 @@ Qed.
 (* ================================================================= *)
 (** ** Löb Induction *)
 
-(* TODO: Update section. *)
-
 (**
-  With this later modality, we can do a special kind of induction,
-  called Löb induction. The formal statement is `□ (▷ P -∗ P) -∗ P`.
-  Intuitively, this is a form of course of value induction, where we
-  say that if given that `P` holds for executions strictly smaller than n
-  steps we can prove that `P` holds for n steps, then `P` holds for
-  all steps.
+  The later modality allows for a strong induction principle, called Löb
+  induction. Essentially, Löb induction states that, to prove a
+  proposition [P], we are allowed to assume that [P] holds later, i.e.
+  [▷ P]. Formally, we have [□ (▷ P -∗ P) -∗ P]. Recall that [▷]
+  represents a single step in the logic. Löb induction essentially
+  performs induction in the number of steps. Intuitively, Löb induction
+  states that, if we can show that whenever [P] holds for strictly
+  smaller than [n] steps we can prove that [P] holds for [n] steps, then
+  [P] holds for all steps.
 
   We can use this principle to prove many properties of recursive
   programs. To see this in action, we will define a simple recursive
-  program that increments a counter.
+  function that increments a counter.
 *)
 
-Definition count : val :=
+Example count : val :=
   rec: "count" "x" := "count" ("x" + #1).
 
 (**
-  This program never terminates, as it will keep calling itself with
-  larger and larger inputs. To show this we pick the postcondition
-  [False]. We can now use Löb induction, along with [wp_rec], to prove
-  this specification.
+  This function never terminates for any input as it will keep calling
+  itself with larger and larger inputs. To show this we pick the
+  postcondition [False]. We can now use Löb induction, along with
+  [wp_rec], to prove this specification.
 *)
+
 Lemma count_spec (x : Z) : ⊢ WP count #x {{_, False}}.
 Proof.
+  (**
+    The tactic for Löb induction, [iLöb], requires us to specify the
+    name of the induction hypothesis, which we here call "IH".
+    Optionally, it can also forall quantify any of our variables before
+    performing induction. We here forall quantify [x] as it changes for
+    every recursive call.
+  *)
   iLöb as "IH" forall (x).
+  (**
+    [iLöb] automatically introduces the forall quantified variables in
+    the goal, so we can proceed to execute the function.
+  *)
   wp_rec.
   wp_pure.
   iApply "IH".

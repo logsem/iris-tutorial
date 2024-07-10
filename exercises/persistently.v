@@ -407,7 +407,8 @@ Proof.
   *)
   1, 2: wp_load; by iFrame.
   (** The threads return their fractions. *)
-  iIntros (v1 v2) "[[-> Hl1] [-> Hl2]] !>".
+  iIntros (v1 v2) "[[-> Hl1] [-> Hl2]]".
+  iNext.
   wp_let.
   (** We combine them, allowing us to perform the store. *)
   iCombine "Hl1 Hl2" as "Hl".

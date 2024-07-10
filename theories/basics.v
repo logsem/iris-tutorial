@@ -208,7 +208,7 @@ Qed.
   as [P -∗ Q] and pronounced `magic wand' or simply `wand'. Separation
   is so widely used that [P -∗ Q] is treated specially; instead of
   writing [P ⊢ Q] we can write [P -∗ Q], with the [⊢] being implicit.
-  That is, [⊢ P -∗ Q] is equivalent to [P -∗ Q].
+  That is, [⊢ P -∗ Q] is notationally equivalent to [P -∗ Q].
 
   Writing a wand instead of entailment makes currying more natural. Here
   is the Iris version of modus ponens. It is provable using only

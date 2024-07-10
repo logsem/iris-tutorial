@@ -597,10 +597,10 @@ Proof.
   iIntros (r1 r2) "[Hl1 Hl2]".
   rewrite /t1_post /t2_post.
   (** 
-    Note: the [wp_par] specification adds a [▷] to the goal. This
-    actually strengthens [wp_par], but we do not need that strength in
-    this example, so we can simply ignore it. We explain the details of
-    [▷] later. The [▷] can be introduced with [iNext].
+    Note: the [wp_par] specification adds a later modality [▷] to the
+    goal. This actually strengthens [wp_par], but we do not need that
+    strength in this example, so we can simply ignore it. We explain the
+    details of [▷] later. The [▷] can be introduced with [iNext].
   *)
   iNext.
   wp_seq.

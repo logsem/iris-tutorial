@@ -27,7 +27,9 @@ Context `{!heapGS Σ}.
 
 (**
   The later modality is monotone meaning that if we know [P ⊢ Q], then
-  we can also conclude [▷ P ⊢ ▷ Q]. This is captured by the [iNext]
+  we can also conclude [▷ P ⊢ ▷ Q]. In words, if we know that [P]
+  entails [Q], then we also know that, if we get [P] after one step, we
+  will also get [Q] after one step. This is captured by the [iNext]
   tactic, which introduces a later, while stripping laters from our
   hypotheses.
 *)
@@ -91,9 +93,9 @@ Qed.
 
 Lemma later_impl (P Q : iProp Σ) : P ∗ ▷ (P -∗ Q) -∗ ▷ Q.
 (* SOLUTION *) Proof.
-  iIntros "[HP HQ]".
+  iIntros "[HP HPQ]".
   iNext.
-  iApply "HQ".
+  iApply "HPQ".
   iApply "HP".
 Qed.
 
@@ -176,6 +178,11 @@ Proof.
   *)
   wp_rec.
   wp_pure.
+  (** 
+    Since we have taken steps, the [▷] in our induction hypothesis has
+    been stripped, allowing us to apply the hypothesis for the recursive
+    call.
+  *)
   iApply "IH".
 Qed.
 

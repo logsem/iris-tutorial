@@ -1,4 +1,3 @@
-From iris.algebra Require Export excl_auth frac_auth.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation par.
 
@@ -8,7 +7,7 @@ From iris.heap_lang Require Import lang proofmode notation par.
   + PERSISTENCY
   + OPEN ONCE BEFORE CLOSING
   + INVARIANT NAMES (namespaces)
-  + MASKS AND UPDATE MODALITY
+  + MASKS AND FANCY UPDATE MODALITY
 - SHOW EXISTING EXAMPLES AFTERWARDS
 - MOVE parallel_add to concurrency.v
 #####################################*)
@@ -73,7 +72,7 @@ Proof.
   (**
     To create an invariant we use the lemma
     [inv_alloc : ▷P -∗ |={E}=> inv N P].
-    To deal with the update modality, we will use the [iMod]
+    To deal with the fancy update modality, we will use the [iMod]
     tactic rather than [iPoseProof] or [iDestruct].
   *)
   iMod (inv_alloc N _ (prog_inv l) with "[Hl]") as "#I".

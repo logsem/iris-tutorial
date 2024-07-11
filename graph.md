@@ -7,23 +7,28 @@ graph TD;
   pers -->  ra[resource algebra];
   pers --> later;
   pers --> linklist[linked list];
-  later --> invariants;
-  later --> fix;
 
   ra --> invariants;
+
+  later --> invariants;
+  later --> fix[fixpoint];
+
+  linklist --> fix;
+  linklist --> arrays;
+  
   invariants --> timeless;
+
+  arrays --> merge[merge sort];
+
   timeless --> cst_ra[custom resource algebra];
   timeless --> conc[concurrency];
-  
+
+  cst_ra --> ofe;
+
   conc --> counter;
   conc --> spinlock;
-    spinlock --> ticketlock;
-    spinlock --> adequacy;
-
-  linklist --> fix[fixpoint];
-  linklist --> arrays;
-
   conc --> merge;
-  arrays --> merge[merge sort];
-  ofe;
+
+  spinlock --> ticketlock;
+  spinlock --> adequacy;
 ```

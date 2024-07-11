@@ -121,7 +121,7 @@ Qed.
 *)
 Canonical Structure stateR := discreteR state state_ra_mixin.
 (**
-  To help the Iris proofmode, we'll register stateR as a discrete
+  To help the Iris Proof Mode, we will register [stateR] as a discrete
   cmra.
 *)
 Global Instance state_cmra_discrete : CmraDiscrete state.
@@ -138,7 +138,7 @@ Proof. red. done. Qed.
 (**
   We want the ability to change the state from [Start] to [Final].
   However, we will instead prove a more general fact: That any state
-  can update to [Final]
+  can update to [Final].
 *)
 Lemma state_update s : s ~~> Final.
 Proof.

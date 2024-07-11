@@ -10,9 +10,9 @@ graph TD;
   later --> invariants;
   later --> fix;
 
-  ra --> cst_ra[custom resource algebra];
   ra --> invariants;
   invariants --> timeless;
+  timeless --> cst_ra[custom resource algebra];
   timeless --> conc[concurrency];
   
   conc --> counter;

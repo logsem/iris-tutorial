@@ -47,7 +47,7 @@ From iris.proofmode Require Import proofmode.
   the clients will instantiate the propositions to specialize the
   specification to fit their needs.
 
-  In this file, we introduce basic separation logic in Iris.
+  In this chapter, we introduce basic separation logic in Iris.
 *)
 
 (* ================================================================= *)

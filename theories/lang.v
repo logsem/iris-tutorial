@@ -15,8 +15,8 @@ From iris.heap_lang Require Import lang notation spawn par.
 
   The syntax for HeapLang is fairly standard, but there are some quirks
   as we are working inside Coq. As the features of HeapLang are fairly
-  standard, the focus in this file is manly on showcasing the syntax of
-  the language through simple examples.
+  standard, the focus in this chapter is manly on showcasing the syntax
+  of the language through simple examples.
 *)
 
 (* ================================================================= *)
@@ -36,7 +36,7 @@ From iris.heap_lang Require Import lang notation spawn par.
 (**
   By default, the interpreter is not installed as it can only be used
   with development versions of Iris. The interpreter is not required for
-  the tutorial, but it can optionally be installed for this file. To
+  the tutorial, but it can optionally be installed for this chapter. To
   install it, run:
     [opam install coq-iris-unstable].
   This also updates Iris to a development version. To access the

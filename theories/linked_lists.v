@@ -7,8 +7,8 @@ Section linked_lists.
 Context `{!heapGS Σ}.
 
 (**
-  In this file, we will study several functions on linked lists. To do
-  this, we must first agree on what a linked list is. In HeapLang, we
+  In this chapter, we will study several functions on linked lists. To
+  do this, we must first agree on what a linked list is. In HeapLang, we
   can implement linked lists as chains of pointers. We define this
   formally with a predicate, which we denote [isList]. This predicate
   turns a list of values [xs] into a predicate describing the structure

@@ -19,7 +19,7 @@ Local Notation "Q ⊢ P" := (Q ⊢@{iPropI Σ} P).
   The implementation of Iris in Coq has a unique class of propositions
   called `pure'. This class arises from the fact that Coq propositions
   can be embedded into the logic of Iris. Any Coq proposition [φ : Prop]
-  can be turned into an Iris proposition through the pure modality
+  can be turned into an Iris proposition through the pure embedding
   [⌜φ⌝ : iProp Σ]. This allows us to piggyback on much of the
   functionality and theory developed for the logic of Coq. The
   proposition [⌜φ⌝] is thus an Iris proposition, and we can use it as we
@@ -107,7 +107,7 @@ Proof.
 Qed.
 
 (**
-  The pure modality allows us to state an important property, namely
+  The pure embedding allows us to state an important property, namely
   soundness. Soundness is proved in the [uPred_primitive.pure_soundness]
   lemma stating: [∀ φ, (True ⊢ ⌜φ⌝) → φ]. This means that anything
   proved inside the Iris logic is as true as anything proved in Coq.

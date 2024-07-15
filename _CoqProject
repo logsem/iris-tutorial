@@ -18,7 +18,7 @@ theories/custom_ra.v
 theories/invariants.v
 theories/timeless.v
 theories/counter.v
-theories/concurrency.v
+theories/structured_conc.v
 theories/spin_lock.v
 theories/ticket_lock.v
 theories/adequacy.v
@@ -39,7 +39,7 @@ exercises/custom_ra.v
 exercises/invariants.v
 exercises/timeless.v
 exercises/counter.v
-exercises/concurrency.v
+exercises/structured_conc.v
 exercises/spin_lock.v
 exercises/ticket_lock.v
 exercises/adequacy.v

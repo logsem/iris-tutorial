@@ -21,14 +21,17 @@ graph TD;
   arrays --> merge[merge sort];
 
   timeless --> cst_ra[custom resource algebra];
-  timeless --> conc[concurrency];
+  timeless --> strconc[structured concurrency];
+  timeless --> ccs;
+  subgraph ccs[Case Studies on Concurrency]
+  counter;
+  spinlock;
+  ticketlock;
+  merge;
+  spinlock --> ticketlock;
+  end
 
+  spinlock --> adequacy;
   cst_ra --> ofe;
 
-  conc --> counter;
-  conc --> spinlock;
-  conc --> merge;
-
-  spinlock --> ticketlock;
-  spinlock --> adequacy;
 ```

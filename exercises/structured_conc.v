@@ -3,6 +3,11 @@ From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
+- UNSTRUCTURED CONCURRENCY
+  + THUS FAR, ONLY USED STRUCTURED CONCURRENCY
+  + ONE OF THE STRENGTHS OF IRIS IS IT SUPPORTS THE MORE GENERAL
+    UNSTRUCTURED CONCURRENCY (from which we can express structured
+    concurrency – shown in this file)
 - SHOW 'NATIVE' CLIENT OF FORK
 - SHOW SPAWN AND PAR
 - MOVE parallel_add FROM invariants.v TO concurrency.v

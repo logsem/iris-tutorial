@@ -8,7 +8,7 @@ The tutorial comes in two versions:
 - The folder `exercises`: a skeleton development with exercises left admitted.
 - The folder `theories`: the full development with solutions.
 
-It is recommended that you go through the tutorial in the order specified in [Overview](README.md#overview).
+The tutorial consists of several chapters, each corresponding to a Coq file. The graph in [Chapter Dependencies](README.md#chapter-dependencies) illustrates possible ways to go through the tutorial. However, the recommended order is specified in [Overview](README.md#overview).
 
 ## Setup
 This version is known to compile with
@@ -45,13 +45,12 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [lang](/exercises/lang.v) - Introduction to HeapLang
 - [specifications](/exercises/specifications.v) - Weakest precondition,
   basic resources, and Hoare triples
-- [later](/exercises/later.v) - The later modality and recursive functions
 - [persistently](/exercises/persistently.v) - The persistently modality
 - [linked_lists](/exercises/linked_lists.v) - Linked lists
   - [fixpoint](/exercises/fixpoint.v) - Fixpoints of propositions
 - [arrays](/exercises/arrays.v) - Arrays in HeapLang
+- [later](/exercises/later.v) - The later modality and recursive functions
 - [resource_algebra](/exercises/resource_algebra.v) - Introduction to resources algebras
-  - [custom_ra](/exercises/custom_ra.v) - Defining resources algebras from scratch
 - [invariants](/exercises/invariants.v) - Invariants
 - [timeless](/exercises/timeless.v) - Timeless propositions
 - [structured_conc](/exercises/structured_conc.v) - Introducing the spawn and par constructs
@@ -60,7 +59,47 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
 - [adequacy](/exercises/adequacy.v) - Adequacy
 - [merge_sort](/exercises/merge_sort.v) - Merge sort
+- [custom_ra](/exercises/custom_ra.v) - Defining resources algebras from scratch
 - [ofe](/exercises/ofe.v) - Detailed introduction to OFEs
+
+## Chapter Dependencies
+```mermaid
+graph TD;
+  basics --> pure;
+  pure --> specs[specifications];
+  lang --> specs;
+  specs --> pers[persistently];
+  pers -->  ra[resource algebra];
+  pers --> later;
+  pers --> linklist[linked list];
+
+  ra --> invariants;
+
+  later --> invariants;
+  later --> fix[fixpoint];
+
+  linklist --> fix;
+  linklist --> arrays;
+
+  invariants --> timeless;
+
+  arrays --> merge[merge sort];
+
+  timeless --> cst_ra[custom resource algebra];
+  timeless --> strconc[structured concurrency];
+  timeless --> ccs;
+
+  subgraph ccs[Case Studies on Concurrency]
+  counter;
+  spinlock;
+  ticketlock;
+  merge;
+  spinlock --> ticketlock;
+  end
+
+  spinlock --> adequacy;
+  cst_ra --> ofe;
+```
 
 ## Exercises
 To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`. 
@@ -71,6 +110,9 @@ If you are stuck, you can find solutions in the corresponding file in the `theor
 
 ## Documentation
 This [cheatsheet](/cheatsheet.md) contains a table of the most important tactics for each logical connective. A full description of the Iris Proof Mode tactics can be found in the files [proof_mode.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md) and [heap_lang.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md).
+
+## Optional Reading
+In its current state, this tutorial does not go over the underlying model of Iris. For readers who wish to learn about the underlying model of Iris, we refer to the [Iris from the ground up](https://people.mpi-sws.org/~dreyer/papers/iris-ground-up/paper.pdf) paper. Advanced readers may read this paper prior to going through the tutorial. However, it is generally recommended to study it afterwards, given its technical nature.
 
 ## Generating the exercises
 If you want to contribute to the tutorial, note that the files in `exercises/` are generated from the corresponding files in `theories/`. Run `make exercises` to re-generate those files. This requires `gawk` to be installed (which should be available on Linux, and on macOS can be installed via `brew install gawk`).

@@ -15,7 +15,7 @@ graph TD;
 
   linklist --> fix;
   linklist --> arrays;
-  
+
   invariants --> timeless;
 
   arrays --> merge[merge sort];
@@ -23,6 +23,7 @@ graph TD;
   timeless --> cst_ra[custom resource algebra];
   timeless --> strconc[structured concurrency];
   timeless --> ccs;
+
   subgraph ccs[Case Studies on Concurrency]
   counter;
   spinlock;
@@ -33,5 +34,4 @@ graph TD;
 
   spinlock --> adequacy;
   cst_ra --> ofe;
-
 ```

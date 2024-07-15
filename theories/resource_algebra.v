@@ -170,8 +170,7 @@ Lemma dfrac_invalid_own : ¬ (✓ (DfracOwn (2/3) ⋅ DfracOwn (2/3))).
 Proof.
   rewrite dfrac_op2.
   rewrite dfrac_valid.
-  unfold "¬".
-  done.
+  auto.
 Qed.
 
 (** **** The Core (the [PCore A]) *)
@@ -187,7 +186,7 @@ Lemma dfrac_core_discarded : pcore (DfracDiscarded) = Some DfracDiscarded.
 Proof. compute. done. Qed.
 
 (**
-  Note that the core of a [DfracBoth] element is just [DfracDiscarded]
+  Note that the core of a [DfracBoth] element is just [DfracDiscarded].
 *)
 
 Lemma dfrac_core_both (q : Qp) : pcore (DfracBoth q) = Some DfracDiscarded.
@@ -239,16 +238,15 @@ Proof. apply dfrac_discard_update. Qed.
   (e.g. it is used to define the points-to predicate). Hence, in this
   section, we will introduce some often used resource algebras.
 
-  Unlike dfrac, most of the resource algebra we study in this section
-  are parametrised by other resource algebras (or OFE's, or CMRA's).
-  This makes them generic, enabling us to use them to define more
-  complex resource algebras.
+  Unlike dfrac, most of the resource algebras we study in this section
+  are parametrised by other resource algebras (or OFEs, or CMRAs). This
+  makes them generic, enabling us to use them to define more complex
+  resource algebras.
 
-  The collection of resource algebra we present here is by no means
+  The collection of resource algebras we present here is by no means
   exhaustive – Iris ships with a myriad of useful resource algebras,
   which can be found at
   https://gitlab.mpi-sws.org/iris/iris/-/tree/master/iris/algebra.
-
 *)
 
 (* TODO: introductory text *)

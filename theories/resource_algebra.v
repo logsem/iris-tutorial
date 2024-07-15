@@ -35,17 +35,35 @@ From iris.heap_lang Require Import lang proofmode notation.
 (* ================================================================= *)
 (** ** Introduction *)
 
-(* TODO: explain ideas of RA. Relate to resource of heaps *)
-(* TODO: Ra is oblivious to existence of Iris: it is a fundamental concept *)
-(* TODO: Iris is `enriched' with RA through `ghost state'. We study this
-in the last section of this chapter *)
-(* TODO: Mention how RA's are defined from CMRA. See below. *)
-(* TODO: Technically, RA is a special case of the more general
-structure: CMRA. In particular, it is a `discrete' CMRA, meaning it does
-not depend on time. Further, CMRA are defined in terms of `Ordered
-Families of Equations' (OFE). Mention this for the cases where this
-information bleeds through the RA abstraction. *)
-(* TODO: We focus on discrete CMRA, i.e. RA, in this chapter. *)
+(** 
+  The resource of heaps is a widely used notion of a resource,
+  applicable in many circumstances (pretty much every time your program
+  interacts with the heap). However, as it turns out, it is not the
+  solution to all our problems; some programs require other notions of
+  resources to be reasoned about. Instead of adding rules to the logic
+  for each of the notions of resources we can think of, we treat
+  resources uniformly – we define a fixed set of criteria that a notion
+  of resource must satisfy in order to be used in the logic. If the
+  notion satisfies those criteria, then it is a `resource algebra'
+  (often shorted to `RA'). We can then have a small handful of rules for
+  resource algebras in general, and we hence do not need to change the
+  logic every time we wish to use a new notion of a resource. 
+
+  In this way, resource algebras are oblivious to the existence of Iris
+  – they exist as a separate thing. Iris then has a mechanism to embed
+  arbitrary resource algebras into the logic and reason about them. This
+  mechanism is called `ghost state', and we study it in the last section
+  of this chapter.
+
+  A small side note: in Iris, resource algebras are specialisations of
+  the more general structure `CMRA'. In particular, resource algebras
+  are `discrete CMRAs', meaning they do not have a notion of time. In
+  turn, CMRAs are built on top of `Ordered Families of Equations'. The
+  exact details of these concepts are not important for this chapter,
+  but we mention them as they appear a few times throughout the chapter.
+  CMRAs and OFEs are covered in more detail in later chapters. The focus
+  point in this chapter is discerete CMRAs – resource algebra.
+*)
 
 (* ================================================================= *)
 (** ** Basic Concepts of Resource Algebra *)

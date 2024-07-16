@@ -35,7 +35,7 @@ From iris.heap_lang Require Import lang proofmode notation.
 (* ================================================================= *)
 (** ** Introduction *)
 
-(** 
+(**
   The resource of heaps is a widely used notion of a resource,
   applicable in many circumstances (pretty much every time your program
   interacts with the heap). However, as it turns out, it is not the
@@ -47,7 +47,7 @@ From iris.heap_lang Require Import lang proofmode notation.
   notion satisfies those criteria, then it is a `resource algebra'
   (often shorted to `RA'). We can then have a small handful of rules for
   resource algebras in general, and we hence do not need to change the
-  logic every time we wish to use a new notion of a resource. 
+  logic every time we wish to use a new notion of a resource.
 
   In this way, resource algebras are oblivious to the existence of Iris
   – they exist as a separate thing. Iris then has a mechanism to embed
@@ -87,7 +87,7 @@ From iris.heap_lang Require Import lang proofmode notation.
 
   Secondly, the equivalence relation, written [x ≡ y] for resources
   [x, y ∈ A], tells us which resources are considered equivalent.
-  
+
   Thirdly, the operation, written [x ⋅ y] for resources [x, y ∈ A],
   shows us how to combine resources.
 
@@ -135,7 +135,7 @@ Print RAMixin.
   The `setoids' rules state that equivalence of elements is respected by
   the operation, the core, and validity. For instance, [ra_op_proper]
   expresses that, if [y ≡ z], then [x ⋅ y ≡ x ⋅ z], for all [x].
-  
+
   The fields [ra_assoc] and [ra_comm] assert that the operation [⋅]
   should be associative and commutative. This in effect makes [A] a
   commutative semigroup, which means that we can make all resource
@@ -187,7 +187,7 @@ Print RAMixin.
 Check dfrac_ra_mixin.
 
 (**
-  As such, it has a carrier, an operation, an equivalence relation, a
+  As such, it has a carrier, an equivalence relation, an operation, a
   core, and a subset of valid elements, and these satisfy the properties
   specified in the fields of [RAMixin]. We proceed to discuss each of
   these in turn. The full definitions of the components can be found at
@@ -205,16 +205,54 @@ Check dfrac_ra_mixin.
   resource is knowledge that a fraction has been discarded, we write
   [DfracDiscarded]. Finally, when the resource is a fraction _and_ the
   knowledge that a fraction has been discarded, we write [DfracBoth Qp].
+  The carrier is denoted [dfrac].
 *)
 
 Print dfrac.
 
+(** For instance, [DfracOwn (1/2)] is a resource in dfrac. *)
+
+Check DfracOwn (1/2) : dfrac.
+
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
+(** **** Equivalence of Resources (the [Equiv A]) *)
+
+(**
+  For dfrac, we simply use leibniz equality [=] as our equivalence
+  relation [≡].
+*)
+
+Lemma dfrac_equiv_leibniz (dp dq : dfrac) : (dp = dq) ↔ (dp ≡ dq).
+Proof. done. Qed.
+
+(**
+  This means that we can use [=] to express equivalence of elements. For
+  instance, if two fractions are equivalent, then the corresponding
+  resources are equivalent.
+*)
+
+Lemma dfrac_frac_equiv : DfracOwn (1/2) = DfracOwn (2/4).
+Proof. compute_done. Qed.
+
+(**
+  Here, the tactic [compute_done] reduces expressions and solves the
+  goal if the expressions are equal.
+*)
+
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** Operation (the [Op A]) *)
 
-(* TODO: write explanatory text *)
+(**
+  The operation [⋅] is defined by considering all possible combinations of
+  the three kinds of dfrac resources.
+*)
 
 Print dfrac_op_instance.
+
+(**
+  For instance, if the two resources are fractions, then the operation
+  adds the fractions together.
+*)
 
 Lemma dfrac_op : DfracOwn (1/2) ⋅ DfracOwn (1/4) = DfracOwn (3/4).
 Proof. compute_done. Qed.
@@ -222,11 +260,45 @@ Proof. compute_done. Qed.
 Lemma dfrac_op2 : DfracOwn (2/3) ⋅ DfracOwn (2/3) = DfracOwn (4/3).
 Proof. compute_done. Qed.
 
+(**
+  If the resources are both knowledge that a fraction has been
+  discarded, then the operation simply returns this knowledge.
+*)
+
 Lemma dfrac_op_disc : DfracDiscarded ⋅ DfracDiscarded = DfracDiscarded.
 Proof. compute_done. Qed.
 
+(**
+  If one of the resources is knowledge of a discarded fraction
+  [DfracDiscarded] and the other a fraction [DfracOwn Qp], the operation
+  turns the fraction into [DfracBoth Qp].
+*)
+
 Lemma dfrac_op_both : DfracOwn (2/3) ⋅ DfracDiscarded = DfracBoth (2/3).
 Proof. compute_done. Qed.
+
+(**
+  Exercise: reduce the following expressions.
+*)
+
+Lemma dfrac_op_both_disc : ∃ x : dfrac,
+  DfracBoth (2/3) ⋅ DfracDiscarded = x.
+(* SOLUTION *) Proof.
+  exists (DfracBoth (2/3)).
+  compute_done.
+Qed.
+
+Lemma dfrac_op_frac_both : ∃ x : dfrac,
+  DfracOwn (1/4) ⋅ DfracBoth (2/4) = x.
+(* SOLUTION *) Proof.
+  exists (DfracBoth (3/4)).
+  compute_done.
+Qed.
+
+(**
+  As dfrac is an instance of [RAMixin], we know that [⋅] must be
+  associative and commutative.
+*)
 
 Lemma dfrac_op_assoc (dq1 dq2 dq3 : dfrac) :
   dq1 ⋅ dq2 ⋅ dq3 = dq1 ⋅ (dq2 ⋅ dq3).

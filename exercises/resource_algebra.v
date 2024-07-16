@@ -71,13 +71,50 @@ From iris.heap_lang Require Import lang proofmode notation.
 (* ----------------------------------------------------------------- *)
 (** *** Definition of Resource Algebra *)
 
-(* TODO: Explain in words what a RA is (see ILN). *)
-(* TODO: In Iris, all RA are instances of the RAMixin record. *)
+(**
+  A resource algebra consists of just a few components:
+  - A set of elements [A], called the carrier.
+  - An equivalence relation [Equiv A] on the elements of [A].
+  - An operation [Op A] on the elements of [A].
+  - A subset of elements [Valid A], called valid.
+  - A partial function [PCore A], called the core.
+
+  These components must satisfy certain properties, but before
+  discussing those, let us discuss the purpose of each component.
+
+  Firstly, the elements of the carrier intuitively correspond to the
+  resources of the resource algebra.
+
+  Secondly, the equivalence relation, written [x ≡ y] for resources
+  [x, y ∈ A], tells us which resources are considered equivalent.
+  
+  Thirdly, the operation, written [x ⋅ y] for resources [x, y ∈ A],
+  shows us how to combine resources.
+
+  Fourthly, we distinguish between valid and invalid resources, writing
+  [✓ x] to denote that [x] is valid. Intuitively, validity captures that
+  the combination of some resources should not be allowed. In the logic,
+  if we combine two valid resources and their combination is invalid,
+  then we will be able to derive falsehood.
+
+  Finally, the core, written [pcore x] for a resource [x], is a partial
+  function which extracts exactly the _shareable_ part of a resource. We
+  handle partiality in Coq by letting the core return an option. We
+  write [pcore x = Some y] to mean that the shareable part of resource
+  [x] is [y]. Similarly, we write [pcore x = None] to mean that [x] has
+  no shareable part. For resources [x] that are entirely shareable, we
+  have that [pcore x = Some x].
+
+  Having discussed the purpose of each of the components, we are now
+  ready to see which properties we impose on them. In Iris, all resource
+  algebras are instances of the record [RAMixin], which describes the
+  properties the components should satisfy.
+*)
 
 Print RAMixin.
 
 (**
-  TODO: explain RAMixin (essentially definition of RA)
+  For convenience, we include the definition of [RAMixin] here as well.
 
   Record RAMixin A `{Equiv A, PCore A, Op A, Valid A} := {
     (* setoids *)
@@ -95,30 +132,87 @@ Print RAMixin.
     ra_valid_op_l (x y : A) : ✓ (x ⋅ y) → ✓ x
   }.
 
-  TODO: When creating a new resource algebra, one must show that it
-  satisfies all of above. However, in this chapter, and in most
-  scenarios for that matter, we will not create resource algebras from
-  nothing. We can utilise existing resource algebra and compose them to
-  create a resource algebra that suitably models our desired notion of a
-  resource. This means that we do not have to prove all of the above lemmas.
+  The `setoids' rules state that equivalence of elements is respected by
+  the operation, the core, and validity. For instance, [ra_op_proper]
+  expresses that, if [y ≡ z], then [x ⋅ y ≡ x ⋅ z], for all [x].
+  
+  The fields [ra_assoc] and [ra_comm] assert that the operation [⋅]
+  should be associative and commutative. This in effect makes [A] a
+  commutative semigroup, which means that we can make all resource
+  algebras a preorder through the extension order, written [x ≼ y]. The
+  extension order is defined as:
+        [x ≼ y = ∃z, y ≡ x ⋅ z]
+  Intuitively, the resource [x] is _included_ in [y], if we can express
+  [y] in terms of [x] and some [z].
+
+  The fields [ra_pcore_l] and [ra_pcore_idemp] capture the idea that the
+  core extracts the shareable part of a resource, and how shareable
+  resources behave. [ra_pcore_l] expresses that including the same
+  shareable resource multiple times does not change a resource, and
+  [ra_pcore_idemp] states that invoking the core on a resource twice
+  gives the same resource as invoking the core once.
+
+  [ra_pcore_mono] captures the relationship between the core and the
+  extension order.
+
+  Finally, [ra_valid_op_l] asserts that all parts of a valid resource
+  are themselves valid.
+
+  All resource algebra satisfy the properties of [RAMixin], and when
+  creating a new resource algebra, one must show that it is an [RAMixin]
+  record. However, in this chapter, and in most real-world scenarios for
+  that matter, we will not create resource algebras from scratch. We can
+  utilise existing resource algebras and compose them to create a
+  resource algebra that suitably models our desired notion of a
+  resource. This allows us to forgo proving the properties of [RAMixin].
+  We refer to chapter [Custom Resource Algebra] for an introduction to
+  creating resource algebras from scratch.
 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Definition of RA by Example: dfrac *)
+(** *** Example Resource Algebra : dfrac *)
 
-(* TODO: introductory text. relate to points-to predicate *)
+(**
+  That was a lot of abstract information, so let us get a bit more
+  concrete and study the definition of resource algebra through a
+  familiar example: discarded fractions (shortened to dfrac). We saw
+  discarded fragments when we introduced the persistent points-to
+  predicate in the persistently chapter. As it turns out, the resource of
+  heaps is actually composed of other resource algebras, one of which is
+  dfrac.
+
+  As dfrac is a resource algebra, it is an instance of [RAMixin].
+*)
 
 Check dfrac_ra_mixin.
 
 (**
+  As such, it has a carrier, an operation, an equivalence relation, a
+  core, and a subset of valid elements, and these satisfy the properties
+  specified in the fields of [RAMixin]. We proceed to discuss each of
+  these in turn. The full definitions of the components can be found at
   https://gitlab.mpi-sws.org/iris/iris/-/blob/master/iris/algebra/dfrac.v
 *)
 
-(** **** The Carrier (the [A])*)
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
+(** **** The Carrier (the [A]) *)
+
+(**
+  In dfrac, a resource is either a fraction, knowledge that a fraction
+  has been discarded, or a combination of the two.
+
+  When the resource is a fraction [Qp], we write [DfracOwn Qp]. When the
+  resource is knowledge that a fraction has been discarded, we write
+  [DfracDiscarded]. Finally, when the resource is a fraction _and_ the
+  knowledge that a fraction has been discarded, we write [DfracBoth Qp].
+*)
 
 Print dfrac.
 
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** Operation (the [Op A]) *)
+
+(* TODO: write explanatory text *)
 
 Print dfrac_op_instance.
 
@@ -148,7 +242,10 @@ Proof.
   (* exercise *)
 Admitted.
 
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** Valid Elements (the [Valid A]) *)
+
+(* TODO: write explanatory text *)
 
 Print dfrac_valid_instance.
 
@@ -171,7 +268,10 @@ Proof.
   auto.
 Qed.
 
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** The Core (the [PCore A]) *)
+
+(* TODO: write explanatory text *)
 
 (* TODO: relate to persistent points-to predicate from persistency chapter *)
 
@@ -199,15 +299,12 @@ Proof. compute. done. Qed.
   element should be [DfracDiscarded].
 *)
 
-(** **** Summary *)
-
-(* TODO: do *)
-
 (* ----------------------------------------------------------------- *)
 (** *** Frame Preserving Update *)
 
 (* TODO: do *)
 
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** Example with dfrac *)
 
 (* TODO: do *)

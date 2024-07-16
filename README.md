@@ -50,7 +50,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
   - [fixpoint](/exercises/fixpoint.v) - Fixpoints of propositions
 - [arrays](/exercises/arrays.v) - Arrays in HeapLang
 - [later](/exercises/later.v) - The later modality and recursive functions
-- [resource_algebra](/exercises/resource_algebra.v) - Introduction to resources algebras
+- [resource_algebra](/exercises/resource_algebra.v) - Introduction to resource algebras
 - [invariants](/exercises/invariants.v) - Invariants
 - [timeless](/exercises/timeless.v) - Timeless propositions
 - [structured_conc](/exercises/structured_conc.v) - Introducing the spawn and par constructs
@@ -59,7 +59,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
 - [adequacy](/exercises/adequacy.v) - Adequacy
 - [merge_sort](/exercises/merge_sort.v) - Merge sort
-- [custom_ra](/exercises/custom_ra.v) - Defining resources algebras from scratch
+- [custom_ra](/exercises/custom_ra.v) - Defining resource algebras from scratch
 - [ofe](/exercises/ofe.v) - Detailed introduction to OFEs
 
 ## Chapter Dependencies

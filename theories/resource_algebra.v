@@ -170,7 +170,7 @@ Print RAMixin.
 *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Example Resource Algebra : dfrac *)
+(** *** An Example Resource Algebra : dfrac *)
 
 (**
   That was a lot of abstract information, so let us get a bit more
@@ -319,9 +319,29 @@ Qed.
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** Valid Elements (the [Valid A]) *)
 
-(* TODO: write explanatory text *)
+(**
+  The idea with using fractions as resources is to be able to split up
+  ownership into smaller parts. As such, we let the fraction [1]
+  represent total ownership, and fractions less than [1] denote partial
+  ownership. In this way, fractions greater than [1] are nonsensical and
+  are thus not valid. Likewise for fractions smaller than or equal to
+  [0]. In other words, only fractions in the interval (0; 1] are valid.
+  Knowledge that a fraction has been discarded is also valid. The
+  function [dfrac_valid_instance] defines this formally.
+*)
 
 Print dfrac_valid_instance.
+
+(**
+  Note that for [DfracBoth q], we require that [q] is _strictly_ smaller
+  than [1], reflecting that a fraction has been discarded, making it
+  impossible to have total ownership.
+*)
+
+(**
+  The lemma [dfrac_valid] converts a validity assertion into the
+  corresponding propositions as defined by [dfrac_valid_instance].
+*)
 
 Lemma dfrac_valid_own : ✓ (DfracOwn (2/3)).
 Proof.
@@ -372,6 +392,33 @@ Proof. compute. done. Qed.
   exactly the shareable part of an element, the core of a [DfracBoth]
   element should be [DfracDiscarded].
 *)
+
+(* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
+(** **** The preorder (the [≼]) *)
+
+(**
+  Unlike the other components, the preorder is defined for us as the
+  extension order: [x ≼ y = ∃z, y ≡ x ⋅ z]. The proposition [x ≼ y]
+  expresses that [x] is included in [y].
+*)
+
+Lemma dfrac_pre_own : DfracOwn (1/4) ≼ DfracOwn (3/4).
+Proof.
+  exists (DfracOwn (2/4)).
+  compute_done.
+Qed.
+
+Lemma dfrac_pre_disc_both : DfracDiscarded ≼ DfracBoth (3/4).
+(* Solution *) Proof.
+  exists (DfracOwn (3/4)).
+  compute_done.
+Qed.
+
+Lemma dfrac_pre_own_both : DfracOwn (2/4) ≼ DfracBoth (3/4).
+(* Solution *) Proof.
+  exists (DfracBoth (1/4)).
+  compute_done.
+Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Frame Preserving Update *)

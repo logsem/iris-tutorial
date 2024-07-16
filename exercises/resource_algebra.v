@@ -8,14 +8,13 @@ From iris.heap_lang Require Import lang proofmode notation.
   + DFRAC RUNNING EXAMPLE
   + FRAME PRESERVING UPDATE
 - EXAMPLE RESOURCE ALGEBRA
-- HOW TO ACCESS THEM IN COQ. CONTEXT, Σ
-  + SEE https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/resource_algebras.md
-- BASIC EXAMPLES
   + EXCLUSIVE
     * TOKENS (custom definition, not from lib)
   + AGREE
   + PRODUCTS
   + AUTH
+- HOW TO ACCESS THEM IN COQ. CONTEXT, Σ
+  + SEE https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/resource_algebras.md
 - GHOST STATE
   + ENRICHING IRIS WITH RESOURCES FROM RA
     * 'own'
@@ -176,7 +175,7 @@ Print RAMixin.
   That was a lot of abstract information, so let us get a bit more
   concrete and study the definition of resource algebra through a
   familiar example: discarded fractions (shortened to dfrac). We saw
-  discarded fragments when we introduced the persistent points-to
+  discarded fractions when we introduced the persistent points-to
   predicate in the persistently chapter. As it turns out, the resource of
   heaps is actually composed of other resource algebras, one of which is
   dfrac.
@@ -361,32 +360,41 @@ Qed.
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** The Core (the [PCore A]) *)
 
-(* TODO: write explanatory text *)
-
-(* TODO: relate to persistent points-to predicate from persistency chapter *)
+(**
+  For dfrac, ownership of a fraction should be exclusive, while
+  knowledge that a fraction has been discarded should be freely
+  shareable. We manifest this desire through the definition of the core.
+*)
 
 Print dfrac_pcore_instance.
 
+(**
+  That is, the core of a [DfracOwn] resource is [None].
+*)
 Lemma dfrac_core_own (q : Qp) : pcore (DfracOwn q) = None.
 Proof. compute. done. Qed.
 
+(**
+  The core of [DfracDiscarded] is [Some DfracDiscarded].
+*)
 Lemma dfrac_core_discarded : pcore (DfracDiscarded) = Some DfracDiscarded.
 Proof. compute. done. Qed.
 
 (**
-  Note that the core of a [DfracBoth] element is just [DfracDiscarded].
+  And the most interesting case, the core of a [DfracBoth] resource is
+  just [Some DfracDiscarded].
 *)
-
 Lemma dfrac_core_both (q : Qp) : pcore (DfracBoth q) = Some DfracDiscarded.
 Proof. compute. done. Qed.
 
 (**
-  The reason is that we want the fraction [q] to be exclusive, whereas
-  knowledge of a fraction having been discarded should be shareable. The
-  element [DfracBoth q] consists of both the fraction [q] and the
-  knowledge that a fraction has been discarded. Since the core extracts
-  exactly the shareable part of an element, the core of a [DfracBoth]
-  element should be [DfracDiscarded].
+  Recall that, in general, the core extracts exactly the shareable part
+  of a resource. Since only knowledge of a fraction having been
+  discarded should be shareable, the image of the core should only
+  contain [DfracDiscarded]. In particular, because all resources
+  [DfracBoth q] can be written as [DfracDiscarded ⋅ DfracOwn q], the
+  core of a [DfracBoth] resource should be just the shareable part:
+  [DfracDiscarded].
 *)
 
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)

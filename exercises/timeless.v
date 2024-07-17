@@ -95,7 +95,7 @@ Qed.
 *)
 
 Lemma later_timeless_strip (P Q : iProp Σ) `{!Timeless P} :
-  (P ⊢ ▷ Q) ->
+  (P ⊢ ▷ Q) →
   (▷ P ⊢ ▷ Q).
 Proof.
   intros HPLQ.

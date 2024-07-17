@@ -187,7 +187,7 @@ END TEMPLATE *)
 
 (** Persistency is preserved by quantifications. *)
 
-Lemma pers_all `{A} (P : A -> iProp Σ) : (∀x, □ P x) ⊢ ∀y, P y ∗ P y.
+Lemma pers_all `{A} (P : A → iProp Σ) : (∀x, □ P x) ⊢ ∀y, P y ∗ P y.
 Proof.
   iIntros "#Hp %y".
   iSplitL; iApply ("Hp" $! y).

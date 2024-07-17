@@ -34,7 +34,7 @@ Context `{!heapGS Σ}.
   hypotheses.
 *)
 
-Lemma later_mono (P Q : iProp Σ) : (Q ⊢ P) -> (▷ Q ⊢ ▷ P).
+Lemma later_mono (P Q : iProp Σ) : (Q ⊢ P) → (▷ Q ⊢ ▷ P).
 Proof.
   intros HQP.
   iIntros "HQ".
@@ -49,7 +49,7 @@ Qed.
   less verbose to handle the later modality.
 *)
 
-Lemma later_mono' (P Q : iProp Σ) : (Q ⊢ P) -> (▷ Q ⊢ ▷ P).
+Lemma later_mono' (P Q : iProp Σ) : (Q ⊢ P) → (▷ Q ⊢ ▷ P).
 Proof.
   intros HQP.
   iIntros "HQ !>".

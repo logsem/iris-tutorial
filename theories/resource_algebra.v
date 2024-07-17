@@ -106,8 +106,8 @@ From iris.heap_lang Require Import lang proofmode notation.
 
   Having discussed the purpose of each of the components, we are now
   ready to see which properties we impose on them. In Iris, all resource
-  algebras are instances of the record [RAMixin], which describes the
-  properties the components should satisfy.
+  algebras are records in the shape described by [RAMixin]. This
+  structure describes the properties the components should satisfy.
 *)
 
 Print RAMixin.
@@ -210,14 +210,16 @@ Check dfrac_ra_mixin.
 Print dfrac.
 
 (** For instance, [DfracOwn (1/2)] is a resource in dfrac. *)
-
 Check DfracOwn (1/2) : dfrac.
+
+(** And so is knowledge of a fraction having been discarded. *)
+Check DfracDiscarded : dfrac.
 
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** Equivalence of Resources (the [Equiv A]) *)
 
 (**
-  For dfrac, we simply use leibniz equality [=] as our equivalence
+  For dfrac, we simply use Leibniz equality [=] as our equivalence
   relation [≡].
 *)
 
@@ -295,24 +297,23 @@ Lemma dfrac_op_frac_both : ∃ x : dfrac,
 Qed.
 
 (**
-  As dfrac is an instance of [RAMixin], we know that [⋅] must be
-  associative and commutative.
+  As dfrac is a record of type [RAMixin], we know that [⋅] must be
+  associative and commutative. We can refer to these properties through
+  record projection.
 *)
 
 Lemma dfrac_op_assoc (dq1 dq2 dq3 : dfrac) :
   dq1 ⋅ dq2 ⋅ dq3 = dq1 ⋅ (dq2 ⋅ dq3).
 Proof.
-  rewrite ra_assoc.
-  - done.
-  - apply dfrac_ra_mixin.
+  rewrite dfrac_ra_mixin.(ra_assoc _).
+  done.
 Qed.
 
 Lemma dfrac_op_comm (dq1 dq2 : dfrac) :
   dq1 ⋅ dq2 = dq2 ⋅ dq1.
 (* SOLUTION *) Proof.
-  rewrite ra_comm.
-  - done.
-  - apply dfrac_ra_mixin.
+  rewrite dfrac_ra_mixin.(ra_comm _).
+  done.
 Qed.
 
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
@@ -431,12 +432,82 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (** *** Frame Preserving Update *)
 
-(* TODO: do *)
+(**
+  The final core ingredient we need for resource algebra is a way to
+  update resources – resources are used to reason about programs, and
+  programs update resources. One has to be careful with how resources
+  are allowed to be updated; in Iris, only _valid_ resources can be
+  owned. It should always be the case that, if we combine the resources
+  owned by all threads in the system, the resulting resource should be
+  valid. Otherwise, we could easily derive falsehood. Hence, when a
+  thread updates its resources, it must ensure that it does not
+  introduce the possibility of obtaining an invalid element. We call
+  such an update a `frame preserving Update', and write [x ~~> y] to
+  mean that we can perform a frame preserving update from resource [x]
+  to resource [y]. The formal definition for this notion turns out to be
+  quite succinct:
+
+                [x ~~> y = ∀z, ✓(x ⋅ z) → ✓(y ⋅ z)]
+
+  This proposition ensures that every resource that is valid with [x] is
+  also valid with [y]. If this is the case, then it is okay to update
+  [x] to [y]. Since [z] is forall quantified, [z] also represents the
+  resource we get by combining the resources from all other threads.
+  That is to say, [x ~~> y] ensures that, if the combination of all
+  resources was valid before the update, it still is after. As [z]
+  represents all the other resources, it is called the `frame', and the
+  proposition [x ~~> y] expresses that the validity of [z] – the frame –
+  is preserved, hence `frame preserving update'.
+*)
+
+(**
+  Due to some technicalities, when the core is not total (i.e. the core
+  is [None] for some resources), we use a slightly more general
+  definition of the frame preserving update:
+
+                [x ~~> y = ∀mz, ✓(x ⋅? mz) → ✓(y ⋅? mz)]
+
+  The only difference is that the frame [mz] is now an option, i.e.
+  [None] or [Some z]. The operation [⋅] does not work with option
+  elements, so we use [a ⋅? mb] instead, which returns [a] if [mb] is
+  [None], and [a ⋅ b] if [mb] is [Some b].
+*)
+
+(**
+  To complicate matters further, the frame preserving update works for
+  CMRAs in general, not just resource algebra. Hence, the actual
+  definition of [~~>] is slightly more complex than above.
+*)
+
+Print "~~>".
+
+(**
+  However, when the CMRA is discrete (hence a resource algebra), we can
+  prove that the actual definition of [~~>] is equivalent to our
+  definition above.
+*)
+
+About cmra_discrete_update.
+
+(**
+  Further, if the core is total, it is also equivalent to our first
+  definition of the frame preserving update.
+*)
+
+About cmra_discrete_total_update.
 
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
 (** **** Example with dfrac *)
 
-(* TODO: do *)
+(**
+  The by far most commonly used update for dfrac resources is to discard
+  a fraction. Intuitively, such an update is frame preserving as only
+  fractions greater than [1] are considered invalid. If a thread
+  discards its fraction, the sum total from all threads will only
+  decrease. So if the frame was valid before (i.e. less than or equal to
+  [1]), it will remain valid after discarding. As such, we can always
+  discard fractions.
+*)
 
 Check dfrac_discard_update.
 
@@ -447,10 +518,71 @@ Example dfrac_update_disc : DfracDiscarded ~~> DfracDiscarded.
 Proof. apply dfrac_discard_update. Qed.
 
 (**
-  Recall that we used the [pointsto_persist] lemma to make points-to
-  predicates persistent. Looking deep under the hood, [pointsto_persist]
-  uses [dfrac_discard_update] to discard the dfrac in [l ↦{dq} v].
+  Recall that, in the persistently chapter, we used the
+  [pointsto_persist] lemma to make points-to predicates persistent.
+  Looking deep under the hood, [pointsto_persist] actually uses
+  [dfrac_discard_update] to discard the dfrac in [l ↦{dq} v].
 *)
+
+(**
+  Of course, there are also other frame preserving updates for dfrac.
+  However, these we must prove manually. Since the core of dfrac is not
+  total, we can only use the definition of frame preserving update with
+  the frame being an option ([cmra_discrete_update]).
+
+  For example, a trivial update is the identity.
+*)
+
+Lemma dfrac_update_ident (dq: dfrac): dq ~~> dq.
+Proof.
+  rewrite cmra_discrete_update.
+  intros mz Hvalid.
+  apply Hvalid.
+Qed.
+
+(**
+  We can also update a fraction by decreasing it.
+*)
+
+Lemma dfrac_update_own_own : DfracOwn (3/4) ~~> DfracOwn (1/4).
+Proof.
+  rewrite cmra_discrete_update.
+  intros mz Hvalid.
+  rewrite <- dfrac_op in Hvalid.
+  rewrite cmra_op_opM_assoc in Hvalid. (* helper lemma from [cmra] *)
+  rewrite dfrac_ra_mixin.(ra_comm _) in Hvalid.
+  apply dfrac_ra_mixin.(ra_valid_op_l _) in Hvalid.
+  apply Hvalid.
+Qed.
+
+(**
+  We can additionally get [DfracDiscarded] when updating a fraction by
+  decreasing it.
+  Exercise: finish the proof of the example.
+  Hint: use [cmra_discrete_update] to rewrite [dfrac_discard_update].
+*)
+
+Lemma dfrac_update_own_both : DfracOwn (3/4) ~~> DfracBoth (1/4).
+Proof.
+  rewrite cmra_discrete_update.
+  intros mz Hvalid.
+  rewrite <- dfrac_op in Hvalid.
+  assert ((DfracBoth (1 / 4)) = (DfracDiscarded ⋅? Some (DfracOwn (1 / 4)))) as ->.
+  { compute_done. }
+  rewrite cmra_opM_opM_assoc_L.
+(* BEGIN SOLUTION *)
+  assert (∀dq mz, ✓(dq ⋅? mz) → ✓(DfracDiscarded ⋅? mz)) as
+    Hdfrac_discard_update_discrete.
+  { intros dq. rewrite <- cmra_discrete_update. apply dfrac_discard_update. }
+  apply (Hdfrac_discard_update_discrete (DfracOwn (1/2))).
+  rewrite <- cmra_opM_opM_assoc_L.
+  simpl.
+  apply Hvalid.
+Qed.
+(* END SOLUTION BEGIN TEMPLATE
+  (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 (* ================================================================= *)
 (** ** Example Resource Algebra *)

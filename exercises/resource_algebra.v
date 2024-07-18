@@ -1,4 +1,4 @@
-From iris.algebra Require Import cmra dfrac.
+From iris.algebra Require Import cmra dfrac excl.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
@@ -591,14 +591,108 @@ Admitted.
   https://gitlab.mpi-sws.org/iris/iris/-/tree/master/iris/algebra.
 *)
 
-(* TODO: introductory text *)
-
 (* ----------------------------------------------------------------- *)
 (** *** Exclusive *)
 
-(* TODO: do *)
+Section exclusive.
 
-(* TODO: also custom tokens (through unitO) *)
+(**
+  Our first example is the `exclusive' resource algebra. The key idea is
+  that it makes all combinations of resources from some resource algebra
+  invalid. The exclusive RA is actually parametrised by an OFE, but
+  since all resource algebras are OFEs, the exclusive RA also works for
+  resource algebras.
+
+  Below, we let [A] be some OFE, but we may think of it as being the
+  carrier for some resource algebra.
+*)
+
+Context {A : ofe}.
+
+(**
+  The carrier of the exclusive RA, [excl], is the same as the carrier of
+  the underlying resource algebra with the addition of a bottom element,
+  denoted [ExclBot].
+*)
+
+Print excl.
+
+(**
+  The core is always undefined (nothing is shareable). 
+*)
+
+Lemma excl_core (ea : excl A) : pcore ea ≡ None.
+Proof. constructor. Qed.
+
+(**
+  Crucially, all elements except [ExclBot] are valid.
+*)
+
+Lemma excl_valid (a : A) : ✓ (Excl a).
+Proof. constructor. Qed.
+
+Lemma excl_bot_invalid : ¬ (✓ (ExclBot : excl A)).
+Proof.
+  intros contra.
+  inversion contra.
+Qed.
+
+(**
+  And the combination of any two elements gives the invalid [ExclBot].
+*)
+
+Lemma excl_op (ea eb : excl A) : ea ⋅ eb ≡ ExclBot.
+Proof. constructor. Qed.
+
+(**
+  Let us return to our beloved dfrac. While the operation for dfrac adds
+  two dfrac fractions together, the operation for two _exclusive_ dfrac
+  fractions simply results in [ExclBot].
+*)
+
+Example excl_op_dfrac :
+  (Excl (DfracOwn (1/4))) ⋅ (Excl (DfracOwn (2/4))) ≡ ExclBot.
+Proof. constructor. Qed.
+
+End exclusive.
+
+(**
+  So how is this resource algebra useful? While it is a key component in
+  many fairly complex resource algebras, it has a super simple, yet
+  extremely practical use case. Together with the OFE [unitO], we can
+  create the resource algebra of `tokens'.
+*)
+
+Section token. 
+
+(** The [unitO] OFE has just one element [()], called the unit. *)
+Check () : unitO.
+
+(** A token is then simply an exclusive unit. *)
+Definition token := Excl ().
+
+(** The token is valid... *)
+Lemma token_valid : ✓ token.
+Proof. apply excl_valid. Qed.
+
+(** ... but having the token twice gives the bottom element... *)
+Lemma token_token_bot : token ⋅ token ≡ ExclBot.
+Proof. apply excl_op. Qed.
+
+(* ... which is invalid. *)
+Lemma token_exclusive : ¬ ✓ (token ⋅ token).
+Proof. rewrite token_token_bot. apply excl_bot_invalid. Qed.
+
+(**
+  As only valid resources can be owned in Iris, and the contribution
+  from all threads should yield a valid resource, we know that only a
+  single token can be owned at any one time. Among others, this resource
+  algebra is useful to reason about programs whose correctness rely on
+  only one thread accessing some critical section of memory at a time.
+  We will see examples of this in later chapters.
+*)
+
+End token.
 
 (* ----------------------------------------------------------------- *)
 (** *** Agree *)
@@ -627,13 +721,33 @@ Admitted.
 (* ================================================================= *)
 (** ** Ghost State *)
 
-(* TODO: introductory text *)
+(** 
+  In the previous sections, we duly studied the key concepts of resource
+  algebras and a handful of basic examples. It is due time we put all
+  that theory to use. In this section, we will see how to use resource
+  algebras inside the Iris logic.
+*)
 
 (* ----------------------------------------------------------------- *)
 (** *** Ownership of Resources *)
 
-(* TODO: notation for ownership *)
+(** 
+  Iris provides exactly one way of embedding a resource into the
+  logic...
+*)
+
+(* TODO: introduce ownership and notation *)
+
+(**
+  Looking under the hood, the points-to predicate [l ↦ v] is also
+  defined in terms of [own]. That is, [l ↦ v] is just notation denoting
+  ownership of a resource in the resource of heaps!
+*)
+
 (* TODO: multiple instances of the same algebra: Ghost names *)
+  (* TODO: motivate with tokens (two tokens protecting two different
+  critical sections of the heap) *)
+
 (* TODO: combining ownership and validity *)
 
 (* ----------------------------------------------------------------- *)

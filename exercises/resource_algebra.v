@@ -1,4 +1,4 @@
-From iris.algebra Require Import cmra dfrac excl.
+From iris.algebra Require Import cmra dfrac excl agree.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
@@ -697,7 +697,111 @@ End token.
 (* ----------------------------------------------------------------- *)
 (** *** Agree *)
 
-(* TODO: do *)
+Section agree.
+
+Context {A : ofe}.
+
+(**
+  The agree construction is parametrised by an ofe [A] (again, think
+  carrier of resource algebra), and all it cares about is whether two
+  resources are equivalent. That is, whether they _agree_. As such, the
+  carrier of agree is the same as the carrier of the underlying resource
+  algebra, and all resources in [agree A] are valid – irregardless of
+  their validity in the original resource algebra.
+*)
+
+Lemma agree_valid (a : A) : ✓ (to_agree a).
+Proof. constructor. Qed.
+
+(**
+  Additionally, we make all resources shareable.
+*)
+
+Lemma agree_core (a : agree A) : pcore a ≡ Some a.
+Proof. constructor. done. Qed.
+
+
+(**
+  The key idea is that only resources that are equivalent in the
+  original resource algebra can be combined.
+*)
+
+About to_agree_op_valid.
+
+(**
+  For instance, if the resources are dfrac fractions, the fractions have
+  to be the same.
+*)
+
+Lemma agree_dfrac :
+  ✓ (to_agree (DfracOwn (1/2)) ⋅ to_agree (DfracOwn (2/4))).
+Proof.
+  apply to_agree_op_valid.
+  compute_done.
+Qed.
+
+Lemma disagree_dfrac :
+  ¬ ✓ (to_agree (DfracOwn (1/4)) ⋅ to_agree (DfracOwn (2/4))).
+Proof.
+  intros contra.
+  apply to_agree_op_valid in contra.
+  inversion contra.
+Qed.
+
+(**
+  If the composition of two elements is valid, it hence just amounts to
+  composing a resource with itself. Since we only care about which
+  resources are equivalent, we define composition as to be idempotent.
+*)
+
+About agree_idemp.
+
+Lemma agree_dfrac_op :
+  to_agree (DfracOwn (1/2)) ⋅ to_agree (DfracOwn (2/4)) ≡
+  to_agree (DfracOwn (1/2)).
+Proof.
+  rewrite <- dfrac_frac_equiv.
+  apply agree_idemp.
+Qed.
+
+(**
+  As a result, if a composition valid, the result is simply one of the
+  two (equivalent) resources.
+*)
+
+Lemma agree_valid_opL (a b : A) : ✓ (to_agree a ⋅ to_agree b) → 
+  to_agree a ⋅ to_agree b ≡ to_agree a.
+(* Solution *) Proof.
+  intros Hvalid.
+  apply to_agree_op_valid in Hvalid.
+  rewrite Hvalid.
+  apply agree_idemp.
+Qed.
+
+(**
+  Due to idempotency and the fact that the combination of equivalent
+  resources is valid, we get that the extension order coincides with
+  equivalence.
+*)
+
+Local Lemma to_agree_included (a b : A) :
+  to_agree a ≼ to_agree b ↔ a ≡ b.
+Proof.
+  split.
+  (* exercise *)
+Admitted.
+
+(**
+  The usefulness of the agree construction is demonstrated by the fact
+  that it is used to define the resource of heaps. The inclusion of the
+  agree RA allows us to conclude that, if we have two points-to
+  predicates for the same location, [l ↦{dq1} v1] and [l ↦{dq2} v2],
+  then they _agree_ on the value stored at the location: [v1 = v2].
+*)
+
+About pointsto_agree.
+
+End agree.
 
 (* ----------------------------------------------------------------- *)
 (** *** Product *)

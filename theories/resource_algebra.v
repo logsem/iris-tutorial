@@ -904,7 +904,9 @@ Qed.
 
 (**
   The product RA is often used in conjunction with dfrac and agree, with
-  the first component being a dfrac, and the second being an element of some resource algebra wrapped in agree. This pattern is common enough that it has been added to Iris' library of resource algebras.
+  the first component being a dfrac, and the second being an element of
+  some resource algebra wrapped in agree. This pattern is common enough
+  that it has been added to Iris' library of resource algebras.
 *)
 
 Print dfrac_agreeR.

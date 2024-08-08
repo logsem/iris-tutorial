@@ -1,4 +1,4 @@
-From iris.algebra Require Import cmra dfrac excl agree.
+From iris.algebra Require Import cmra dfrac excl agree dfrac_agree.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
@@ -833,7 +833,88 @@ End agree.
 (* ----------------------------------------------------------------- *)
 (** *** Product *)
 
-(* TODO: do *)
+Section product.
+
+(**
+  While Iris supports reasoning about multiple different notions of
+  resources simultaneously, it is sometimes useful to combine them at
+  the level of resource algebras. To this end, we have the `product'
+  resource algebra, [prodR], which is parametrised by _two_ CMRAs.
+*)
+
+Context {A B : cmra}.
+
+(**
+  Elements of the product resource algebra are pairs of elements from
+  [A] and [B].
+*)
+
+Context {a : A} {b : B}.
+
+Check (a, b) : prodR A B.
+
+(**
+  For the product RA, the two CMRAs are largely treated in parallel. For
+  instance, pairs are composed component-wise.
+*)
+
+About pair_op.
+
+(**
+  A pair is valid exactly when its components are valid.
+*)
+
+About pair_valid.
+
+(**
+  A pair is included in another pair, if the components of the first are
+  included in the components of the second.
+*)
+
+About pair_included.
+
+(**
+  When the core is defined for both of the components of a pair, the
+  core of the pair is simply the core of the components.
+*)
+
+Lemma pair_pcore_some (ca : A) (cb : B) :
+  pcore a = Some ca ->
+  pcore b = Some cb ->
+  pcore (a, b) = Some (ca, cb).
+Proof.
+  intros Hcore_a Hcore_b.
+  rewrite pair_pcore.
+  rewrite Hcore_a Hcore_b.
+  simpl.
+  reflexivity.
+Qed.
+
+(**
+  However, if the core of just one of the components is undefined, then
+  the core of the pair is also undefined.
+*)
+
+Lemma pair_pcore_dfrac : pcore (DfracOwn (1/2), b) = None.
+Proof. 
+  rewrite pair_pcore.
+  simpl.
+  reflexivity.
+Qed.
+
+(**
+  The product RA is often used in conjunction with dfrac and agree, with
+  the first component being a dfrac, and the second being an element of some resource algebra wrapped in agree. This pattern is common enough that it has been added to Iris' library of resource algebras.
+*)
+
+Print dfrac_agreeR.
+
+(**
+  This construction is a simple way to make the resources of some
+  resource algebra [A] shareable between threads in a safe way.
+*)
+
+End product.
 
 (* ----------------------------------------------------------------- *)
 (** *** Auth *)

@@ -56,12 +56,12 @@ From iris.heap_lang Require Import lang proofmode notation.
 
   A small side note: in Iris, resource algebras are specialisations of
   the more general structure `CMRA'. In particular, resource algebras
-  are `discrete CMRAs', meaning they do not have a notion of time. In
+  are `discrete' CMRAs, meaning they do not have a notion of time. In
   turn, CMRAs are built on top of `Ordered Families of Equations'. The
   exact details of these concepts are not important for this chapter,
   but we mention them as they appear a few times throughout the chapter.
   CMRAs and OFEs are covered in more detail in later chapters. The focus
-  point in this chapter is discerete CMRAs – resource algebra.
+  point in this chapter is discrete CMRAs – resource algebra.
 *)
 
 (* ================================================================= *)
@@ -78,8 +78,8 @@ From iris.heap_lang Require Import lang proofmode notation.
   - A subset of elements [Valid A], called valid.
   - A partial function [PCore A], called the core.
 
-  These components must satisfy certain properties, but before
-  discussing those, let us discuss the purpose of each component.
+  These components must satisfy certain properties, but before listing
+  those, let us discuss the purpose of each component.
 
   Firstly, the elements of the carrier intuitively correspond to the
   resources of the resource algebra.
@@ -183,7 +183,7 @@ Print RAMixin.
   As dfrac is a resource algebra, it is an instance of [RAMixin].
 *)
 
-Check dfrac_ra_mixin.
+Check dfrac_ra_mixin : RAMixin dfrac.
 
 (**
   As such, it has a carrier, an equivalence relation, an operation, a
@@ -390,8 +390,8 @@ Lemma dfrac_core_both (q : Qp) : pcore (DfracBoth q) = Some DfracDiscarded.
 Proof. compute. done. Qed.
 
 (**
-  Recall that, in general, the core extracts exactly the shareable part
-  of a resource. Since only knowledge of a fraction having been
+  Recall that, in general, the core extracts _exactly_ the shareable
+  part of a resource. Since only knowledge of a fraction having been
   discarded should be shareable, the image of the core should only
   contain [DfracDiscarded]. In particular, because all resources
   [DfracBoth q] can be written as [DfracDiscarded ⋅ DfracOwn q], the
@@ -580,8 +580,8 @@ Admitted.
   (e.g. it is used to define the points-to predicate). Hence, in this
   section, we will introduce some often used resource algebras.
 
-  Unlike dfrac, most of the resource algebras we study in this section
-  are parametrised by other resource algebras (or OFEs, or CMRAs). This
+  Unlike dfrac, the resource algebras we study in this section are
+  parametrised by other resource algebras (or OFEs, or CMRAs). This
   makes them generic, enabling us to use them to define more complex
   resource algebras.
 
@@ -663,7 +663,7 @@ End exclusive.
   create the resource algebra of `tokens'.
 *)
 
-Section token. 
+Section token.
 
 (** The [unitO] OFE has just one element [()], called the unit. *)
 Check () : unitO.
@@ -689,7 +689,7 @@ Proof. rewrite token_token_bot. apply excl_bot_invalid. Qed.
   single token can be owned at any one time. Among others, this resource
   algebra is useful to reason about programs whose correctness rely on
   only one thread accessing some critical section of memory at a time.
-  We will see examples of this in later chapters.
+  We will see concrete examples of this in later chapters.
 *)
 
 End token.
@@ -765,8 +765,8 @@ Proof.
 Qed.
 
 (**
-  As a result, if a composition valid, the result is simply one of the
-  two (equivalent) resources.
+  As a result, if a composition is valid, the result is simply one of
+  the two (equivalent) resources.
 *)
 
 Lemma agree_valid_opL (a b : A) : ✓ (to_agree a ⋅ to_agree b) → 

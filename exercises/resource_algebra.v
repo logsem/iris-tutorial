@@ -12,10 +12,8 @@ From iris.heap_lang Require Import lang proofmode notation.
     * TOKENS (custom definition, not from lib)
   + AGREE
   + PRODUCTS
-  + AUTH
-- HOW TO ACCESS THEM IN COQ. CONTEXT, Σ
-  + SEE https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/resource_algebras.md
 - GHOST STATE
+  + HOW TO ACCESS THEM IN COQ. CONTEXT, Σ
   + ENRICHING IRIS WITH RESOURCES FROM RA
     * 'own'
     * OWN-OP, OWN-VALID
@@ -618,7 +616,7 @@ Context {A : ofe}.
 Print excl.
 
 (**
-  The core is always undefined (nothing is shareable). 
+  The core is always undefined (nothing is shareable).
 *)
 
 Lemma excl_core (ea : excl A) : pcore ea ≡ None.
@@ -769,7 +767,7 @@ Qed.
   the two (equivalent) resources.
 *)
 
-Lemma agree_valid_opL (a b : A) : ✓ (to_agree a ⋅ to_agree b) → 
+Lemma agree_valid_opL (a b : A) : ✓ (to_agree a ⋅ to_agree b) →
   to_agree a ⋅ to_agree b ≡ to_agree a.
 (* Solution *) Proof.
   intros Hvalid.
@@ -869,7 +867,7 @@ Qed.
 *)
 
 Lemma pair_pcore_dfrac : pcore (DfracOwn (1/2), b) = None.
-Proof. 
+Proof.
   rewrite pair_pcore.
   simpl.
   reflexivity.
@@ -891,24 +889,12 @@ Print dfrac_agreeR.
 
 End product.
 
-(* ----------------------------------------------------------------- *)
-(** *** Auth *)
-
-(* TODO: do *)
-
-(* ================================================================= *)
-(** ** Accessing Resource Algebras in Coq *)
-
-(* TODO: do *)
-
-(**
-  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/resource_algebras.md
-*)
-
 (* ================================================================= *)
 (** ** Ghost State *)
 
-(** 
+Section ghost.
+
+(**
   In the previous sections, we duly studied the key concepts of resource
   algebras and a handful of basic examples. It is due time we put all
   that theory to use. In this section, we will see how to use resource
@@ -916,9 +902,55 @@ End product.
 *)
 
 (* ----------------------------------------------------------------- *)
+(** ** Accessing Resource Algebras in Coq *)
+
+(**
+  To use a resource algebra inside the Iris logic, we first need to make
+  the resource algebra available. As we have stated before, propositions
+  in Iris have type [iProp Σ]. The [Σ] can be thought of as a global
+  list of resource algebras that are available in the logic. The [Σ] is
+  always universally quantified to enable composition of proofs.
+  However, we may put _restrictions_ on [Σ], to specify that the list
+  must contain some specific resource algebra of our choosing. The
+  typeclass [inG Σ R] expresses that the resource algebra [R] is in the
+  [G]lobal list of resource algebras [Σ]. If we add this to the Coq
+  Context, then we may assume that [Σ] contains [R], which allows us to
+  use [R] inside the logic.
+
+  For instance, let us say that we want to use the resource algebra of
+  exclusive unit. The resources algebra for exclusive is denoted
+  [exclR], and we here instantiate it with the [unitO] OFE.
+*)
+
+Context `{!inG Σ (exclR unitO)}.
+
+(**
+  Libraries often bundle the resource algebras they need into their own
+  typeclasses so that they do not have to expose the details of the
+  resource algebras to clients. For instance, the [spawn] library
+  includes its required resource algebras in the [spawnG Σ] typeclass.
+  As such, adding this to the Coq Context makes the resource algebras
+  required by [spawn] available.
+*)
+
+Context `{!spawnG Σ}.
+
+(**
+  Similarly, the [heapGS Σ] typeclass asserts that the resource of heaps
+  is present in [Σ].
+*)
+
+Context `{!heapGS Σ}.
+
+(**
+  For additional information, please consult:
+  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/resource_algebras.md
+*)
+
+(* ----------------------------------------------------------------- *)
 (** *** Ownership of Resources *)
 
-(** 
+(**
   Iris provides exactly one way of embedding a resource into the
   logic...
 *)
@@ -946,3 +978,5 @@ End product.
 (** *** Allocation and Updates *)
 
 (* TODO: do *)
+
+End ghost.

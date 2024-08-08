@@ -519,7 +519,7 @@ Example par_client : expr :=
   example, but we must still assume that [Σ] contains the resources.
 *)
 
-Context `{spawnG Σ}.
+Context `{!spawnG Σ}.
 
 (**
   We specify the behaviour of [par_client] with a Hoare triple.

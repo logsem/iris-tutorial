@@ -1009,7 +1009,7 @@ Definition token (γ : gname) := own γ (Excl ()).
 *)
 
 Lemma own_op_dfrac (γ : gname) :
-  own γ (DfracOwn (1/4)) ∗ own γ (DfracBoth (1/4)) ∗-∗ 
+  own γ (DfracOwn (1/4)) ∗ own γ (DfracBoth (1/4)) ∗-∗
   own γ (DfracBoth (1/2)).
 Proof.
   iAssert (⌜DfracOwn (1 / 4) ⋅ DfracBoth (1 / 4) = DfracBoth (1 / 2)⌝)%I
@@ -1047,10 +1047,26 @@ Proof.
 Qed.
 
 (**
-  Todo: Persistency
+  Recall that the core extracts the shareable part of a resource. If the
+  core of some resource is itself, then that resource is freely
+  shareable – in particular ownership of the resource is duplicable.
+  That is, if [pcore r = Some r], then [own γ r] is persistent.
 *)
 
-(* Todo: example with dfrac *)
+Lemma own_dfrac_disc_persistent (γ : gname) :
+  own γ DfracDiscarded ⊢
+  (own γ DfracDiscarded) ∗ (own γ DfracDiscarded).
+Proof.
+  iIntros "#Hdisc".
+  iFrame "#".
+Qed.
+
+Lemma own_dfrac_both_disc (γ : gname) :
+  own γ (DfracBoth (2/3)) ⊢
+  (own γ (DfracBoth (2/3))) ∗ (own γ DfracDiscarded).
+Proof.
+  (* exercise *)
+Admitted.
 
 (* ----------------------------------------------------------------- *)
 (** *** Update Modality *)

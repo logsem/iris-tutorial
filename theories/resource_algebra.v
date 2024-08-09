@@ -172,11 +172,11 @@ Print RAMixin.
 (**
   That was a lot of abstract information, so let us get a bit more
   concrete and study the definition of resource algebra through a
-  familiar example: discarded fractions (shortened to dfrac). We saw
-  discarded fractions when we introduced the persistent points-to
-  predicate in the persistently chapter. As it turns out, the resource of
-  heaps is actually composed of other resource algebras, one of which is
-  dfrac.
+  familiar example: discardable fractions (shortened to dfrac). We saw
+  discardable fractions when we introduced the persistent points-to
+  predicate in the persistently chapter. As it turns out, the resource
+  of heaps is actually composed of other resource algebras, one of which
+  is dfrac.
 
   As dfrac is a resource algebra, it is an instance of [RAMixin].
 *)
@@ -681,18 +681,18 @@ Section token.
 Check () : unitO.
 
 (** A token is then simply an exclusive unit. *)
-Definition token := Excl ().
+Definition tok := Excl ().
 
 (** The token is valid... *)
-Lemma token_valid : ✓ token.
+Lemma token_valid : ✓ tok.
 Proof. apply excl_valid. Qed.
 
 (** ... but having the token twice gives the bottom element... *)
-Lemma token_token_bot : token ⋅ token ≡ ExclBot.
+Lemma token_token_bot : tok ⋅ tok ≡ ExclBot.
 Proof. apply excl_op. Qed.
 
 (* ... which is invalid. *)
-Lemma token_exclusive : ¬ ✓ (token ⋅ token).
+Lemma token_exclusive : ¬ ✓ (tok ⋅ tok).
 Proof. rewrite token_token_bot. apply excl_bot_invalid. Qed.
 
 (**
@@ -952,6 +952,14 @@ Section ghost.
 Context `{!inG Σ (exclR unitO)}.
 
 (**
+  Similarly, if we want to use the resource algebra of discardable
+  fractions, we assert that [Σ] must contain [dfracR] – the name of the
+  resource algebra in Coq.
+*)
+
+Context `{!inG Σ dfracR}.
+
+(**
   Libraries often bundle the resource algebras they need into their own
   typeclasses so that they do not have to expose the details of the
   resource algebras to clients. For instance, the [spawn] library
@@ -978,23 +986,98 @@ Context `{!heapGS Σ}.
 (** *** Ownership of Resources *)
 
 (**
-  Iris provides exactly one way of embedding a resource into the
-  logic...
+  Now that we have ensured that [Σ] contains our desired resource
+  algebras, we can start using them inside the logic. Iris provides
+  exactly one way of embedding a resource [r] from some resource algebra
+  [R] into the logic: the proposition [own γ r] asserts _ownership_ of
+  the resource [r] in an instance of the resource algebra [R] named [γ].
+  That is to say, in Iris, once we have added a [R] to [Σ], we may
+  create multiple instances of [R], so that the same resource in [R] may
+  be owned multiple times. To distinguish between instances, we use
+  `ghost names' (sometimes also called `ghost variables' or `ghost
+  locations'), which is usually written with a lower-case gamma: [γ].
+
+  For instance, as we have added [(exclR unitO)] to [Σ], we can define
+  tokens as ownership of the single valid resource in the resource
+  algebra.
 *)
 
-(* TODO: introduce ownership and notation *)
+Definition token (γ : gname) := own γ (Excl ()).
+
+(**
+  We can have multiple tokens, each of which is associated with its own
+  instance of the resource algebra. In this way, the [γ] serves as a
+  name for the token.
+*)
 
 (**
   Looking under the hood, the points-to predicate [l ↦ v] is also
   defined in terms of [own]. That is, [l ↦ v] is just notation denoting
-  ownership of a resource in the resource of heaps!
+  ownership of a resource in the resource of heaps! But where is the
+  ghost name [γ]? When adding the resource of heaps to [Σ], we do it
+  with the [heapGS Σ] typeclass. Here, the [S] stands for `singleton',
+  and signifies that only _one_ instance of the resource of heaps
+  exists. As such, we do not need ghost names to distinguish between
+  instances.
 *)
 
-(* TODO: multiple instances of the same algebra: Ghost names *)
-  (* TODO: motivate with tokens (two tokens protecting two different
-  critical sections of the heap) *)
+(**
+  If one owns multiple resources from the same instance of a resource
+  algebra, then these resources may be combined with the [iCombine]
+  tactic. Conversely, if one owns a resource that is composed of other
+  resources, one may split up the ownership into the constituent
+  resources with [iDestruct].
 
-(* TODO: combining ownership and validity *)
+  That is, we have the following rule:
+
+      [own γ a ∗ own γ b ⊣⊢ own γ (a ⋅ b)]
+
+  Let's see an example of this.
+*)
+
+Lemma own_op_dfrac (γ : gname) :
+  own γ (DfracOwn (1/4)) ∗ own γ (DfracBoth (1/4)) ∗-∗ 
+  own γ (DfracBoth (1/2)).
+Proof.
+  iAssert (⌜DfracOwn (1 / 4) ⋅ DfracBoth (1 / 4) = DfracBoth (1 / 2)⌝)%I
+  as "%Heq".
+  { iPureIntro. compute_done. }
+  (**
+    Note that, whereas ownership of resources is not pure, assertions
+    about the resources themselves are.
+  *)
+  iSplit.
+  - iIntros "[Hdq1 Hdq2]".
+    iCombine "Hdq1" "Hdq2" as "Hdq".
+    rewrite Heq.
+    done.
+  - iIntros "Hdq".
+    rewrite <- Heq.
+    iDestruct "Hdq" as "[Hdq1 Hdq2]".
+    iFrame.
+Qed.
+
+(**
+  In Iris, all owned resources are valid. This knowledge can be
+  extracted via the [iCombine] tactic. For instance, we can use it to
+  prove that token ownership is exclusive.
+*)
+
+Lemma own_token_exclusive (γ : gname) :
+  token γ ∗ token γ ⊢ False.
+Proof.
+  iIntros "[Htoken1 Htoken2]".
+  iCombine "Htoken1 Htoken2" as "Hcombined" gives "%Hvalid".
+  iPureIntro.
+  apply token_exclusive.
+  apply Hvalid.
+Qed.
+
+(**
+  Todo: Persistency
+*)
+
+(* Todo: example with dfrac *)
 
 (* ----------------------------------------------------------------- *)
 (** *** Update Modality *)

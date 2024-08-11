@@ -1103,7 +1103,60 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (** *** Update Modality *)
 
-(* TODO: do *)
+(**
+  We now know how to combine and split ownership of resources, but we
+  are missing two crucial features: allocation and updating. That is, we
+  must be able to get ownership of new resources, and we must be able to
+  update owned resources. To support these operations, Iris uses the
+  `update modality', [|==>], which we have already been exposed to in
+  previous chapters. Intuitively, the proposition [|==> P] describes the
+  resources we _could_ own after performing a frame preserving update
+  from the resources described by [P].
+
+  We may always introduce an update modality.
+*)
+
+Lemma upd_intro (P : iProp Σ): P ⊢ |==> P.
+Proof.
+  iIntros "HP".
+  (**
+    As [|==>] is a modality, we can use the [iModIntro] and [iMod]
+    tactics to work with it.
+  *) 
+  iModIntro.
+  iApply "HP".
+Qed.
+
+(**
+  We can only remove an update modality from an assumption if the goal
+  contains an update modality.
+*)
+
+Lemma upd_assumption (P Q: iProp Σ): (P -∗ Q) ∗ (|==> P) ⊢ |==> Q.
+Proof.
+  iIntros "[HPQ HuP]".
+  iMod "HuP" as "HP".
+  iModIntro.
+  by iApply "HPQ".
+Qed.
+
+Lemma upd_assumption_fail (P Q: iProp Σ): (P -∗ Q) ∗ (|==> P) ⊢ Q.
+Proof.
+  iIntros "[HPQ HuP]".
+  Fail iMod "HuP" as "HP".
+Abort.
+
+(**
+  Updating our resources two times in a row is equivalent to just
+  updating them once.
+*)
+
+Lemma upd_idemp (P : iProp Σ): (|==> |==> P) ⊢ |==> P.
+Proof.
+  iIntros "HuuP".
+  iMod "HuuP" as "HuP".
+  iApply "HuP".
+Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Allocation and Updates *)

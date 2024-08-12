@@ -227,7 +227,8 @@ Qed.
   [(H1 & .. & H2 & H3)] as a shorthand for [[H1 .. [H2 H3] ..]].
 
   Exercise: try to use an introduction with a pattern of parentheses to
-  prove associativity for [∗].
+  prove associativity for [∗]. Note that [∗] is right-associative, so
+  [P ∗ Q ∗ R] is parsed as [P ∗ (Q ∗ R)].
 *)
 Lemma sep_assoc_1 (P Q R : iProp Σ) : P ∗ Q ∗ R ⊢ (P ∗ Q) ∗ R.
 (* SOLUTION *) Proof.

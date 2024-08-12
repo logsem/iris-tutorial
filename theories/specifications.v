@@ -524,7 +524,7 @@ Qed.
 
 (**
   We finish this chapter with a final example that utilises the theory
-  presented in the previous sections. The example gives a specifications
+  presented in the previous sections. The example gives a specification
   for a concurrent program, which illustrates how ownership of resources
   (in particular points-to predicates) can be transferred between
   threads. The program is as follows.
@@ -538,19 +538,43 @@ Example par_client : expr :=
   ("l1", "l2", "life").
 
 (**
-  The program uses parallel composition (e1 ||| e1) from the [par]
+  The program uses parallel composition (e1 ||| e2) from the [par]
   package. Note that the two threads operate on separate locations;
-  there is no possibility for a data race. The [par] package provides a
-  specification for parallel composition called [wp_par]. This
-  specification relies on a notion of resources different from the
-  resource of heaps. The details of the resources are irrelevant for our
-  example, but we must still assume that [Σ] contains the resources.
+  there is no possibility for a data race. 
+  
+  The [par] package provides a specification for parallel composition
+  called [wp_par]. The specification is as follows.
+
+  [[
+  ∀ (Ψ1 Ψ2 : val → iProp Σ) (e1 e2 : expr) (Φ : val → iProp Σ),
+    WP e1 {{ Ψ1 }} -∗
+    WP e2 {{ Ψ2 }} -∗
+    (∀ v1 v2, (Ψ1 v1) ∗ (Ψ2 v2) -∗ ▷ Φ (v1, v2)) -∗
+    WP (e1 ||| e2) {{ Φ }}
+  ]]
+
+  Essentially, to prove a weakest precondition of parallel composition
+  [WP (e1 ||| e2) {{ Φ }}], one must prove a weakest precondition for
+  each of the threads, [WP e1 {{ Ψ1 }}] and [WP e2 {{ Ψ2 }}], and show
+  that all pairs of values that satisfy the postconditions [Ψ1] and [Ψ2]
+  respectively, also satisfy the postcondition of the weakest
+  precondition we wish to prove [Φ]. Note that the specification uses
+  the `later' modality [▷]. This is not needed for our current purposes,
+  so it can safely be ignored. We cover the later modality later.
+*)
+
+(**
+  The [wp_par] specification relies on a notion of resources different
+  from the resource of heaps. The details of the resources are
+  irrelevant for our example, but we must still assume that [Σ] contains
+  the resources.
 *)
 
 Context `{!spawnG Σ}.
 
 (**
-  We specify the behaviour of [par_client] with a Hoare triple.
+  Let us now return to our [par_client] example. We specify the
+  behaviour of [par_client] with a Hoare triple.
 *)
 
 Lemma par_client_spec :
@@ -593,7 +617,7 @@ Proof.
     the postconditions of both threads. Since the postconditions
     mentioned the points-to predicates, these are essentially
     transferred back to the main thread.
-   *)
+  *)
   iIntros (r1 r2) "[Hl1 Hl2]".
   rewrite /t1_post /t2_post.
   (** 

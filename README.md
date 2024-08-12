@@ -8,7 +8,7 @@ The tutorial comes in two versions:
 - The folder `exercises`: a skeleton development with exercises left admitted.
 - The folder `theories`: the full development with solutions.
 
-The tutorial consists of several chapters, each corresponding to a Coq file. The graph in [Chapter Dependencies](README.md#chapter-dependencies) illustrates possible ways to go through the tutorial. However, the recommended order is specified in [Overview](README.md#overview).
+The tutorial consists of several chapters, each corresponding to a Coq file. The graph in [Chapter Dependencies](README.md#chapter-dependencies) illustrates possible ways to go through the tutorial. However, the recommended order is specified in the [Recommended Learning Path](README.md#recommended-learning-path).
 
 ## Setup
 This version is known to compile with
@@ -38,7 +38,7 @@ opam install . --deps-only
 ## Editor
 Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/editor.md) describes how to set up your favorite editor.
 
-## Overview
+## Chapter Overview
 - [basics](/exercises/basics.v) - Introduction to the separation
   logic and the Iris Proof Mode
 - [pure](/exercises/pure.v) - Distinction between the Coq context and the Iris context
@@ -100,6 +100,26 @@ graph TD;
   spinlock --> adequacy;
   cst_ra --> ofe;
 ```
+
+## Recommended Learning Path
+To get a good understanding of the fundamental concepts of Iris, it is recommended to study the following chapters in the given order.
+
+1. [basics](/exercises/basics.v)
+2. [pure](/exercises/pure.v)
+3. [lang](/exercises/lang.v)
+4. [specifications](/exercises/specifications.v)
+5. [persistently](/exercises/persistently.v)
+6. [linked_lists](/exercises/linked_lists.v)
+7. [arrays](/exercises/arrays.v)
+8. [later](/exercises/later.v)
+9. [resource_algebra](/exercises/resource_algebra.v)
+10. [invariants](/exercises/invariants.v)
+11. [timeless](/exercises/timeless.v)
+12. [structured_conc](/exercises/structured_conc.v)
+13. [counter](/exercises/counter.v)
+14. [spin_lock](/exercises/spin_lock.v)
+15. [ticket_lock](/exercises/ticket_lock.v)
+16. [adequacy](/exercises/adequacy.v)
 
 ## Exercises
 To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`. 

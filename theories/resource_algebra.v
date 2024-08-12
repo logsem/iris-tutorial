@@ -1058,15 +1058,40 @@ Proof.
 Qed.
 
 (**
-  In Iris, all owned resources are valid. This knowledge can be
-  extracted via the [iCombine] tactic. For instance, we can use it to
-  prove that token ownership is exclusive.
+  In Iris, all owned resources are valid. This is captured by the
+  [own_valid] lemma.
+*)
+
+About own_valid.
+
+(**
+  We can use the [own_valid] lemma to prove that token ownership is
+  exclusive.
 *)
 
 Lemma own_token_exclusive (γ : gname) :
   token γ ∗ token γ ⊢ False.
 Proof.
   iIntros "[Htoken1 Htoken2]".
+  (** Combine the tokens. *)
+  iCombine "Htoken1 Htoken2" as "Hcombined".
+  (** Deduce that the combined resource is valid. *)
+  iPoseProof (own_valid with "Hcombined") as "%Hvalid".
+  iPureIntro.
+  apply token_exclusive.
+  apply Hvalid.
+Qed.
+
+(**
+  Validity of owned resources can also be extracted with the [iCombine]
+  tactic.
+*)
+
+Lemma own_token_exclusive' (γ : gname) :
+  token γ ∗ token γ ⊢ False.
+Proof.
+  iIntros "[Htoken1 Htoken2]".
+  (** Combine the tokens and deduce validity. *)
   iCombine "Htoken1 Htoken2" as "Hcombined" gives "%Hvalid".
   iPureIntro.
   apply token_exclusive.
@@ -1161,6 +1186,61 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (** *** Allocation and Updates *)
 
-(* TODO: do *)
+(* TODO: proofread *)
+
+(**
+  New resources are created by making a new instance of some resource
+  algebra. This is captured by the [own_alloc] lemma.
+*)
+
+About own_alloc.
+
+(**
+  Essentially, this states that as long as the resource you want to create
+  is valid, then you may update your resources to get a fresh instance
+  of your resource algebra (identified with a fresh ghost name), and
+  ownership of the resource.
+
+  For instance, we can always create new tokens.
+*)
+
+Lemma token_alloc : ⊢ |==> ∃ γ, token γ.
+Proof.
+  iApply own_alloc.
+  apply token_valid.
+Qed.
+
+(**
+  We can also create new, total dfracs.
+*)
+
+Lemma dfrac_alloc_one : ⊢ |==> ∃ γ, own γ (DfracOwn 1).
+(* SOLUTION *) Proof.
+  iApply own_alloc.
+  apply dfrac_valid.
+  done.
+Qed.
+
+(**
+  After having allocated new resources, we may update them using the
+  [own_update] lemma.
+*)
+
+About own_update.
+
+(**
+  Essentially, if we own resource [a], then we may update our resources
+  to get ownership of resource [a'], as long as we can do a frame
+  preserving update from [a] to [a'].
+*)
+
+Lemma own_dfrac_update (γ : gname) (dq : dfrac) :
+  own γ dq ⊢ |==> own γ DfracDiscarded.
+Proof.
+  iIntros "Hown".
+  iApply own_update.
+  { apply dfrac_discard_update. }
+  iApply "Hown".
+Qed.
 
 End ghost.

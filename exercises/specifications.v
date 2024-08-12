@@ -64,7 +64,7 @@ Proof.
   (**
     Note that the expression [#2 * #3] turned into [#(2 * 3)] – the Coq
     expression [2 * 3] is treated as a value in HeapLang.
-    
+
     In particular, [wp_op] has here applied three underlying rules:
     wp-bind, wp-op, and wp-val. The rule wp-bind allows us to `focus' on
     some sub-expression [e], which is the next part to be evaluated
@@ -73,7 +73,7 @@ Proof.
               [WP e {{ w, WP K[w] {{ v, Φ v }} }} ⊢ WP K[e] {{ v, Φ v }}]
 
     This allows us to change the goal from
-    [WP (#1 + #2 * #3 + #4 + #5) {{ v, ⌜v = #16⌝ }}] 
+    [WP (#1 + #2 * #3 + #4 + #5) {{ v, ⌜v = #16⌝ }}]
     to
     [WP #2 * #3 {{ w, WP (#1 + [] + #4 + #5)[w] {{ v, ⌜v = #16⌝ }} }}]
 
@@ -86,7 +86,7 @@ Proof.
 
     We can thus perform the multiplication and change the goal to
     [WP #(2 * 3) {{ w, WP (#1 + [] + #4 + #5)[w] {{ v, ⌜v = #16⌝ }} }}]
-    
+
     Finally, wp-val states that we can prove a weakest precondition of a
     value by proving the postcondition specialised to that value.
 
@@ -94,7 +94,7 @@ Proof.
 
     The goal is changed to
     [WP #1 + #(2 * 3) + #4 + #5 {{ v, ⌜v = #16⌝ }}]
-    
+
     This is where [wp_op] has taken us. The next step of the program is
     to add [#1] to [#(2 * 3)]. We could again use [wp_op] to
     symbolically execute this, but instead, we shall use the [wp_pure]
@@ -103,7 +103,7 @@ Proof.
   wp_pure.
   (**
     Similarly to above, this tactic applies wp-bind, wp-op, and wp-val.
-  
+
     If there are several pure steps in a row, we can use the [wp_pures]
     tactic, which repeatedly applies [wp_pure].
   *)
@@ -276,7 +276,7 @@ Example cas : expr :=
 (**
   The result of both [CAS] instructions are predetermined. Hence, we can
   use the [wp_cmpxchg_suc] and [wp_cmpxchg_fail] tactics to symbolically
-  execute them (remember that [CAS l v1 v2] is syntactic sugar for 
+  execute them (remember that [CAS l v1 v2] is syntactic sugar for
   [Snd (CmpXchg l v1 v2)]).
   Exercise: finish the proof of the specification for [cas].
 *)
@@ -512,8 +512,8 @@ Example par_client : expr :=
 (**
   The program uses parallel composition (e1 ||| e2) from the [par]
   package. Note that the two threads operate on separate locations;
-  there is no possibility for a data race. 
-  
+  there is no possibility for a data race.
+
   The [par] package provides a specification for parallel composition
   called [wp_par]. The specification is as follows.
 
@@ -550,13 +550,13 @@ Context `{!spawnG Σ}.
 *)
 
 Lemma par_client_spec :
-  {{{ True }}} 
+  {{{ True }}}
     par_client
   {{{ l1 l2 life, RET (#l1, #l2, #life); l1 ↦ #21 ∗ l2 ↦ #2 ∗ ⌜life = 42⌝ }}}.
 Proof.
   iIntros (Φ _) "HΦ".
   rewrite /par_client.
-  (** 
+  (**
     The program starts by creating two fresh location, [l1] and [l2].
   *)
   wp_alloc l1 as "Hl1".
@@ -564,7 +564,7 @@ Proof.
   wp_alloc l2 as "Hl2".
   wp_let.
   wp_pures.
-  (** 
+  (**
     The specification for [par] requires us to specify the
     postconditions for the two threads. Since the threads return unit,
     the postconditions will just describe the points-to predicates,
@@ -592,11 +592,11 @@ Proof.
   *)
   iIntros (r1 r2) "[Hl1 Hl2]".
   rewrite /t1_post /t2_post.
-  (** 
+  (**
     Note: the [wp_par] specification adds a later modality [▷] to the
     goal. This actually strengthens [wp_par], but we do not need that
-    strength in this example, so we can simply ignore it. We explain the
-    details of [▷] later. The [▷] can be introduced with [iNext].
+    strength in this example, so we can simply ignore it. The [▷] can be
+    introduced with [iNext].
   *)
   iNext.
   wp_seq.

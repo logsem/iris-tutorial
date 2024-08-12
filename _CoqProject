@@ -10,7 +10,7 @@ theories/specifications.v
 theories/later.v
 theories/persistently.v
 theories/linked_lists.v
-theories/fixpoint.v
+theories/gr_predicates.v
 theories/arrays.v
 theories/merge_sort.v
 theories/resource_algebra.v
@@ -31,7 +31,7 @@ exercises/specifications.v
 exercises/later.v
 exercises/persistently.v
 exercises/linked_lists.v
-exercises/fixpoint.v
+exercises/gr_predicates.v
 exercises/arrays.v
 exercises/merge_sort.v
 exercises/resource_algebra.v

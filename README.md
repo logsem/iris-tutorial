@@ -47,7 +47,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
   basic resources, and Hoare triples
 - [persistently](/exercises/persistently.v) - The persistently modality
 - [linked_lists](/exercises/linked_lists.v) - Linked lists
-  - [fixpoint](/exercises/fixpoint.v) - Fixpoints of propositions
+  - [gr_predicates](/exercises/gr_predicates.v) - Guarded Recursive Predicates
 - [arrays](/exercises/arrays.v) - Arrays in HeapLang
 - [later](/exercises/later.v) - The later modality and recursive functions
 - [resource_algebra](/exercises/resource_algebra.v) - Introduction to resource algebras
@@ -76,9 +76,9 @@ graph TD;
   ra --> invariants;
 
   later --> invariants;
-  later --> fix[fixpoint];
+  later --> grp[gr_predicates];
 
-  linklist --> fix;
+  linklist --> grp;
   linklist --> arrays;
 
   invariants --> timeless;

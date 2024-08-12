@@ -11,9 +11,9 @@ graph TD;
   ra --> invariants;
 
   later --> invariants;
-  later --> fix[fixpoint];
+  later --> grp[gr_predicates];
 
-  linklist --> fix;
+  linklist --> grp;
   linklist --> arrays;
 
   invariants --> timeless;

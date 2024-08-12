@@ -41,15 +41,15 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 ## Overview
 - [basics](/exercises/basics.v) - Introduction to the separation
   logic and the Iris Proof Mode
-  - [pure](/exercises/pure.v) - Distinction between the Coq context and the Iris context
+- [pure](/exercises/pure.v) - Distinction between the Coq context and the Iris context
 - [lang](/exercises/lang.v) - Introduction to HeapLang
 - [specifications](/exercises/specifications.v) - Weakest precondition,
-  basic resources, and Hoare triples
+  basic resources, Hoare triples, and basic concurrency
 - [persistently](/exercises/persistently.v) - The persistently modality
 - [linked_lists](/exercises/linked_lists.v) - Linked lists
-  - [gr_predicates](/exercises/gr_predicates.v) - Guarded Recursive Predicates
 - [arrays](/exercises/arrays.v) - Arrays in HeapLang
 - [later](/exercises/later.v) - The later modality and recursive functions
+- [gr_predicates](/exercises/gr_predicates.v) - Guarded Recursive Predicates
 - [resource_algebra](/exercises/resource_algebra.v) - Introduction to resource algebras
 - [invariants](/exercises/invariants.v) - Invariants
 - [timeless](/exercises/timeless.v) - Timeless propositions

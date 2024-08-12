@@ -1,9 +1,8 @@
-# Versioning
-- coq-iris-unstable requires development versions of coq-iris and
-  coq-iris-heaplang.
-
 # Possible future topics
-- Remaining  examples from ILN
+- Have a file showcasing advanced Coq tactics.
+- Add example with "Landin's knot" (recursion through the store).
+- Add some exercises from Persistently chapter in ILN to Persistently chapter.
+- Remaining examples from ILN
   - Ch. 16 - fixpoints
 - Detailed description of cmra with excercises on defining new ones.
   - Defining a discrete cmra
@@ -16,3 +15,7 @@
 - How to define a new language in Iris.
 - Defining new modalities
   - Run through the relevant typeclasses
+
+# Features
+- Make tutorial accessible as an interactive webpage (jscoq)
+  - See e.g. https://jscoq.github.io/ext/sf/

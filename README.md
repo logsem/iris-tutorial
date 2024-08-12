@@ -1,7 +1,7 @@
 # Iris Tutorial
 The Iris Tutorial is an introduction to the [Iris separation logic framework](https://iris-project.org/) and how to work with its [Coq formalization](https://gitlab.mpi-sws.org/iris/iris/).
 
-The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. In its current form, the tutorial material is intended as a supplement to the [Iris Lecture Notes](https://iris-project.org/tutorial-material.html). No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/).
+The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Coq proof assistant is assumed. Advanced Coq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning.
 
 The tutorial comes in two versions:
 
@@ -112,6 +112,9 @@ If you are stuck, you can find solutions in the corresponding file in the `theor
 This [cheatsheet](/cheatsheet.md) contains a table of the most important tactics for each logical connective. A full description of the Iris Proof Mode tactics can be found in the files [proof_mode.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md) and [heap_lang.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md).
 
 ## Optional Reading
+
+Currently, the [Iris Lecture Notes](https://iris-project.org/tutorial-material.html) cover all the material presented in this tutorial and more. The lecture notes are not required to work through the tutorial, but readers may want to refer to the lecture notes for additional/alternative explanations of introduced concepts.
+
 In its current state, this tutorial does not go over the underlying model of Iris. For readers who wish to learn about the underlying model of Iris, we refer to the [Iris from the ground up](https://people.mpi-sws.org/~dreyer/papers/iris-ground-up/paper.pdf) paper. Advanced readers may read this paper prior to going through the tutorial. However, it is generally recommended to study it afterwards, given its technical nature.
 
 ## Generating the exercises

@@ -1,31 +1,6 @@
 From iris.algebra Require Import cmra dfrac excl agree dfrac_agree.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*########## CONTENTS PLAN ##########
-- INTRODUCTION TO RESOURCE ALGEBRA
-- BASIC DEFINITION AND COMPONENTS (FROM ILN)
-  + DEFINITION
-  + DFRAC RUNNING EXAMPLE
-  + FRAME PRESERVING UPDATE
-- EXAMPLE RESOURCE ALGEBRA
-  + EXCLUSIVE
-    * TOKENS (custom definition, not from lib)
-  + AGREE
-  + PRODUCTS
-- GHOST STATE
-  + HOW TO ACCESS THEM IN COQ. CONTEXT, Σ
-  + ENRICHING IRIS WITH RESOURCES FROM RA
-    * 'own'
-    * OWN-OP, OWN-VALID
-    * EXAMPLE: TOKENS
-      ** owning a token
-      ** combining two of the same token with own-op
-      ** using own-valid to conclude that said element must be valid
-      ** knowing from RA that said element must be invalid, hence contradiction
-  + UPDATE MODALITY
-  + ALLOC, UPDATE
-#####################################*)
-
 (* ################################################################# *)
 (** * Resource Algebra *)
 
@@ -1121,7 +1096,7 @@ Proof.
 Qed.
 
 (**
-  We can only remove an update modality from an assumption if the goal
+  We can remove an update modality from an assumption if the goal
   contains an update modality.
 *)
 
@@ -1133,6 +1108,21 @@ Proof.
   by iApply "HPQ".
 Qed.
 
+(**
+  Recall that we can use [>] in an introduction pattern to invoke
+  [iMod], and [!>] to invoke [iModIntro].
+*)
+
+Lemma upd_assumption' (P Q: iProp Σ): (P -∗ Q) ∗ (|==> P) ⊢ |==> Q.
+Proof.
+  iIntros "[HPQ >HuP] !>".
+  by iApply "HPQ".
+Qed.
+
+(**
+  Only some goals permit removing update modalities from assumptions. In
+  the general case, we cannot strip update modalities.
+*)
 Lemma upd_assumption_fail (P Q: iProp Σ): (P -∗ Q) ∗ (|==> P) ⊢ Q.
 Proof.
   iIntros "[HPQ HuP]".
@@ -1140,21 +1130,28 @@ Proof.
 Abort.
 
 (**
-  Updating our resources two times in a row is equivalent to just
-  updating them once.
+  Notably, we can remove update modalities if the goal is a weakest
+  precondition.
+*)
+Lemma upd_wp (P : iProp Σ): (|==> P) ⊢ WP #4 + #2 {{ v, P }}.
+Proof.
+  iIntros ">HP".
+  wp_pures.
+  iApply "HP".
+Qed.
+
+(**
+  Exercise: Prove that updating our resources two times in a row is
+  equivalent to just updating them once.
 *)
 
 Lemma upd_idemp (P : iProp Σ): (|==> |==> P) ⊢ |==> P.
 Proof.
-  iIntros "HuuP".
-  iMod "HuuP" as "HuP".
-  iApply "HuP".
-Qed.
+  (* exercise *)
+Admitted.
 
 (* ----------------------------------------------------------------- *)
 (** *** Allocation and Updates *)
-
-(* TODO: proofread *)
 
 (**
   New resources are created by making a new instance of some resource
@@ -1164,10 +1161,10 @@ Qed.
 About own_alloc.
 
 (**
-  Essentially, this states that as long as the resource you want to create
-  is valid, then you may update your resources to get a fresh instance
-  of your resource algebra (identified with a fresh ghost name), and
-  ownership of the resource.
+  That is, if we have some resource algebra [A], and wish to create and
+  get ownership of resource [a] in [A], then, as long as [a] is valid,
+  we may update our resources to get ownership of [a] in a _fresh_
+  instance of [A], identified by a fresh ghost name [γ].
 
   For instance, we can always create new tokens.
 *)
@@ -1198,6 +1195,10 @@ About own_update.
   Essentially, if we own resource [a], then we may update our resources
   to get ownership of resource [a'], as long as we can do a frame
   preserving update from [a] to [a'].
+
+  For example, since we can do a frame preserving update from any dfrac
+  element to [DfracDiscarded], we can always update ownership of any
+  dfrac resource to ownership of [DfracDiscarded].
 *)
 
 Lemma own_dfrac_update (γ : gname) (dq : dfrac) :
@@ -1208,5 +1209,15 @@ Proof.
   { apply dfrac_discard_update. }
   iApply "Hown".
 Qed.
+
+(**
+  Exercise: Use [own_dfrac_update] to prove the following hoare triple.
+*)
+
+Lemma hoare_triple_dfrac (γ : gname):
+  {{{ own γ (DfracOwn 1) }}} #1 + #1 {{{v , RET v; own γ DfracDiscarded }}}.
+Proof.
+  (* exercise *)
+Admitted.
 
 End ghost.

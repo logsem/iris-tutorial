@@ -28,13 +28,12 @@ From iris.heap_lang Require Import lang proofmode notation.
   of this chapter.
 
   A small side note: in Iris, resource algebras are specialisations of
-  the more general structure `CMRA'. In particular, resource algebras
-  are `discrete' CMRAs, meaning they do not have a notion of time. In
-  turn, CMRAs are built on top of `Ordered Families of Equations'. The
-  exact details of these concepts are not important for this chapter,
-  but we mention them as they appear a few times throughout the chapter.
-  CMRAs and OFEs are covered in more detail in later chapters. The focus
-  point in this chapter is discrete CMRAs – resource algebra.
+  the more general structure `CMRA' (in particular, resource algebras
+  are `discrete' CMRAs). In turn, CMRAs are built on top of `Ordered
+  Families of Equations' (shortened to `OFE'). The exact details of
+  these concepts are not important for this chapter, but we mention them
+  as they appear a few times throughout the chapter. CMRAs and OFEs are
+  covered in more detail in later chapters.
 *)
 
 (* ================================================================= *)
@@ -54,8 +53,8 @@ From iris.heap_lang Require Import lang proofmode notation.
   These components must satisfy certain properties, but before listing
   those, let us discuss the purpose of each component.
 
-  Firstly, the elements of the carrier intuitively correspond to the
-  resources of the resource algebra.
+  Firstly, the elements of the carrier correspond to the resources of
+  the resource algebra.
 
   Secondly, the equivalence relation, written [x ≡ y] for resources
   [x, y ∈ A], tells us which resources are considered equivalent.
@@ -693,7 +692,6 @@ Proof. constructor. Qed.
 Lemma agree_core (a : agree A) : pcore a ≡ Some a.
 Proof. constructor. done. Qed.
 
-
 (**
   The key idea is that only resources that are equivalent in the
   original resource algebra can be combined.
@@ -889,11 +887,11 @@ Section ghost.
   must contain some specific resource algebra of our choosing. The
   typeclass [inG Σ R] expresses that the resource algebra [R] is in the
   [G]lobal list of resource algebras [Σ]. If we add this to the Coq
-  Context, then we may assume that [Σ] contains [R], which allows us to
-  use [R] inside the logic.
+  Context, then we may assume that [Σ] contains [R], allowing us to use
+  [R] inside the logic.
 
   For instance, let us say that we want to use the resource algebra of
-  exclusive unit. The resources algebra for exclusive is denoted
+  exclusive unit. The resource algebra for exclusive is denoted
   [exclR], and we here instantiate it with the [unitO] OFE.
 *)
 
@@ -1090,7 +1088,7 @@ Proof.
   (**
     As [|==>] is a modality, we can use the [iModIntro] and [iMod]
     tactics to work with it.
-  *) 
+  *)
   iModIntro.
   iApply "HP".
 Qed.

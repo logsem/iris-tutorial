@@ -1,16 +1,11 @@
 From iris.base_logic.lib Require Export invariants.
-From iris.heap_lang Require Import lang proofmode notation par.
+From iris.heap_lang Require Import lang proofmode notation.
 
-(*########## CONTENTS PLAN ##########
-- MORE BASIC INTRODUCTION TO INVARIANTS
-  + THEIR PURPOSE
-  + PERSISTENCY
-  + OPEN ONCE BEFORE CLOSING
-  + INVARIANT NAMES (namespaces)
-  + MASKS AND FANCY UPDATE MODALITY
-- SHOW EXISTING EXAMPLES AFTERWARDS
-- MOVE parallel_add to concurrency.v
-#####################################*)
+(* ################################################################# *)
+(** * Invariants *)
+
+(* ================================================================= *)
+(** ** A Motivating Example *)
 
 (**
   Let's make a simple multi-threaded program. We can use [Fork e] to
@@ -44,21 +39,260 @@ Proof.
   *)
 Abort.
 
-(**
-  To get around this, we will use invariants. Invariants are written
-  [inv N P] where N is a namespace (Think of it as the name of the
-  invariant), and [P] is the proposition we want to make invariant.
-  As the name suggests, invariants are propositions that will remain
-  true forever. This allows them to be persistent no matter what [P] is.
-  
-  As stated, invariants need a namespace. This allows invariants to be
-  used together as long as they are in different namespaces.
-*)
-Let N := nroot .@ "stuff".
+(* ================================================================= *)
+(** ** Introduction to Invariants *)
+
+Section inv_intro.
 
 (**
-  In this case, we want the invariant to encapsulate ownership of [l]
-  as well as its possible values.
+  As the above program illustrates, some resources are required by
+  multiple threads simultaneously. If those resources are not shareable
+  (i.e. persistent), then we will get stuck, as in the example above.
+  To get around this problem, we can devise an invariant for said
+  resources. That is, we come up with a proposition [P] which describes
+  the resources in a way that is always true, no matter where in the
+  program we are, or how threads have interleaved. We can then use Iris'
+  invariant functionality to assert that [P] is an invariant: [inv N P].
+  Here, [N] is a `namespace', which we may think of as the name of the
+  invariant.
+
+  The key property of invariants that solve our problem is that they are persistent.
+*)
+
+Lemma inv_persist (N : namespace) (P : iProp Σ) :
+  Persistent (inv N P).
+Proof. apply _. Qed.
+
+(**
+  Thus, if we can we can come up with a proposition [P] describing our
+  resources correctly throughout the entire program, then we can
+  _allocate_ [P] as an invariant, and supply said invariant to the
+  threads requiring access to the resources described by [P]. To access
+  [P] from the invariant, threads must then _open_ the invariant.
+
+  The next two sub-sections cover how to open and allocate invariants.
+*)
+
+(* ----------------------------------------------------------------- *)
+(** *** Opening Invariants *)
+
+(**
+  Once we have an invariant [inv N P], we can use the [iInv] tactic to
+  _open_ the invariant, granting us access to [P]. To ensure soundness
+  of the logic, there are some restrictions to opening an invariant.
+
+  Firstly, an invariant can only be opened once before being closed
+  again. This is enforced in Iris through `masks'. A mask can be thought
+  of as a set that tracks which invariants are closed. If no invariants
+  are open, the mask is [⊤]. If only invariant [N] is open, the mask is
+  [⊤ ∖ ↑N]. If we have two invariants [N1] and [N2] that are both open,
+  the mask is [⊤ ∖ ↑N1 ∖ ↑N2], and so on. Only invariants that are in
+  the mask can be opened. Thus, if invariant [N] is not in the mask
+  (i.e. it is open), then we cannot use [iInv] to open [N] again.
+  Closing the invariant puts [N] back into the mask, allowing it to be
+  opened again.
+
+  We can only open an invariant if the goal has a mask which contains
+  [N]. As such, if the goal is a generic proposition, we cannot open any
+  invariants.
+*)
+
+Lemma inv_open_fail (N : namespace) (P Q : iProp Σ) :
+  inv N (P) ⊢ Q.
+Proof.
+  iIntros "Hinv".
+  Fail iInv "Hinv" as "HP".
+Abort.
+
+(**
+  An example of a goal that has a mask is a weakest precondition. That
+  is, the shape of a weakest precondition is actually
+
+    [WP e @ E {{Φ}}]
+
+  with [E] being the mask. However, when the mask is [⊤], it is
+  notationally hidden, which is why we have yet to see it.
+
+  Another example of a goal permitting invariant openings is the _fancy
+  update modality_, which essentially just adds a mask to the update
+  modality. A fancy update modality is written [|={E}=>] for a mask [E].
+  The fancy update modality is like the update modality, but with
+  support for invariants: if the goal contains [|={E}=>], then we are
+  allowed to open all invariants in [E].
+*)
+
+(**
+  Another restriction on invariant openings is that, when the goal is a
+  weakest precondition [WP e {{Φ}}], an invariant can be open for at
+  most one program step. That is, [e] must be an atomic expression,
+  meaning it reduces to a value in one step. After the one step, we have
+  to _close_ the invariant again. Closing an open invariant [iInv N P]
+  corresponds to proving that [P] still holds.
+  
+  Let us try to see these concepts in action with a simple example.
+*)
+
+Lemma inv_open_example_attempt_1 (N : namespace) (l : loc) :
+  inv N (l ↦ #1) ⊢ WP !#l + !#l {{ v, ⌜v = #2⌝ }}.
+Proof.
+  iIntros "#Hinv".
+  (**
+    To prove the WP, we must get access to [l ↦ #1] from the invariant.
+    As discussed, to open the invariant, the expression must be atomic.
+    Let us ignore this and try to open the invariant anyway.
+  *)
+  iInv "Hinv" as "Hl".
+  (** 
+    Iris now asks us to prove that [!#l + !#l] is atomic. Hence we are
+    stuck.
+  *)
+Abort.
+
+(** 
+  When the expression in the WP is not atomic, we can make it so by
+  _binding_ the expression we want to open the invariant around.
+*)
+
+Lemma inv_open_example_attempt_2 (N : namespace) (l : loc) :
+  inv N (l ↦ #1) ⊢ WP !#l + !#l {{ v, ⌜v = #2⌝ }}.
+Proof.
+  iIntros "#Hinv".
+  (**
+    We now first bind the expression (!#l), which _is_ atomic.
+  *)
+  wp_bind (!#l)%E.
+  (**
+    This allows us to open the invariant.
+  *)
+  iInv "Hinv" as "Hl".
+  (**
+    Note that we got the points-to proposition from the invariant. A
+    small caveat is that we only get the proposition later. This is
+    usually not an issue, as the later can be removed in most cases,
+    which we discuss in a later chapter.
+
+    Notice the mask on the weakest precondition: [⊤ ∖ ↑N]. This ensures
+    that we cannot open [N] again to prove the WP. If we tried to open
+    the invariant again, Iris would ask us to show that [↑N] is a subset
+    of [⊤ ∖ ↑N]. For the sake of demonstration, let us try this.
+  *)
+  iInv "Hinv" as "Hl'".
+  (**
+    This is of course impossible to prove, so we are stuck.
+  *)
+Abort.
+
+Lemma inv_open_example (N : namespace) (l : loc) :
+  inv N (l ↦ #1) ⊢ WP !#l + !#l {{ v, ⌜v = #2⌝ }}.
+Proof.
+  iIntros "#Hinv".
+  wp_bind (!#l)%E.
+  iInv "Hinv" as "Hl".
+  (**
+    Having opened the invariant, we now have access to [l ↦ #1], which
+    we can use to prove the WP.
+  *)
+  wp_load.
+  (**
+    Now we have used our invariant to take the one step so as
+    discussed, we must now close the invariant by proving that the
+    invariant still holds. Notice that the fancy update modality keeps
+    us from using the invariant in proving this.
+  *)
+  iSplitL "Hl".
+  { iApply "Hl". }
+  (**
+    Note that, even though we have now closed the invariant, the fancy
+    update modality still prevents us from opening the invariant.
+    However, we can always introduce a fancy update modality with
+    [iModIntro].
+    *)
+  iModIntro.
+  (** 
+    Since the mask on the weakest precondition in the goal is implicitly
+    [⊤], we can open [N] again.
+
+    We proceed as before.
+  *)
+  wp_bind (!#l)%E.
+  iInv "Hinv" as "Hl".
+  wp_load.
+  iSplitL "Hl".
+  { iApply "Hl". }
+  iModIntro.
+  wp_pures.
+  done.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(** *** Allocating Invariants *)
+
+(**
+  Now we know how to open invariants, but how are they created in the
+  first place?
+
+  Once we have devised a proposition [P] describing our resources
+  invariantly, we can turn [P] into an invariant [inv N P] using the
+  [inv_alloc] lemma. The lemma states
+
+      [inv_alloc : ▷P -∗ |={E}=> inv N P]
+
+  That is, to turn [P] into an invariant, we must prove that [P] is true
+  after one step (or, if we can, in the current step). As with
+  allocation of ownership of resources, we do not get access to the
+  invariant immediately; it is behind a fancy update modality
+  [|={E}=>].
+
+  Let us see this in action. First, we give a name to the invariant we
+  wish to allocate.
+*)
+Let N := nroot .@ "myInvariant".
+
+(**
+  Now, let us try to prove the following (quite contrived)
+  specification.
+*)
+Lemma inv_alloc_wp :
+  {{{ True }}} ref #0 {{{(l : loc), RET #l; inv N (l ↦ #0)}}}.
+Proof.
+  iIntros (Φ) "_ HΦ".
+  wp_alloc l as "Hl".
+  (**
+    We now wish to allocate the invariant using [inv_alloc]. To strip
+    the fancy update modality immediately, we use the [iMod] tactic.
+    We can do this since the goal contains a fancy update modality.
+  *)
+  iMod (inv_alloc N _ (l ↦ #0) with "[Hl]") as "Hinv".
+  (**
+    As discussed, in order to allocate the invariant, we must prove that
+    it holds after one step.
+  *)
+  { iNext. done. }
+  (**
+    With the invariant allocated, we can finish the proof.
+  *)
+  iModIntro.
+  iApply "HΦ".
+  iApply "Hinv".
+Qed.
+
+End inv_intro.
+
+(* ================================================================= *)
+(** ** A Motivating Example - Take Two *)
+
+(**
+  Armed with the knowledge of invariants, let us attempt to prove the
+  specification from the beginning of the chapter again. We start by
+  giving a name to our invariant.
+*)
+Let N := nroot .@ "prog".
+
+(**
+  So what should the invariant be? The resource of interest is what the
+  location [l] points to, and throughout the program, it points to
+  either [0] or [1]. As such, we will create an invariant which captures
+  that [l] points to either [0] or [1].
 *)
 Definition prog_inv (l : loc) : iProp Σ :=
   ∃ v, l ↦ v ∗ (⌜v = #0⌝ ∨ ⌜v = #1⌝).
@@ -69,13 +303,9 @@ Proof.
   rewrite /prog.
   wp_alloc l as "Hl".
   wp_pures.
-  (**
-    To create an invariant we use the lemma
-    [inv_alloc : ▷P -∗ |={E}=> inv N P].
-    To deal with the fancy update modality, we will use the [iMod]
-    tactic rather than [iPoseProof] or [iDestruct].
-  *)
-  iMod (inv_alloc N _ (prog_inv l) with "[Hl]") as "#I".
+  (** We now allocate our [prog_inv] invariant, using [inv_alloc]. *)
+  iMod (inv_alloc N _ (prog_inv l) with "[Hl]") as "#Hinv".
+  (** We prove that the invariant is currently true. *)
   {
     iNext.
     iExists #0.
@@ -83,46 +313,54 @@ Proof.
     by iLeft.
   }
   (**
-    As the invariant is persistent, we can now share it between the
-    threads.
+    With the invariant allocated and in the persistent context, we can
+    use it to prove both threads.
   *)
   wp_apply wp_fork.
   - (**
-      We can use the [iInv] to access the resources in the invariant.
+      As [#l <- #1] is atomic and the mask on the WP is [⊤], we can open the invariant.
     *)
-    iInv "I" as "(%v & Hl & _)".
-    (**
-      Opening invariants have certain restrictions. It is only
-      possible to open invariants over an atomic step, and after this
-      step, we must reestablish the invariant.
-      Furthermore, the [@ ⊤ \ ↑N], signifies that the [N] namespace
-      has been opened. As such we won't be able to open it twice at the same step.
-    *)
+    iInv "Hinv" as "(%v & Hl & _)".
+    (** We use the obtained points-to predicate to prove the WP. *)
     wp_store.
-    iSplitL; last done.
-    iIntros "!> !>".
-    iExists #1.
-    iFrame.
-    by iRight.
+    (** We close the invariant... *)
+    iSplitL.
+    {
+      iIntros "!> !>".
+      iExists #1.
+      iFrame.
+      by iRight.
+    }
+    (** ... and finish the proof of the forked thread. *)
+    done.
+(* BEGIN SOLUTION *)
   - wp_pures.
-    iInv "I" as "(%v & Hl & #Hv)".
+    iInv "Hinv" as "(%v & Hl & #Hv)".
     wp_load.
     iModIntro.
     iSplitL "Hl".
-    + iExists v.
-      by iFrame.
-    + by iApply "HΦ".
+    { iExists v. by iFrame. }
+    by iApply "HΦ".
 Qed.
+(* END SOLUTION BEGIN TEMPLATE
+  - (* exercise *)
+Admitted.
+END TEMPLATE *)
 
 End proofs.
 
+(* ================================================================= *)
+(** ** Another Example *)
+
 (**
-  Let's look at another program. This program will create a thread to
-  increment a counter. While the main thread will read the counter at
-  some point. As such, this program should produce some non-negative
-  number. However, we will only prove that it returns a number. Later,
-  we will see other tools that will allow us to refine this.
+  Let us look at another program. This program will create a thread to
+  continuously increment a counter, while the main thread will read the
+  counter at some point. As such, this program should produce some
+  non-negative number. However, we will only prove that it returns a
+  number. Later, we will see other tools that will allow us to refine
+  this.
 *)
+
 Definition prog2 : expr :=
   let: "l" := ref #0 in
   Fork ((
@@ -134,7 +372,7 @@ Definition prog2 : expr :=
 
 Section proofs.
 Context `{!heapGS Σ}.
-Let N := nroot .@ "other stuff".
+Let N := nroot .@ "prog2".
 
 (**
   Our invariant will simply be that the location points to an integer.
@@ -148,30 +386,20 @@ Proof.
   rewrite /prog2.
   wp_alloc l as "Hl".
   wp_pures.
-  (**
-    Like before, we allocate the invariant.
-  *)
+  (** Like before, we allocate the invariant. *)
   iMod (inv_alloc N _ (prog2_inv l) with "[Hl]") as "#I".
   { iNext. by iExists 0. }
   wp_apply wp_fork.
   - wp_pure.
-    (** We use löb induction to accent the recursive calls *)
+    (** We use löb induction to accent the recursive calls. *)
     iLöb as "IH".
     wp_pures.
-    (** If we now try to open the invariant: *)
-    iInv "I" as "[%i Hl]".
     (**
-      We run into something different from earlier. This new subgoal
-      [Atomic] is a typeclass, stating that the program should only
-      consist of a single atomic operation. In this case, the typeclass
-      search fails, because the program in fact consists of two
-      operations. So it is not atomic.
-    *)
-    Undo. (* TODO: Undo not supported by VsCoq2 *)
-    (**
-      To get around this, we will use wp_bind to split the program
-      into atomic parts.
-      Notice that the [%E] is necessary to use the notation.
+      We need to access the contents of the invariant to step through
+      the read of [l] and the store to [l]. However, invariants can only
+      be open for one step, so we are forced to open the invariant twice
+      in succession.
+      First, we open it around the read.
     *)
     wp_bind (! _)%E.
     iInv "I" as "[%i Hl]".
@@ -181,8 +409,7 @@ Proof.
     { by iExists i. }
     wp_pures.
     (**
-      As we know need access to [l] again, we have to do the same
-      trick again.
+      Next, we open it around the store.
     *)
     wp_bind (_ <- _)%E.
     iInv "I" as "[%j Hl]".
@@ -202,81 +429,3 @@ Proof.
 Qed.
 
 End proofs.
-
-(**
-  This time we'll use the par operator, to do 2 parallel fetch and
-  adds. Again we will only prove that r ends up even.
-*)
-Definition parallel_add : expr :=
-  let: "r" := ref #0 in
-  (FAA "r" #2)
-  |||
-  (FAA "r" #6)
-  ;;
-  !"r".
-
-Section parallel_add.
-(**
-  The par operator needs more resources than are available in
-  [heapGS]. So to use it we also need to add [spawnG Σ].
-*)
-Context `{!heapGS Σ, !spawnG Σ}.
-
-(** The invariant is thus that r points to an even integer. *)
-Definition parallel_add_inv (r : loc) : iProp Σ :=
-  ∃ n : Z, r ↦ #n ∗ ⌜Zeven n⌝.
-
-Lemma parallel_add_spec :
-  {{{ True }}} parallel_add {{{ n, RET #n; ⌜Zeven n⌝ }}}.
-Proof.
-  iIntros "%Φ _ HΦ".
-  rewrite /parallel_add.
-  wp_alloc r as "Hr".
-  wp_pures.
-  iMod (inv_alloc nroot _ (parallel_add_inv r) with "[Hr]") as "#I".
-  {
-    iNext.
-    iExists 0.
-    iFrame.
-  }
-  (**
-    We don't need information back from the threads, so we will simply
-    use [λ _, True] as the post conditions.
-  *)
-  wp_apply (wp_par (λ _, True%I) (λ _, True%I)).
-  - iInv "I" as "(%n & Hr & >%Hn)".
-    wp_faa.
-    iModIntro.
-    iSplitL; last done.
-    iModIntro.
-    iExists (n + 2)%Z.
-    iFrame.
-    iPureIntro.
-    by apply Zeven_plus_Zeven.
-(* BEGIN SOLUTION *)
-  - iInv "I" as "(%n & Hr & >%Hn)".
-    wp_faa.
-    iModIntro.
-    iSplitL; last done.
-    iModIntro.
-    iExists (n + 6)%Z.
-    iFrame.
-    iPureIntro.
-    by apply Zeven_plus_Zeven.
-  - iIntros "%v1 %v2 _ !>".
-    wp_pures.
-    iInv "I" as "(%n & Hr & >%Hn)".
-    wp_load.
-    iModIntro.
-    iSplitL "Hr".
-    + iNext.
-      iExists n.
-      by iFrame.
-    + by iApply "HΦ".
-Qed.
-(* END SOLUTION BEGIN TEMPLATE
-  (* exercise *)
-Admitted.
-END TEMPLATE *)
-
-End parallel_add.

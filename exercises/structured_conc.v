@@ -60,6 +60,7 @@ Definition par : val :=
   ("v1", "v2").
 
 (** ... and introduce convenient notation that hides the thunks. *)
+Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : expr_scope.
 Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
 (** Our desired specification for [par] is going to look as follows:
@@ -262,3 +263,70 @@ Proof.
 Qed.
 
 End threads.
+
+(**
+  Let us try to use the par specification to prove a specification for a
+  simple client. The client performs two `fetch and add' operations on
+  the same location in parallel. The expression [FAA "l" #i] atomically
+  fetches the value at location [l], adds [i] to it, and stores the
+  result back in [l].
+
+  Our specification will state that the resulting value is even.
+*)
+
+
+(* <--- REMOVE:TODO
+
+TODO: Make proof work with par_spec from this chapter. 
+
+
+Definition parallel_add : expr :=
+  let: "r" := ref #0 in
+  (FAA "r" #2)
+  |||
+  (FAA "r" #6)
+  ;;
+  !"r".
+
+Section parallel_add.
+(**
+  The par operator needs more resources than are available in
+  [heapGS]. So to use it we also need to add [spawnG Σ].
+*)
+Context `{!heapGS Σ, !spawnG Σ}.
+
+(** The invariant is thus that r points to an even integer. *)
+Definition parallel_add_inv (r : loc) : iProp Σ :=
+  ∃ n : Z, r ↦ #n ∗ ⌜Zeven n⌝.
+
+Lemma parallel_add_spec :
+  {{{ True }}} parallel_add {{{ n, RET #n; ⌜Zeven n⌝ }}}.
+Proof.
+  iIntros "%Φ _ HΦ".
+  rewrite /parallel_add.
+  wp_alloc r as "Hr".
+  wp_pures.
+  iMod (inv_alloc nroot _ (parallel_add_inv r) with "[Hr]") as "#I".
+  {
+    iNext.
+    iExists 0.
+    iFrame.
+  }
+  (**
+    We don't need informations back from the threads, so we will simply
+    use [λ _, True] as the post conditions.
+  *)
+  wp_apply (wp_par (λ _, True%I) (λ _, True%I)).
+  - iInv "I" as "(%n & Hr & >%Hn)".
+    wp_faa.
+    iModIntro.
+    iSplitL; last done.
+    iModIntro.
+    iExists (n + 2)%Z.
+    iFrame.
+    iPureIntro.
+    by apply Zeven_plus_Zeven.
+  (* exercise *)
+Admitted.
+
+TODO:REMOVE --> *)

@@ -1,5 +1,5 @@
-From iris.base_logic.lib Require Export invariants.
-From iris.heap_lang Require Import lang proofmode notation.
+From iris.base_logic.lib Require Export invariants token.
+From iris.heap_lang Require Import lang proofmode notation par.
 
 (* ################################################################# *)
 (** * Invariants *)
@@ -8,15 +8,17 @@ From iris.heap_lang Require Import lang proofmode notation.
 (** ** A Motivating Example *)
 
 (**
-  Let's make a simple multi-threaded program. We can use [Fork e] to
-  create a new thread to run [e]. As such the following program will
-  race to either update [l] or read [l]. Meaning the resulting value
-  could be either 0 or 1.
+  Let us make a simple multi-threaded program.
 *)
 Definition prog : expr :=
   let: "l" := ref #0 in
   Fork ("l" <- #1);;
   !"l".
+
+(**
+  This program will race to either update [l] or read [l], meaning the
+  resulting value could be either [0] or [1].
+*)
 
 Section proofs.
 Context `{!heapGS Σ}.
@@ -64,7 +66,7 @@ Lemma inv_persist (N : namespace) (P : iProp Σ) :
 Proof. apply _. Qed.
 
 (**
-  Thus, if we can we can come up with a proposition [P] describing our
+  Thus, if we can come up with a proposition [P] describing our
   resources correctly throughout the entire program, then we can
   _allocate_ [P] as an invariant, and supply said invariant to the
   threads requiring access to the resources described by [P]. To access
@@ -90,7 +92,8 @@ Proof. apply _. Qed.
   the mask can be opened. Thus, if invariant [N] is not in the mask
   (i.e. it is open), then we cannot use [iInv] to open [N] again.
   Closing the invariant puts [N] back into the mask, allowing it to be
-  opened again.
+  opened again. Closing an open invariant [iInv N P] corresponds to
+  proving that [P] still holds.
 
   We can only open an invariant if the goal has a mask which contains
   [N]. As such, if the goal is a generic proposition, we cannot open any
@@ -108,7 +111,7 @@ Abort.
   An example of a goal that has a mask is a weakest precondition. That
   is, the shape of a weakest precondition is actually
 
-    [WP e @ E {{Φ}}]
+    [WP e @ E {{ Φ }}]
 
   with [E] being the mask. However, when the mask is [⊤], it is
   notationally hidden, which is why we have yet to see it.
@@ -124,10 +127,9 @@ Abort.
 (**
   Another restriction on invariant openings is that, when the goal is a
   weakest precondition [WP e {{Φ}}], an invariant can be open for at
-  most one program step. That is, [e] must be an atomic expression,
-  meaning it reduces to a value in one step. After the one step, we have
-  to _close_ the invariant again. Closing an open invariant [iInv N P]
-  corresponds to proving that [P] still holds.
+  most one program step. This is enforced by requiring [e] to be an
+  atomic expression, meaning it reduces to a value in one step. After
+  the one step, we have to close the invariant again.
   
   Let us try to see these concepts in action with a simple example.
 *)
@@ -166,12 +168,21 @@ Proof.
   *)
   iInv "Hinv" as "Hl".
   (**
-    Note that we got the points-to proposition from the invariant. A
-    small caveat is that we only get the proposition later. This is
-    usually not an issue, as the later can be removed in most cases,
-    which we discuss in a later chapter.
+    This tactic did quit a bit, so let us break it down.
 
-    Notice the mask on the weakest precondition: [⊤ ∖ ↑N]. This ensures
+    Firstly, notice that we got the points-to predicate from the
+    invariant. A small caveat is that we only get the predicate later.
+    This is usually not an issue, as the later can be removed in most
+    cases, which we discuss in a later chapter.
+
+    Secondly, the postcondition of the weakest precondition in the goal
+    got augmented with [|={⊤ ∖ ↑N}=> ▷ l ↦ #1]. After stepping through
+    the current WP, we will have to prove this proposition to show that
+    the invariant [l ↦ #1] still holds. The fancy update modality is
+    there to stop us from opening the invariant to prove that the
+    invariant still holds.
+
+    Thirdly, notice the mask on the weakest precondition: [⊤ ∖ ↑N]. This ensures
     that we cannot open [N] again to prove the WP. If we tried to open
     the invariant again, Iris would ask us to show that [↑N] is a subset
     of [⊤ ∖ ↑N]. For the sake of demonstration, let us try this.
@@ -194,33 +205,41 @@ Proof.
   *)
   wp_load.
   (**
-    Now we have used our invariant to take the one step so as
-    discussed, we must now close the invariant by proving that the
-    invariant still holds. Notice that the fancy update modality keeps
-    us from using the invariant in proving this.
+    Now that we have used our invariant to take the one step, we must
+    close the invariant by proving that the invariant still holds.
   *)
   iSplitL "Hl".
   { iApply "Hl". }
   (**
-    Note that, even though we have now closed the invariant, the fancy
+    Even though we have now closed the invariant, the fancy
     update modality still prevents us from opening the invariant.
     However, we can always introduce a fancy update modality with
     [iModIntro].
     *)
   iModIntro.
-  (** 
+  (**
     Since the mask on the weakest precondition in the goal is implicitly
     [⊤], we can open [N] again.
-
-    We proceed as before.
+  *)
+  (**
+    We have now used the invariant to reduce the right-hand [!#l].
+    Reducing the left-hand dereference is done analogously.
+    First we bind the dereference.
   *)
   wp_bind (!#l)%E.
+  (** Then we open the invariant. *)
   iInv "Hinv" as "Hl".
+  (** Next, we use the contents of the invariant to prove the dereference. *)
   wp_load.
+  (** Finally, we close the invariant by proving it still holds. *)
   iSplitL "Hl".
   { iApply "Hl". }
+  (** 
+    Now, both dereferences have been reduced, so we easily prove the
+    remaining WP.
+  *)
   iModIntro.
-  wp_pures.
+  wp_pure.
   done.
 Qed.
 
@@ -252,7 +271,7 @@ Let N := nroot .@ "myInvariant".
   Now, let us try to prove the following (quite contrived)
   specification.
 *)
-Lemma inv_alloc_wp :
+Lemma inv_alloc_loc :
   {{{ True }}} ref #0 {{{(l : loc), RET #l; inv N (l ↦ #0)}}}.
 Proof.
   iIntros (Φ) "_ HΦ".
@@ -275,6 +294,13 @@ Proof.
   iApply "HΦ".
   iApply "Hinv".
 Qed.
+
+(**
+  Side note: The above proof demonstrates why, when we have to prove the
+  postcondition of a WP, we have to prove it _behind_ a fancy update
+  modality. Having the fancy update modality in the goal allows us to
+  allocate/open invariants, and allocate/update resources.
+*)
 
 End inv_intro.
 
@@ -299,7 +325,7 @@ Definition prog_inv (l : loc) : iProp Σ :=
 
 Lemma wp_prog : {{{ True }}} prog {{{ v, RET v; ⌜v = #0⌝ ∨ ⌜v = #1⌝ }}}.
 Proof.
-  iIntros "%Φ _ HΦ".
+  iIntros (Φ) "_ HΦ".
   rewrite /prog.
   wp_alloc l as "Hl".
   wp_pures.

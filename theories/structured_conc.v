@@ -358,3 +358,5 @@ Qed.
   (* exercise *)
 Admitted.
 END TEMPLATE *)
+
+End parallel_add.

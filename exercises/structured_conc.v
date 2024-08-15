@@ -328,3 +328,5 @@ Proof.
     by iApply "HΦ'".
   (* exercise *)
 Admitted.
+
+End parallel_add.

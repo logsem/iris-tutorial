@@ -60,7 +60,7 @@ Definition par : val :=
   ("v1", "v2").
 
 (** ... and introduce convenient notation that hides the thunks. *)
-Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : expr_scope.
+Notation "e1 ||| e2" := (par (λ: <>, e1)%E (λ: <>, e2)%E) : expr_scope.
 Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
 (** Our desired specification for [par] is going to look as follows:
@@ -274,12 +274,6 @@ End threads.
   Our specification will state that the resulting value is even.
 *)
 
-
-(* <--- REMOVE:TODO
-
-TODO: Make proof work with par_spec from this chapter. 
-
-
 Definition parallel_add : expr :=
   let: "r" := ref #0 in
   (FAA "r" #2)
@@ -293,7 +287,7 @@ Section parallel_add.
   The par operator needs more resources than are available in
   [heapGS]. So to use it we also need to add [spawnG Σ].
 *)
-Context `{!heapGS Σ, !spawnG Σ}.
+Context `{!heapGS Σ, !inG Σ (excl ())}.
 
 (** The invariant is thus that r points to an even integer. *)
 Definition parallel_add_inv (r : loc) : iProp Σ :=
@@ -313,43 +307,54 @@ Proof.
     iFrame.
   }
   (**
-    We don't need informations back from the threads, so we will simply
-    use [λ _, True] as the post conditions.
+    We don't need information back from the threads, so we will simply
+    use [λ _, True] as the post conditions. Similarly, we only need the
+    invariant to prove the threads, and since this is in the persistent
+    context, we let the preconditions be [True].
   *)
-  wp_apply (wp_par (λ _, True%I) (λ _, True%I)).
-  - iInv "I" as "(%n & Hr & >%Hn)".
+  wp_apply (par_spec (True%I) (True%I) _ _ (λ _, True%I) (λ _, True%I)).
+  - iIntros (Φ') "!> _ HΦ'".
+    iInv "I" as "(%n & Hr & >%Hn)".
     wp_faa.
     iModIntro.
-    iSplitL; last done.
-    iModIntro.
-    iExists (n + 2)%Z.
-    iFrame.
-    iPureIntro.
-    by apply Zeven_plus_Zeven.
+    iSplitL "Hr".
+    {
+      iModIntro.
+      iExists (n + 2)%Z.
+      iFrame.
+      iPureIntro.
+      by apply Zeven_plus_Zeven.
+    }
+    by iApply "HΦ'".
 (* BEGIN SOLUTION *)
-  - iInv "I" as "(%n & Hr & >%Hn)".
+  - iIntros (Φ') "!> _ HΦ'".
+    iInv "I" as "(%n & Hr & >%Hn)".
     wp_faa.
     iModIntro.
-    iSplitL; last done.
-    iModIntro.
-    iExists (n + 6)%Z.
-    iFrame.
-    iPureIntro.
-    by apply Zeven_plus_Zeven.
-  - iIntros "%v1 %v2 _ !>".
+    iSplitL "Hr".
+    {
+      iModIntro.
+      iExists (n + 6)%Z.
+      iFrame.
+      iPureIntro.
+      by apply Zeven_plus_Zeven.
+    }
+    by iApply "HΦ'".
+  - done.
+  - iIntros "%v1 %v2 _".
     wp_pures.
     iInv "I" as "(%n & Hr & >%Hn)".
     wp_load.
     iModIntro.
     iSplitL "Hr".
-    + iNext.
+    {
+      iNext.
       iExists n.
       by iFrame.
-    + by iApply "HΦ".
+    }
+    by iApply "HΦ".
 Qed.
 (* END SOLUTION BEGIN TEMPLATE
   (* exercise *)
 Admitted.
 END TEMPLATE *)
-
-TODO:REMOVE --> *)

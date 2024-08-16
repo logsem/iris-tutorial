@@ -1,14 +1,6 @@
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*########## CONTENTS PLAN ##########
-  - BASIC DESCRIPTION OF TIMELESS PROPOSITIONS
-  - STRIPPING LATERS AND FUP (later_timeless_fup)
-    + USUALLY DONE WHEN INTRODUCING PROPOSITIONS VIA '>'
-  - SHOW EXAMPLES
-  - EXAMPLE WITH INVARIANTS
-#####################################*)
-
 (* ################################################################# *)
 (** * Timeless Propositions *)
 
@@ -18,7 +10,7 @@ From iris.heap_lang Require Import lang proofmode notation.
 Section timeless.
 Context `{!heapGS Σ}.
 
-(** 
+(**
   A large class of propositions do not depend on time; they are either
   always true or always false. Take for instance equalities –
   [2 + 2 = 4] is always true. We call such propositions timeless. All
@@ -115,25 +107,57 @@ Qed.
   Timeless propositions are especially useful in connection with
   invariants. Recall from the invariants chapter that, when we open an
   invariant, [inv N P], we only get the resources _later_, [▷P]. Often,
-  however, we require the resources now.
-  TODO: finish text.
+  however, we require the resources now. Consider the following example.
 *)
 
-(* TODO: finish/improve example. *)
-
-(* Let N := nroot .@ "myInvariant".
-
-Lemma ht_inv_timeless_fail (l : loc) (w : val) :
-  {{{ inv N (⌜w = #5⌝) }}} 
-    if: w = #5 then #true else #false
-  {{{ v, RET v; ⌜v = #5⌝ }}}.
+Lemma inv_timeless (l : loc) (w : val) (P : iProp Σ) (N : namespace) :
+  {{{ inv N (⌜w = #5⌝ ∗ P) ∗ (l ↦ w) }}}
+    CAS #l #5 #6
+  {{{ v, RET v; l ↦ #6 }}}.
 Proof.
-  iIntros (Φ) "#Hinv HΦ".
-  wp_bind (w = #5)%E.
-  iInv "Hinv" as "Heq".
+  iIntros (Φ) "[#Hinv Hl] HΦ".
+  (**
+    To prove that the CAS succeeds, we need to know that [w] equals [5].
+    Thus, we must open the invariant.
+  *)
+  wp_bind (CmpXchg #l #5 #6)%E.
+  iInv "Hinv" as "[Heq HP]".
+  (**
+    Opening the invariant only gives us that [w] equals [5] later.
+    However, as pure propositions are timeless, we can strip the later.
+  *)
+  iMod "Heq" as "%Heq".
+  rewrite Heq.
+  (** Now we can prove that the CAS succeeds. *)
+  wp_cmpxchg_suc.
+  iSplitL "HP"; first by iFrame.
+  iModIntro.
   wp_pures.
-Abort.
+  by iApply "HΦ".
+Qed.
 
+(**
+  When opening invariants, we usually strip laters from timeless parts
+  of the invariant immediately.
 *)
+
+Lemma inv_timeless' (l : loc) (w : val) (P : iProp Σ) (N : namespace) :
+  {{{ inv N (⌜w = #5⌝ ∗ P) ∗ (l ↦ w) }}}
+    CAS #l #5 #6
+  {{{ v, RET v; l ↦ #6 }}}.
+Proof.
+  iIntros (Φ) "[#Hinv Hl] HΦ".
+  wp_bind (CmpXchg #l #5 #6)%E.
+  (**
+    Open the invariant, strip the later from the equality (achieved by
+    [">"]), and rewrite with the equality (achieved by ["->"]).
+  *)
+  iInv "Hinv" as "[>-> HP]".
+  wp_cmpxchg_suc.
+  iSplitL "HP"; first by iFrame.
+  iModIntro.
+  wp_pures.
+  by iApply "HΦ".
+Qed.
 
 End timeless.

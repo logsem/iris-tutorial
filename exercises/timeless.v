@@ -1,3 +1,4 @@
+From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
@@ -11,16 +12,20 @@ From iris.heap_lang Require Import lang proofmode notation.
 (* ################################################################# *)
 (** * Timeless Propositions *)
 
+(* ================================================================= *)
+(** ** Definition and Uses *)
+
 Section timeless.
 Context `{!heapGS Σ}.
 
 (** 
   A large class of propositions do not depend on time; they are either
-  always true or always false. Take for instance equalities – [2 + 2 =
-  4] is always true. We call such propositions timeless. All pure
-  propositions are timeless and ownership of resources is timeless (e.g.
-  [l ↦ 5]). Further, timelessness is preserved by most connectives. As a
-  rule of thumb, a predicate is timeless if
+  always true or always false. Take for instance equalities –
+  [2 + 2 = 4] is always true. We call such propositions timeless. All
+  pure propositions are timeless and ownership of resources is timeless
+  if the resource comes from a resource algebra (this includes points-to
+  predicates). Further, timelessness is preserved by most connectives.
+  As a rule of thumb, a predicate is timeless if
   - it does not contain a later
   - it does not mention an invariant
   - it is first-order
@@ -40,17 +45,18 @@ Lemma later_timeless_fup (P : iProp Σ) `{!Timeless P} :
 Proof.
   iIntros "HP".
   (**
-    The [iMod] tactic removes a modality from a hypothesis if the goal
-    permits. In this case, since the goal has a fancy update modality,
-    we can remove the later.
+    As [▷] is a modality, we can use the [iMod] tactic to strip it from
+    our hypothesis. In this case, this is allowed as the goal contains a
+    fancy update modality and [P] is timeless.
   *)
   iMod "HP".
   done.
 Qed.
 
 (**
-  Similarly to how "!>" invokes [iModIntro], the pattern ">" invokes
-  [iMod]. The above proof can hence be shortened as follows.
+  As usual, we can use the notation ">" to invoke [iMod]. This is how we
+  will usually invoke [iMod] to strip laters. The above proof can hence
+  be shortened as follows.
 *)
 
 Lemma later_timeless_fup' (P : iProp Σ) `{!Timeless P} :
@@ -59,11 +65,12 @@ Proof.
   iIntros ">HP".
   done.
 Qed.
-
+ 
 (**
-  We may _always_ add a fancy update in front of a WP (concretely with
-  the [fupd_wp] lemma), so if the goal is a weakest precondition, we
-  can remove laters from timeless propositions in our context.
+  We may _always_ add a fancy update modality in front of a WP
+  (concretely with the [fupd_wp] lemma), so if the goal is a weakest
+  precondition, we can remove laters from timeless propositions in our
+  context.
 *)
 
 Lemma later_store (l : loc) (v : val) :
@@ -95,14 +102,38 @@ Qed.
 *)
 
 Lemma later_timeless_strip (P Q : iProp Σ) `{!Timeless P} :
-  (P ⊢ ▷ Q) →
-  (▷ P ⊢ ▷ Q).
+  (P -∗ ▷Q) ∗ ▷ P ⊢ ▷ Q.
 Proof.
-  intros HPLQ.
-  iIntros ">HP".
-  by iApply HPLQ.
+  iIntros "[HPQ >HP]".
+  by iApply "HPQ".
 Qed.
 
-(* TODO: EXAMPLE WITH INVARIANTS *)
+(* ================================================================= *)
+(** ** Timeless Propositions and Invariants *)
+
+(**
+  Timeless propositions are especially useful in connection with
+  invariants. Recall from the invariants chapter that, when we open an
+  invariant, [inv N P], we only get the resources _later_, [▷P]. Often,
+  however, we require the resources now.
+  TODO: finish text.
+*)
+
+(* TODO: finish/improve example. *)
+
+(* Let N := nroot .@ "myInvariant".
+
+Lemma ht_inv_timeless_fail (l : loc) (w : val) :
+  {{{ inv N (⌜w = #5⌝) }}} 
+    if: w = #5 then #true else #false
+  {{{ v, RET v; ⌜v = #5⌝ }}}.
+Proof.
+  iIntros (Φ) "#Hinv HΦ".
+  wp_bind (w = #5)%E.
+  iInv "Hinv" as "Heq".
+  wp_pures.
+Abort.
+
+*)
 
 End timeless.

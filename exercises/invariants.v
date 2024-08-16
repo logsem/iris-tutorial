@@ -1,4 +1,4 @@
-From iris.base_logic.lib Require Export invariants token.
+From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation par.
 
 (* ################################################################# *)

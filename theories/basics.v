@@ -164,9 +164,11 @@ Definition and_success (P Q : iProp Σ) := (P ∧ Q)%I.
   Separating conjunction differs from regular conjunction particularly
   in its introduction rule:
 
+  [[
         P1 ⊢ Q1       P2 ⊢ Q2
         ----------------------
           P1 ∗ P2 ⊢ Q1 ∗ Q2
+  ]]
 
   That is, if we want to prove [Q1 ∗ Q2], we must decide which of our
   owned resources we use to prove [Q1] and which we use to prove [Q2].

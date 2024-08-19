@@ -73,18 +73,23 @@ Proof.
               [WP e {{ w, WP K[w] {{ v, Φ v }} }} ⊢ WP K[e] {{ v, Φ v }}]
 
     This allows us to change the goal from
+
     [WP (#1 + #2 * #3 + #4 + #5) {{ v, ⌜v = #16⌝ }}]
+
     to
+
     [WP #2 * #3 {{ w, WP (#1 + [] + #4 + #5)[w] {{ v, ⌜v = #16⌝ }} }}]
 
     Next, the wp-op rule symbolically executes a single arithmetic
     operation, [⊚].
-
-                              [v = v₁ ⊚ v₂]
+    [[
+                              v = v₁ ⊚ v₂
                 -------------------------------------------
-                [WP v {{ v, Φ v }} ⊢ WP v₁ ⊚ v₂ {{ v, Φ v }}]
+                WP v {{ v, Φ v }} ⊢ WP v₁ ⊚ v₂ {{ v, Φ v }}
+    ]]
 
     We can thus perform the multiplication and change the goal to
+
     [WP #(2 * 3) {{ w, WP (#1 + [] + #4 + #5)[w] {{ v, ⌜v = #16⌝ }} }}]
 
     Finally, wp-val states that we can prove a weakest precondition of a
@@ -93,6 +98,7 @@ Proof.
                           [Φ(v) ⊢ WP v {{ w, Φ w }}]
 
     The goal is changed to
+    
     [WP #1 + #(2 * 3) + #4 + #5 {{ v, ⌜v = #16⌝ }}]
 
     This is where [wp_op] has taken us. The next step of the program is

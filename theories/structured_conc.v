@@ -59,11 +59,13 @@ About wp_fork.
 (* ================================================================= *)
 (** ** The Spawn Construct *)
 
-(* TODO: write about the spawn construct *)
-
 (**
-  We can use the [Fork] construct to implement other common concurrency
-  operators such as [spawn] and [join].
+  The first structured concurrency construct we study is [spawn]. This
+  consists of two functions: [spawn], which spawns a thread and returns
+  a `handle', and [join], which uses the handle to wait for a thread to
+  finish.
+
+  We define the functions as follows.
 *)
 
 Definition spawn : val :=
@@ -80,22 +82,39 @@ Definition join: val :=
     end.
 
 (**
-  [spawn] creates a new thread and a "shared channel" which is used to
-  signal when it is done, and the [join] function listens on the channel
-  until the spawned thread is done. In contrast to plain [Fork], these
-  two functions allow us to wait for a forked-off thread to finish.
+  The idea with [spawn] is to create a `shared channel' which can be
+  used to signal when the forked-off thread has terminated. In this
+  case, the shared channel is simply a location containing an optional
+  value. When forking off the function ["f"], we wrap it around a store
+  operation, which writes the result of ["f"] into the location. The
+  location is then returned to the spawning thread, which can use this
+  so-called `handle' in the [join] function. The [join] function
+  continuously checks if the location has been updated to contain a
+  value. If this happens, the spawning thread knows that the forked-off
+  thread has finished, so it can extract the return value from the
+  location.
 
-  TODO: introduce and explain specs.
+  Considering this behaviour, we give [spawn] the specification:
 
   [[
     {{{ P }}} f #() {{{ v, RET v; Ψ v }}} -∗
-    {{{ P }}} spawn f {{{ v, RET v; join_handle v Ψ }}}
+    {{{ P }}} spawn f {{{ h, RET h; join_handle h Ψ }}}
   ]]
+
+  This states that, to get a specification for [spawn f], we first must
+  prove a specification for [f] which captures which resources [f]
+  needs, [P], and what the value [f] terminates at satisfies, [Ψ]. If we
+  can prove such a specification for [f], then, given [P], we can also
+  run [spawn f], which will return a value [h] which satisfies a
+  `join-handle' predicate. This predicate is a promise that, if we
+  invoke [join] with [h], then the value we get back satisfies [Ψ]. This
+  is reflected in the specification for [join]:
 
   [[
     {{{ join_handle h Ψ }}} join h {{{ v, RET v; Ψ v }}}.
   ]]
 
+  Let us now prove these specifications.
 *)
 
 Section spawn.
@@ -118,12 +137,12 @@ Definition handle_inv1 (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
 
   We can then use the invariant to define the [join_handle] predicate.
 *)
-Definition join_handle1 (v : val) (Ψ : val → iProp Σ) : iProp Σ :=
-  ∃ l : loc, ⌜v = #l⌝ ∗ inv N (handle_inv1 l Ψ).
+Definition join_handle1 (h : val) (Ψ : val → iProp Σ) : iProp Σ :=
+  ∃ l : loc, ⌜h = #l⌝ ∗ inv N (handle_inv1 l Ψ).
 
 (** Let us now attempt to prove the specification for [join]. *)
-Lemma join_spec (v : val) (Ψ : val → iProp Σ) :
-  {{{ join_handle1 v Ψ }}} join v {{{ v, RET v; Ψ v }}}.
+Lemma join_spec (h : val) (Ψ : val → iProp Σ) :
+  {{{ join_handle1 h Ψ }}} join h {{{ v, RET v; Ψ v }}}.
 Proof.
   iIntros (Φ) "(%l & -> & #I) HΦ".
   iLöb as "IH".
@@ -164,8 +183,8 @@ Context `{!inG Σ (excl ())}.
 Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w, ⌜v = SOMEV w⌝ ∗ (own γ (Excl ()) ∨ Ψ w)).
 
-Definition join_handle (v : val) (Ψ : val → iProp Σ) : iProp Σ :=
-  ∃ γ (l : loc), ⌜v = #l⌝ ∗ own γ (Excl ()) ∗ inv N (handle_inv γ l Ψ).
+Definition join_handle (h : val) (Ψ : val → iProp Σ) : iProp Σ :=
+  ∃ γ (l : loc), ⌜h = #l⌝ ∗ own γ (Excl ()) ∗ inv N (handle_inv γ l Ψ).
 
 (* TODO: consider using definition of tokens from Iris library instead, and mention that it is similar to our coverage of them in the resource algebra chapter *)
 Lemma token_alloc : ⊢ |==> ∃ γ, own γ (Excl ()).
@@ -193,7 +212,7 @@ Qed.
 
 Lemma spawn_spec (P : iProp Σ) (Ψ : val → iProp Σ) (f : val) :
   {{{ P }}} f #() {{{ v, RET v; Ψ v }}} -∗
-  {{{ P }}} spawn f {{{ v, RET v; join_handle v Ψ }}}.
+  {{{ P }}} spawn f {{{ h, RET h; join_handle h Ψ }}}.
 Proof.
   iIntros "#Hf %Φ !> HP HΦ".
   wp_lam.

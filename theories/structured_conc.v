@@ -1,5 +1,5 @@
 From iris.algebra Require Import excl.
-From iris.base_logic.lib Require Export invariants.
+From iris.base_logic.lib Require Export invariants token.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (* ################################################################# *)
@@ -166,8 +166,13 @@ Proof.
         the postcondition. We are stuck... *)
 Abort.
 
+(* 
+  TODO: rewrite, and mention that we use token from library which is
+  similar to the tokens we defined in resource algebra chapter.
+*)
+
 (**
-  We need a way to keep track of whether [Ψ w] has been "taken out" of
+  We need a way to keep track of whether [Ψ w] has been `taken out' of
   the invariant or not. However, we do not have any program state to
   link it to. Instead, we will use _ghost state_ to track this
   information. Iris supports different kinds of ghost state, but we will
@@ -178,35 +183,25 @@ Abort.
   meaning [Excl a ⋅ Excl b] is not valid. As we don't care about the
   value of the state, we will simply let [A:=()].
 *)
-Context `{!inG Σ (excl ())}.
+Context `{!tokenG Σ}.
 
 Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
-  ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w, ⌜v = SOMEV w⌝ ∗ (own γ (Excl ()) ∨ Ψ w)).
+  ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w, ⌜v = SOMEV w⌝ ∗ (token γ ∨ Ψ w)).
+
+(* TODO: decide which handle_inv to use. *)
+Definition handle_inv' (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
+  ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ (∃ w, ⌜v = SOMEV w⌝ ∗ Ψ w) ∨ token γ).
 
 Definition join_handle (h : val) (Ψ : val → iProp Σ) : iProp Σ :=
-  ∃ γ (l : loc), ⌜h = #l⌝ ∗ own γ (Excl ()) ∗ inv N (handle_inv γ l Ψ).
-
-(* TODO: consider using definition of tokens from Iris library instead, and mention that it is similar to our coverage of them in the resource algebra chapter *)
-Lemma token_alloc : ⊢ |==> ∃ γ, own γ (Excl ()).
-Proof. by iApply own_alloc. Qed.
-
-(**
-  Due to the exclusivity of [Excl ()] ownership becomes exclusive as
-  well.
-*)
-Lemma token_excl γ : own γ (Excl ()) -∗ own γ (Excl ()) -∗ False.
-Proof.
-  iIntros "H1 H2".
-  iDestruct (own_valid_2 with "H1 H2") as %?.
-  cbv in H.
-  done.
-Qed.
+  ∃ γ (l : loc), ⌜h = #l⌝ ∗ token γ ∗ inv N (handle_inv γ l Ψ).
 
 Lemma token_lock (γ : gname) (P : iProp Σ) :
-  own γ (Excl ()) -∗ (own γ (Excl ()) ∨ P) -∗ own γ (Excl ()) ∗ P.
+  token γ -∗
+  (token γ ∨ P) -∗
+  token γ ∗ P.
 Proof.
   iIntros "H1 [H2 | HP]".
-  - iExFalso. iApply (token_excl with "H1 H2").
+  - iExFalso. iApply (token_exclusive with "H1 H2").
   - iFrame.
 Qed.
 
@@ -267,7 +262,7 @@ Proof.
     }
     wp_pures.
     iApply ("IH" with "Hγ HΦ").
-  - iPoseProof (token_excl with "Hγ Hγ'") as "[]".
+  - iPoseProof (token_exclusive with "Hγ Hγ'") as "[]".
   - wp_load.
     iModIntro.
     iSplitL "Hγ Hl".
@@ -326,8 +321,7 @@ Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
 Section par.
 (* TODO: mention that we must include the resource algebra that spawn relies on. *)
-Context `{!heapGS Σ}.
-Context `{!inG Σ (excl ())}.
+Context `{!heapGS Σ, !tokenG Σ}.
 
 (* TODO: some text explaining the proof might be nice. *)
 Lemma par_spec (P1 P2 : iProp Σ) (e1 e2 : expr) (Q1 Q2 : val → iProp Σ) :
@@ -382,7 +376,7 @@ Section parallel_add.
   The par operator needs more resources than are available in
   [heapGS]. So to use it we also need to add [spawnG Σ].
 *)
-Context `{!heapGS Σ, !inG Σ (excl ())}.
+Context `{!heapGS Σ, !tokenG Σ}.
 
 (** The invariant is thus that r points to an even integer. *)
 Definition parallel_add_inv (r : loc) : iProp Σ :=

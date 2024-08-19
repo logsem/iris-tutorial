@@ -4,33 +4,48 @@ From iris.heap_lang Require Import lang proofmode notation.
 
 (*########## CONTENTS PLAN ##########
 - UNSTRUCTURED CONCURRENCY
-  + THUS FAR, ONLY USED STRUCTURED CONCURRENCY
+  + THUS FAR, MAINLY USED STRUCTURED CONCURRENCY
   + ONE OF THE STRENGTHS OF IRIS IS IT SUPPORTS THE MORE GENERAL
     UNSTRUCTURED CONCURRENCY (from which we can express structured
     concurrency – shown in this file)
-- SHOW 'NATIVE' CLIENT OF FORK
 - SHOW SPAWN AND PAR
-- MOVE parallel_add FROM invariants.v TO concurrency.v
 #####################################*)
 
-(** HeapLang's primitive concurrency mechanism is the [Fork] construct. The
-    operation takes an expression [e] as an argument and spawns a new thread that
-    executes [e] concurrently. The operation itself returns the unit value on
-    the spawning thread.
+(* ################################################################# *)
+(** * Structured Concurrency *)
 
-    [Fork] does not have dedicated tactical support. Instead, we simply apply
-    the lemma [wp_fork]. This lemma is more general than what we need for our
-    current use cases, but its specification is as follows:
+(* ================================================================= *)
+(** ** Description *)
 
-      [WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}]
+(* TODO: write about unstructured and structured conc. Mention that we work towards defining spawn and par from fork in this chapter. First spawn, then building on top of that, we define par. Also explain that the specifications we have used for par thus far has been a specification from the Iris library. In this chapter, we define the constructs and specifications from scratch. *)
 
-    That is, to show the weakest precondition of [Fork e] we have to show the
-    weakest precondition of [e] for a trivial postcondition. The key point is
-    that we only require the forked-off thread to be safe---we do not care about
-    its return value, hence the trivial postcondition.
+(**
+  HeapLang's primitive concurrency mechanism is the [Fork] construct.
+  The operation takes an expression [e] as an argument and spawns a new
+  thread that executes [e] concurrently. The operation itself returns
+  the unit value on the spawning thread.
 
-    We can use the [Fork] construct to implement other common concurrency
-    operators such as [spawn] and [join]. *)
+  [Fork] does not have dedicated tactical support. Instead, we simply
+  apply the lemma [wp_fork]. This lemma is more general than what we
+  need for our current use cases, but its specification is as follows:
+
+    [WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}]
+
+  That is, to show the weakest precondition of [Fork e] we have to show
+  the weakest precondition of [e] for a trivial postcondition. The key
+  point is that we only require the forked-off thread to be safe---we do
+  not care about its return value, hence the trivial postcondition.
+*)
+
+(* ================================================================= *)
+(** ** The Spawn Construct *)
+
+(* TODO: write about the spawn construct *)
+
+(**
+  We can use the [Fork] construct to implement other common concurrency
+  operators such as [spawn] and [join].
+*)
 
 Definition spawn : val :=
   λ: "f",
@@ -45,60 +60,48 @@ Definition join: val :=
     | SOME "x" => "x"
     end.
 
-(** [spawn] creates a new thread and a "shared channel" which is used to signal
-    when it is done, and the [join] function listens on the channel until the
-    spawned thread is done. In contrast to plain [Fork], these two functions
-    allow us to wait for a forked-off thread to finish. *)
+(**
+  [spawn] creates a new thread and a "shared channel" which is used to
+  signal when it is done, and the [join] function listens on the channel
+  until the spawned thread is done. In contrast to plain [Fork], these
+  two functions allow us to wait for a forked-off thread to finish.
 
-(** We can then use [spawn] and [join] to define a classical parallel
-    composition operator [par]. *)
-Definition par : val :=
-  λ: "f1" "f2",
-  let: "h" := spawn "f1" in
-  let: "v2" := "f2" #() in
-  let: "v1" := join "h" in
-  ("v1", "v2").
+  TODO: introduce and explain specs.
 
-(** ... and introduce convenient notation that hides the thunks. *)
-Notation "e1 ||| e2" := (par (λ: <>, e1)%E (λ: <>, e2)%E) : expr_scope.
-Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
+  [[[
+    {{{ P }}} f #() {{{ v, RET v; Ψ v }}} -∗
+    {{{ P }}} spawn f {{{ v, RET v; join_handle v Ψ }}}
+  ]]]
 
-(** Our desired specification for [par] is going to look as follows:
-
-    [[
-      {{{ P1 }}} e1 {{{ v, RET v; Ψ1 v }}} -∗
-      {{{ P2 }}} e2 {{{ v, RET v; Ψ2 v }}} -∗
-      {{{ P1 ∗ P2 }}} e1 ||| e2 {{{ v1 v2, RET (v1, v2); Ψ1 v1 ∗ Ψ2 v2 }}}
-    ]]
-
-    The rule states that we can run [e1] and [e2] in parallel if they have
-    _disjoint_ footprints and that we can verify the two components separately.
-    The rule is this reason sometimes also referred to as the _disjoint
-    concurrency rule_.
-
-    To show the rule, we will first show separate specifications for the
-    auxiliary functions [spawn] and [join]. Since we are using a shared channel
-    we will use an invariant to allow the two (concurrently running) threads to
-    access it.
+  [[[
+    {{{ join_handle h Ψ }}} join h {{{ v, RET v; Ψ v }}}.
+  ]]]
 *)
 
-Section threads.
+Section spawn.
+
 Context `{!heapGS Σ}.
 Let N := nroot .@ "handle".
 
-(** An initial attempt at stating this invariant looks like follows. *)
+(**
+  Since we are using a shared channel we will use an invariant to allow
+  the two (concurrently running) threads to access it. An initial
+  attempt at stating this invariant looks as follows.
+*)
 Definition handle_inv1 (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ v : val, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w : val, ⌜v = SOMEV w⌝ ∗ Ψ w).
 
+(**
+  The stated invariant governs the shared channel (some location [l])
+  and states that either no value has been sent yet, or some value has
+  been sent that satisfies the predicate [Ψ].
+
+  We can then use the invariant to define the [join_handle] predicate.
+*)
 Definition join_handle1 (v : val) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (handle_inv1 l Ψ).
 
-(** The stated invariant governs the shared channel (some location [l]) and
-    states that either no value has been sent yet, or some value has been sent
-    that satisfies the predicate [Ψ].
-
-    Let us try this out. *)
-
+(** Let us now attempt to prove the specification for [join]. *)
 Lemma join_spec (v : val) (Ψ : val → iProp Σ) :
   {{{ join_handle1 v Ψ }}} join v {{{ v, RET v; Ψ v }}}.
 Proof.
@@ -124,16 +127,18 @@ Proof.
         the postcondition. We are stuck... *)
 Abort.
 
-(** We need a way to keep track of whether [Ψ w] has been "taken out" of the
-    invariant or not. However, we do not have any program state to link it to.
-    Instead, we will use _ghost state_ instead to track this information. Iris
-    supports different kinds of ghost state, but we will only need one property,
-    namely that our ghost state is _exclusive_.
+(**
+  We need a way to keep track of whether [Ψ w] has been "taken out" of
+  the invariant or not. However, we do not have any program state to
+  link it to. Instead, we will use _ghost state_ to track this
+  information. Iris supports different kinds of ghost state, but we will
+  only need one property, namely that our ghost state is _exclusive_.
 
-    We will use the camera [excl A]. This is the exclusive camera. It has the
-    valid states [Excl a]. Importantly, this state is exclusive, meaning [Excl a
-    ⋅ Excl b] is not valid. As we don't care about the value of the state, we
-    will simply let [A:=()]. *)
+  We will use the camera [excl A]. This is the exclusive camera. It has
+  the valid states [Excl a]. Importantly, this state is exclusive,
+  meaning [Excl a ⋅ Excl b] is not valid. As we don't care about the
+  value of the state, we will simply let [A:=()].
+*)
 Context `{!inG Σ (excl ())}.
 
 Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
@@ -142,10 +147,14 @@ Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ 
 Definition join_handle (v : val) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ γ (l : loc), ⌜v = #l⌝ ∗ own γ (Excl ()) ∗ inv N (handle_inv γ l Ψ).
 
+(* TODO: consider using definition of tokens from Iris library instead, and mention that it is similar to our coverage of them in the resource algebra chapter *)
 Lemma token_alloc : ⊢ |==> ∃ γ, own γ (Excl ()).
 Proof. by iApply own_alloc. Qed.
 
-(** Due to the exclusivity of [Excl ()] ownership becomes exclusive as well. *)
+(**
+  Due to the exclusivity of [Excl ()] ownership becomes exclusive as
+  well.
+*)
 Lemma token_excl γ : own γ (Excl ()) -∗ own γ (Excl ()) -∗ False.
 Proof.
   iIntros "H1 H2".
@@ -235,6 +244,53 @@ Proof.
     by iApply "HΦ".
 Qed.
 
+End spawn.
+
+(* TODO: show example client of spawn. *)
+
+(* ================================================================= *)
+(** ** The Par Construct *)
+
+(* TODO: rewrite *)
+
+(**
+  With [spawn] and [join] defined and their specifications proved, we
+  can move on to study a classical parallel composition operator: [par].
+  Its definition is quite straightforward.
+*)
+Definition par : val :=
+  λ: "f1" "f2",
+  let: "h" := spawn "f1" in
+  let: "v2" := "f2" #() in
+  let: "v1" := join "h" in
+  ("v1", "v2").
+
+(** We introduce familiar notation for [par] that hides the thunks. *)
+Notation "e1 ||| e2" := (par (λ: <>, e1)%E (λ: <>, e2)%E) : expr_scope.
+Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
+
+(**
+  Our desired specification for [par] is going to look as follows:
+
+  [[
+    {{{ P1 }}} e1 {{{ v, RET v; Ψ1 v }}} -∗
+    {{{ P2 }}} e2 {{{ v, RET v; Ψ2 v }}} -∗
+    {{{ P1 ∗ P2 }}} e1 ||| e2 {{{ v1 v2, RET (v1, v2); Ψ1 v1 ∗ Ψ2 v2 }}}
+  ]]
+
+  The rule states that we can run [e1] and [e2] in parallel if they have
+  _disjoint_ footprints and that we can verify the two components
+  separately. The rule is this reason sometimes also referred to as the
+  _disjoint concurrency rule_.
+  TODO: Mention that it is slightly different from the par spec we have seen earlier [wp_par], but that this is mostly a notational difference.
+*)
+
+Section par.
+(* TODO: mention that we must include the resource algebra that spawn relies on. *)
+Context `{!heapGS Σ}.
+Context `{!inG Σ (excl ())}.
+
+(* TODO: some text explaining the proof might be nice. *)
 Lemma par_spec (P1 P2 : iProp Σ) (e1 e2 : expr) (Q1 Q2 : val → iProp Σ) :
   {{{ P1 }}} e1 {{{ v, RET v; Q1 v }}} -∗
   {{{ P2 }}} e2 {{{ v, RET v; Q2 v }}} -∗
@@ -262,7 +318,7 @@ Proof.
   iFrame.
 Qed.
 
-End threads.
+End par.
 
 (**
   Let us try to use the par specification to prove a specification for a

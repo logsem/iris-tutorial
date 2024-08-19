@@ -2,38 +2,57 @@ From iris.algebra Require Import excl.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation.
 
-(*########## CONTENTS PLAN ##########
-- UNSTRUCTURED CONCURRENCY
-  + THUS FAR, MAINLY USED STRUCTURED CONCURRENCY
-  + ONE OF THE STRENGTHS OF IRIS IS IT SUPPORTS THE MORE GENERAL
-    UNSTRUCTURED CONCURRENCY (from which we can express structured
-    concurrency – shown in this file)
-- SHOW SPAWN AND PAR
-#####################################*)
-
 (* ################################################################# *)
 (** * Structured Concurrency *)
 
 (* ================================================================= *)
-(** ** Description *)
-
-(* TODO: write about unstructured and structured conc. Mention that we work towards defining spawn and par from fork in this chapter. First spawn, then building on top of that, we define par. Also explain that the specifications we have used for par thus far has been a specification from the Iris library. In this chapter, we define the constructs and specifications from scratch. *)
+(** ** Introduction *)
 
 (**
-  HeapLang's primitive concurrency mechanism is the [Fork] construct.
-  The operation takes an expression [e] as an argument and spawns a new
-  thread that executes [e] concurrently. The operation itself returns
-  the unit value on the spawning thread.
+  As the reader might recall from the HeapLang chapter, the only
+  construct for concurrency supported natively by HeapLang is [Fork].
+  The [Fork] construction is an example of _unstructured_ concurrency.
+  When we use [Fork] to create a new thread, there are no control flow
+  constructs to reason about the termination of the forked thread – it
+  just runs until it is done and, upon completion, disappears. 
+
+  When such control flow constructs are available, we call it
+  _structured_ concurrency. It turns out that we can implement
+  structured concurrency from unstructured concurrency, and we have
+  already seen two such examples: [spawn] and [par]. Both of these
+  constructs are part of HeapLang's library, but under the hood, they
+  are simply HeapLang programs defined in terms of the [Fork] primitive.
+
+  The library definitions additionally give and prove specifications for
+  the constructs, which we have used in previous chapters. In this
+  chapter, we will define the constructs from scratch, and write our own
+  specifications for them.
+*)
+
+(* ================================================================= *)
+(** ** The Fork Construct *)
+
+(**
+  Let us begin by revisiting the [Fork] construct. The operation takes
+  an expression [e] as an argument and spawns a new thread that executes
+  [e] concurrently. The operation itself returns the unit value on the
+  spawning thread.
 
   [Fork] does not have dedicated tactical support. Instead, we simply
-  apply the lemma [wp_fork]. This lemma is more general than what we
-  need for our current use cases, but its specification is as follows:
+  apply the lemma [wp_fork] – the specification for [Fork]. The lemma is
+  as follows.
+*)
+
+About wp_fork.
+
+(**
+  For convenience, we included it here as well in `simplified' form.
 
     [WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}]
 
-  That is, to show the weakest precondition of [Fork e] we have to show
+  That is, to show a weakest precondition of [Fork e] we have to show
   the weakest precondition of [e] for a trivial postcondition. The key
-  point is that we only require the forked-off thread to be safe---we do
+  point is that we only require the forked-off thread to be safe – we do
   not care about its return value, hence the trivial postcondition.
 *)
 
@@ -68,14 +87,15 @@ Definition join: val :=
 
   TODO: introduce and explain specs.
 
-  [[[
+  [[
     {{{ P }}} f #() {{{ v, RET v; Ψ v }}} -∗
     {{{ P }}} spawn f {{{ v, RET v; join_handle v Ψ }}}
-  ]]]
+  ]]
 
-  [[[
+  [[
     {{{ join_handle h Ψ }}} join h {{{ v, RET v; Ψ v }}}.
-  ]]]
+  ]]
+
 *)
 
 Section spawn.

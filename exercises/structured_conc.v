@@ -14,7 +14,7 @@ From iris.heap_lang Require Import lang proofmode notation.
   The [Fork] construction is an example of _unstructured_ concurrency.
   When we use [Fork] to create a new thread, there are no control flow
   constructs to reason about the termination of the forked thread – it
-  just runs until it is done and, upon completion, disappears. 
+  just runs until it is done and, upon completion, disappears.
 
   When such control flow constructs are available, we call it
   _structured_ concurrency. It turns out that we can implement
@@ -166,40 +166,40 @@ Proof.
         the postcondition. We are stuck... *)
 Abort.
 
-(* 
-  TODO: rewrite, and mention that we use token from library which is
-  similar to the tokens we defined in resource algebra chapter.
-*)
-
 (**
   We need a way to keep track of whether [Ψ w] has been `taken out' of
   the invariant or not. However, we do not have any program state to
   link it to. Instead, we will use _ghost state_ to track this
-  information. Iris supports different kinds of ghost state, but we will
-  only need one property, namely that our ghost state is _exclusive_.
-
-  We will use the camera [excl A]. This is the exclusive camera. It has
-  the valid states [Excl a]. Importantly, this state is exclusive,
-  meaning [Excl a ⋅ Excl b] is not valid. As we don't care about the
-  value of the state, we will simply let [A:=()].
+  information. In particular, we will use _tokens_, which we introduced
+  in the Resource Algebra chapter. We here use the token implementation
+  from the Iris library, but it is similar to the version we
+  implemented.
 *)
 Context `{!tokenG Σ}.
+
+(**
+  The trick is to have an additional state in the invariant which
+  represents the case where [Ψ w] has been taken out of the invariant.
+  This state simply mentions the token.
+*)
 
 Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ (∃ w, ⌜v = SOMEV w⌝ ∗ Ψ w) ∨ token γ).
 
+(**
+  This enables the owner of the token to open the invariant, extract
+  [Ψ w], and close the invariant in the case that mentions the token. As
+  such, we include the token in the join handle, so that [join] gets
+  access to the token.
+*)
+
 Definition join_handle (h : val) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ γ (l : loc), ⌜h = #l⌝ ∗ token γ ∗ inv N (handle_inv γ l Ψ).
 
-Lemma token_lock (γ : gname) (P : iProp Σ) :
-  token γ -∗
-  (token γ ∨ P) -∗
-  token γ ∗ P.
-Proof.
-  iIntros "H1 [H2 | HP]".
-  - iExFalso. iApply (token_exclusive with "H1 H2").
-  - iFrame.
-Qed.
+(**
+  Let us now try to prove the specifications again. We start with
+  [spawn].
+*)
 
 Lemma spawn_spec (P : iProp Σ) (Ψ : val → iProp Σ) (f : val) :
   {{{ P }}} f #() {{{ v, RET v; Ψ v }}} -∗
@@ -247,8 +247,10 @@ Proof.
   iLöb as "IH".
   wp_rec.
   wp_bind (! #l)%E.
+  (** We open the invariant and consider the three possible states. *)
   iInv "I" as "(%_ & Hl & [>-> | [(%w & >-> & HΨ) | >Hγ']])".
-  - wp_load.
+  - (** Case: The forked-off thread is not yet finished. *)
+    wp_load.
     iModIntro.
     iSplitL "Hl".
     {
@@ -259,8 +261,13 @@ Proof.
     }
     wp_pures.
     iApply ("IH" with "Hγ HΦ").
-  - wp_load.
+  - (** Case: The forked-off thread has finished. *)
+    wp_load.
     iModIntro.
+    (**
+      Note that now, since we own the token, we do not need to use [Ψ w]
+      to close the invariant – we close it with the token.
+    *)
     iSplitL "Hγ Hl".
     {
       iNext.
@@ -269,7 +276,11 @@ Proof.
     }
     wp_pures.
     by iApply "HΦ".
-  - iPoseProof (token_exclusive with "Hγ Hγ'") as "[]".
+  - (**
+      Case: [Ψ w] has already been taken out of the invariant.
+      This case is impossible as we own the token.
+    *)
+    iPoseProof (token_exclusive with "Hγ Hγ'") as "[]".
 Qed.
 
 End spawn.
@@ -279,12 +290,11 @@ End spawn.
 (* ================================================================= *)
 (** ** The Par Construct *)
 
-(* TODO: rewrite *)
-
 (**
   With [spawn] and [join] defined and their specifications proved, we
   can move on to study a classical parallel composition operator: [par].
-  Its definition is quite straightforward.
+  Its definition is quite straightforward – building on the [spawn]
+  construct.
 *)
 Definition par : val :=
   λ: "f1" "f2",

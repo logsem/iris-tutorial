@@ -167,9 +167,8 @@ Proof.
 Abort.
 
 (* 
-  TODO: rewrite, and consider using definition of tokens from Iris
-  library instead, and mention that it is similar to our coverage of
-  them in the resource algebra chapter. 
+  TODO: rewrite, and mention that we use token from library which is
+  similar to the tokens we defined in resource algebra chapter.
 *)
 
 (**
@@ -187,9 +186,6 @@ Abort.
 Context `{!tokenG Σ}.
 
 Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
-  ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ ∃ w, ⌜v = SOMEV w⌝ ∗ (token γ ∨ Ψ w)).
-
-Definition handle_inv' (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
   ∃ v, l ↦ v ∗ (⌜v = NONEV⌝ ∨ (∃ w, ⌜v = SOMEV w⌝ ∗ Ψ w) ∨ token γ).
 
 Definition join_handle (h : val) (Ψ : val → iProp Σ) : iProp Σ :=
@@ -234,6 +230,7 @@ Proof.
     iExists (SOMEV v).
     iFrame.
     iRight.
+    iLeft.
     iExists v.
     by iFrame.
   - wp_pures.
@@ -250,7 +247,7 @@ Proof.
   iLöb as "IH".
   wp_rec.
   wp_bind (! #l)%E.
-  iInv "I" as "(%_ & Hl & [>-> | (%w & >-> & [>Hγ' | HΨ])])".
+  iInv "I" as "(%_ & Hl & [>-> | [(%w & >-> & HΨ) | >Hγ']])".
   - wp_load.
     iModIntro.
     iSplitL "Hl".
@@ -262,7 +259,6 @@ Proof.
     }
     wp_pures.
     iApply ("IH" with "Hγ HΦ").
-  - iPoseProof (token_exclusive with "Hγ Hγ'") as "[]".
   - wp_load.
     iModIntro.
     iSplitL "Hγ Hl".
@@ -270,12 +266,10 @@ Proof.
       iNext.
       iExists (SOMEV w).
       iFrame.
-      iRight.
-      iExists w.
-      by iFrame.
     }
     wp_pures.
     by iApply "HΦ".
+  - iPoseProof (token_exclusive with "Hγ Hγ'") as "[]".
 Qed.
 
 End spawn.

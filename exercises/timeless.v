@@ -13,36 +13,36 @@ Context `{!heapGS Σ}.
 (**
   A large class of propositions do not depend on time; they are either
   always true or always false. Take for instance equalities –
-  [2 + 2 = 4] is always true. We call such propositions timeless. All
+  [2 + 2 = 4] is always true. We call such propositions _timeless_. All
   pure propositions are timeless and ownership of resources is timeless
   if the resource comes from a resource algebra (this includes points-to
   predicates). Further, timelessness is preserved by most connectives.
   As a rule of thumb, a predicate is timeless if
-  - it does not contain a later
+  - it does not contain a [▷]
   - it does not mention an invariant
   - it is first-order
 
   Naively, one might assume that if [P] is timeless, then [▷ P ⊢ P].
   However, together with Löb induction, this would actually imply that
-  [P] is [True]. Instead, the power of timeless propositions comes from
-  the rule: [▷ P ⊢ |={⊤}=> P], whenever [P] is timeless. This rule
-  allows us to strip laters from timeless propositions whenever the goal
-  contains a fancy update modality.
+  [P] is [True]. Instead, the power of timeless propositions is
+  reflected in the rule: [▷ P ⊢ |={⊤}=> P], whenever [P] is timeless.
+  This rule allows us to strip laters from timeless propositions
+  whenever the goal contains a fancy update modality.
 
   To identify timeless propositions, Iris uses the typeclass [Timeless].
 *)
 
-Lemma later_timeless_fup (P : iProp Σ) `{!Timeless P} :
-  ▷ P ⊢ |={⊤}=> P.
+Lemma later_timeless_fup (P Q : iProp Σ) `{!Timeless P} :
+  (P -∗ Q) ∗ ▷ P ⊢ |={⊤}=> Q.
 Proof.
-  iIntros "HP".
+  iIntros "[HPQ HP]".
   (**
     As [▷] is a modality, we can use the [iMod] tactic to strip it from
     our hypothesis. In this case, this is allowed as the goal contains a
     fancy update modality and [P] is timeless.
   *)
   iMod "HP".
-  done.
+  by iApply "HPQ".
 Qed.
 
 (**
@@ -51,18 +51,18 @@ Qed.
   be shortened as follows.
 *)
 
-Lemma later_timeless_fup' (P : iProp Σ) `{!Timeless P} :
-  ▷ P ⊢ |={⊤}=> P.
+Lemma later_timeless_fup' (P Q : iProp Σ) `{!Timeless P} :
+  (P -∗ Q) ∗ ▷ P ⊢ |={⊤}=> Q.
 Proof.
-  iIntros ">HP".
-  done.
+  iIntros "[HPQ >HP]".
+  by iApply "HPQ".
 Qed.
 
 (**
   We may _always_ add a fancy update modality in front of a WP
-  (concretely with the [fupd_wp] lemma), so if the goal is a weakest
-  precondition, we can remove laters from timeless propositions in our
-  context.
+  (concretely with the [fupd_wp] lemma), so we can also remove laters
+  from timeless propositions in our context if the goal is a weakest
+  precondition.
 *)
 
 Lemma later_store (l : loc) (v : val) :
@@ -89,7 +89,7 @@ Qed.
 
 (**
   The last scenario we mention is when the goal contains a later. In
-  this case, we may remove laters from timeless hypothesis, without
+  this case, we may remove laters from timeless hypotheses, without
   removing the later from the goal.
 *)
 

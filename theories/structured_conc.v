@@ -344,7 +344,7 @@ Proof.
   iIntros "#H1 #H2 %Φ !> [HP1 HP2] HΦ".
   rewrite /par.
   wp_pures.
-  (** 
+  (**
     We use [spawn_spec] to spawn a thread running [e1]. This requires us
     to prove that if [e1] terminates at value [v1], then [Q1 v1].
     However, this follows by our assumption ["H1"], so we easily prove
@@ -362,7 +362,7 @@ Proof.
   *)
   iIntros "%h Hh".
   wp_pures.
-  (** 
+  (**
     Next, we execute [e2] in the current thread using its specification,
     ["H2"], which gives us that, if [e2] terminates at some value [v2],
     then [Q2 v2].

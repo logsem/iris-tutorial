@@ -386,8 +386,8 @@ END TEMPLATE *)
   Likewise, forall quantification works almost as in Coq. To introduce
   universally quantified variables, you can either use [iIntros (x y z)]
   or [iIntros "%x %y %z"]. These patterns are interchangeable. To
-  specify the parameters of hypotheses, we write 
-  [iApply ("H" $! x y z)]
+  specify the parameters of hypotheses, we write
+  [iApply ("H" $! x y z)].
 *)
 Lemma sep_all_distr {A} (P Q : A → iProp Σ) :
   (∀ x, P x) ∗ (∀ x, Q x) -∗ (∀ x, P x ∗ Q x).

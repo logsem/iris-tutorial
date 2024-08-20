@@ -130,7 +130,7 @@ Abort.
   most one program step. This is enforced by requiring [e] to be an
   atomic expression, meaning it reduces to a value in one step. After
   the one step, we have to close the invariant again.
-  
+
   Let us try to see these concepts in action with a simple example.
 *)
 
@@ -144,13 +144,13 @@ Proof.
     Let us ignore this and try to open the invariant anyway.
   *)
   iInv "Hinv" as "Hl".
-  (** 
+  (**
     Iris now asks us to prove that [!#l + !#l] is atomic. Hence we are
     stuck.
   *)
 Abort.
 
-(** 
+(**
   When the expression in the WP is not atomic, we can make it so by
   _binding_ the expression we want to open the invariant around.
 *)
@@ -234,7 +234,7 @@ Proof.
   (** Finally, we close the invariant by proving it still holds. *)
   iSplitL "Hl".
   { iApply "Hl". }
-  (** 
+  (**
     Now, both dereferences have been reduced, so we easily prove the
     remaining WP.
   *)

@@ -68,7 +68,7 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   pieces:
   - [● x] called an authoritative element.
   - [◯ y] called a fragment.
-  
+
   The idea of the authoritative camera is as follows. The authoritative
   element represents the whole of the resource, while the fragments
   act as the pieces. To achieve this the authoritative element acts

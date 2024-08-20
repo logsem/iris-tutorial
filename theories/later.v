@@ -178,7 +178,7 @@ Proof.
   *)
   wp_rec.
   wp_pure.
-  (** 
+  (**
     Since we have taken steps, the [▷] in our induction hypothesis has
     been stripped, allowing us to apply the hypothesis for the recursive
     call.

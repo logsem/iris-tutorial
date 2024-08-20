@@ -190,7 +190,7 @@ Proof.
   apply (H (S i)).
   lia.
 Qed.
-  
+
 
 (*
   With the setup out of the way, we can now begin defining operations
@@ -250,7 +250,7 @@ CoFixpoint repeat_with_sep_helper (l : list nat) (x : nat) (helper : list nat) :
   | [] => SCons x (repeat_with_sep_helper l x l)
   | y :: helper => SCons y (repeat_with_sep_helper l x helper)
   end.
-Definition repeat_with_sep (l : list nat) (x : nat) := 
+Definition repeat_with_sep (l : list nat) (x : nat) :=
   repeat_with_sep_helper l x l.
 
 (*
@@ -312,7 +312,7 @@ Definition repeat_with_sep_alt (l : list nat) (x : nat) :=
 (*
   And the fixpoint can be unfolded up to equivalence:
 *)
-Lemma repeat_with_sep_alt_unfold (l : list nat) (x : nat) : 
+Lemma repeat_with_sep_alt_unfold (l : list nat) (x : nat) :
   repeat_with_sep_alt l x ≡ sapp l (SCons x (repeat_with_sep_alt l x)).
 Proof. exact (fixpoint_unfold _). Qed.
 
@@ -359,7 +359,7 @@ Definition stream_map_alt (f : nat → nat) := fixpoint (stream_map_pre f).
 
 (*
   Rather than simply restating the fixpoint unfolding lemma directly,
-  we will fully apply the function. 
+  we will fully apply the function.
 *)
 Lemma stream_map_alt_unfold (f : nat → nat) (s : stream) :
   stream_map_alt f s ≡ SCons (f (head s)) (stream_map_alt f (tail s)).

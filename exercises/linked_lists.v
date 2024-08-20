@@ -87,7 +87,7 @@ Definition append : val :=
 
 (**
   If [l1] and [l2] represent the lists [xs] and [ys] respectively, then
-  we expect that [append l1 l2] will return a list representing 
+  we expect that [append l1 l2] will return a list representing
   [xs ++ ys].
 *)
 Lemma append_spec (l1 l2 : val) (xs ys : list val) :
@@ -146,7 +146,7 @@ Proof.
 Admitted.
 
 (**
-  The specifications thus far have been rather straightforward. 
+  The specifications thus far have been rather straightforward.
   Now we will show a very general specification for [fold_right].
 *)
 Definition fold_right : val :=
@@ -203,7 +203,7 @@ Proof.
   (* exercise *)
 Admitted.
 
-(** 
+(**
   We can now sum over a list simply by folding an addition function over
   it.
 *)

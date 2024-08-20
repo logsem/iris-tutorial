@@ -98,7 +98,7 @@ Proof.
                           [Φ(v) ⊢ WP v {{ w, Φ w }}]
 
     The goal is changed to
-    
+
     [WP #1 + #(2 * 3) + #4 + #5 {{ v, ⌜v = #16⌝ }}]
 
     This is where [wp_op] has taken us. The next step of the program is

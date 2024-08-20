@@ -4,8 +4,8 @@ From iris.heap_lang Require Import lang proofmode notation.
 (**
   In this file, we present an alternative approach to defining representation
   predicates for linked lists, which uses fixpoints of predicates rather than
-  Coq's Fixpoint mechanism. 
-  The high-level point to notice is that we can define fixpoints of monotone 
+  Coq's Fixpoint mechanism.
+  The high-level point to notice is that we can define fixpoints of monotone
   functions on Iris predicates, much in the same way as one can define fixpoints
   of monotone function on Coq predicates [XXX insert reference, or include an
   example.]
@@ -30,7 +30,7 @@ Fixpoint is_list_of (v : val) (xs : list val) : iProp Σ :=
   However, sometimes we don't care about the exact list and instead,
   we only want to know that each value of the list satisfies a predicate.
   This can be captured by using a helper predicate [all] expressing that
-  all elements of a Coq list satisfy a predicate. 
+  all elements of a Coq list satisfy a predicate.
   Using that, we can then simply state that the value is represented by one such
   list.
 *)
@@ -86,7 +86,7 @@ Proof.
     apply _.
 Qed.
 
-(** 
+(**
   Now that we have proved monotonicity, we can obtain the least fixed point,
   and lemmas for its unfolding and an induction principle.
 *)
@@ -99,7 +99,7 @@ Proof. apply least_fixpoint_unfold, _. Qed.
 Lemma is_list_rec_ind (Φ Ψ : val → iProp Σ) : □ (∀ v, is_list_pre Φ Ψ v -∗ Ψ v ) -∗ ∀ v, is_list_rec v Φ -∗ Ψ v.
 Proof. apply least_fixpoint_iter, _. Qed.
 
-(** 
+(**
   We can now prove that our new definition is_list_rec obtained as the fixpoint
   is equivalent to the definition we gave earlier.
 *)

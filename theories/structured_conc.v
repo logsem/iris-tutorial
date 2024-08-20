@@ -285,8 +285,6 @@ Qed.
 
 End spawn.
 
-(* TODO: show example client of spawn. *)
-
 (* ================================================================= *)
 (** ** The Par Construct *)
 
@@ -318,16 +316,26 @@ Notation "e1 ||| e2" := (par (λ: <>, e1)%V (λ: <>, e2)%V) : val_scope.
 
   The rule states that we can run [e1] and [e2] in parallel if they have
   _disjoint_ footprints and that we can verify the two components
-  separately. The rule is this reason sometimes also referred to as the
-  _disjoint concurrency rule_.
-  TODO: Mention that it is slightly different from the par spec we have seen earlier [wp_par], but that this is mostly a notational difference.
+  separately. For this reason, the rule is sometimes also referred to as
+  the _disjoint concurrency rule_.  Note that this specification looks
+  slightly different from the specification in the [par] library:
+  [wp_par]. However, the differences are mainly notational.
 *)
 
 Section par.
-(* TODO: mention that we must include the resource algebra that spawn relies on. *)
+
+(**
+  Since [par] is implemented with [spawn], we will use [spawn_spec] and
+  [par_spec] to prove the specification for [par]. As such, we will need
+  to include the resource algebra that those specifications rely on:
+  [token].
+*)
 Context `{!heapGS Σ, !tokenG Σ}.
 
-(* TODO: some text explaining the proof might be nice. *)
+(**
+  It is actually quite straightforward to prove the [par] specification
+  as most of the heavy lifting is done by [spawn_spec] and [par_spec].
+*)
 Lemma par_spec (P1 P2 : iProp Σ) (e1 e2 : expr) (Q1 Q2 : val → iProp Σ) :
   {{{ P1 }}} e1 {{{ v, RET v; Q1 v }}} -∗
   {{{ P2 }}} e2 {{{ v, RET v; Q2 v }}} -∗
@@ -336,17 +344,36 @@ Proof.
   iIntros "#H1 #H2 %Φ !> [HP1 HP2] HΦ".
   rewrite /par.
   wp_pures.
+  (** 
+    We use [spawn_spec] to spawn a thread running [e1]. This requires us
+    to prove that if [e1] terminates at value [v1], then [Q1 v1].
+    However, this follows by our assumption ["H1"], so we easily prove
+    this.
+  *)
   wp_apply (spawn_spec P1 Q1 with "[] HP1").
   {
     iIntros "%Φ1 !> HP1  HΦ1".
     wp_pures.
     iApply ("H1" with "HP1 HΦ1").
   }
+  (**
+    We now get a join handle for the spawned thread, which guarantees us
+    that the value we get upon joining with it satisfies [Q1].
+  *)
   iIntros "%h Hh".
   wp_pures.
+  (** 
+    Next, we execute [e2] in the current thread using its specification,
+    ["H2"], which gives us that, if [e2] terminates at some value [v2],
+    then [Q2 v2].
+  *)
   wp_apply ("H2" with "HP2").
   iIntros "%v2 HQ2".
   wp_pures.
+  (**
+    Finally, we join with the spawned thread using our join handle and
+    [join_spec].
+  *)
   wp_apply (join_spec with "Hh").
   iIntros "%v1 HQ1".
   wp_pures.
@@ -358,7 +385,7 @@ Qed.
 End par.
 
 (**
-  Let us try to use the par specification to prove a specification for a
+  Let us try to use the [par] specification to prove a specification for a
   simple client. The client performs two `fetch and add' operations on
   the same location in parallel. The expression [FAA "l" #i] atomically
   fetches the value at location [l], adds [i] to it, and stores the
@@ -377,12 +404,16 @@ Definition parallel_add : expr :=
 
 Section parallel_add.
 (**
-  The par operator needs more resources than are available in
-  [heapGS]. So to use it we also need to add [spawnG Σ].
+  We must again assume the presence of the [token] resource algebra as
+  we will be using the [par] specification, which relies on it through
+  [spawn].
 *)
 Context `{!heapGS Σ, !tokenG Σ}.
+Let N := nroot .@ "par_add".
 
-(** The invariant is thus that r points to an even integer. *)
+(**
+  We will have an invariant stating that [r] points to an even integer.
+*)
 Definition parallel_add_inv (r : loc) : iProp Σ :=
   ∃ n : Z, r ↦ #n ∗ ⌜Zeven n⌝.
 
@@ -393,7 +424,7 @@ Proof.
   rewrite /parallel_add.
   wp_alloc r as "Hr".
   wp_pures.
-  iMod (inv_alloc nroot _ (parallel_add_inv r) with "[Hr]") as "#I".
+  iMod (inv_alloc N _ (parallel_add_inv r) with "[Hr]") as "#I".
   {
     iNext.
     iExists 0.
@@ -401,7 +432,7 @@ Proof.
   }
   (**
     We don't need information back from the threads, so we will simply
-    use [λ _, True] as the post conditions. Similarly, we only need the
+    use [λ _, True] as the postconditions. Similarly, we only need the
     invariant to prove the threads, and since this is in the persistent
     context, we let the preconditions be [True].
   *)

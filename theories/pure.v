@@ -48,7 +48,7 @@ Qed.
 
 (**
   To eliminate a pure proposition, we can use the specialization pattern
-  "%_". This adds the proposition to the non-spatial context as a Coq
+  ["%_"]. This adds the proposition to the non-spatial context as a Coq
   proposition.
 *)
 Lemma eq_elm {A} (P : A → iProp Σ) (x y : A) : ⌜x = y⌝ -∗ P x -∗ P y.

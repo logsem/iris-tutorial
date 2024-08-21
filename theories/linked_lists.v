@@ -140,8 +140,8 @@ END TEMPLATE *)
 
 (**
   We will implement reverse using a helper function, called
-  reverse_append, which takes two arguments, [l] and [acc], and returns
-  the list [rev l ++ acc].
+  [reverse_append], which takes two arguments, [l] and [acc], and
+  returns the list [rev l ++ acc].
 *)
 Definition reverse_append : val :=
   rec: "reverse_append" "l" "acc" :=
@@ -194,8 +194,8 @@ Admitted.
 END TEMPLATE *)
 
 (**
-  Now we use the specification of [reverse_append] to prove the specification
-  of [reverse].
+  Now we use the specification of [reverse_append] to prove the
+  specification of [reverse].
 *)
 Lemma reverse_spec (l : val) (xs : list val) :
   {{{ isList l xs }}}
@@ -211,8 +211,8 @@ Lemma reverse_spec (l : val) (xs : list val) :
 Qed.
 
 (**
-  The specifications thus far have been rather straightforward.
-  Now we will show a very general specification for [fold_right].
+  The specifications thus far have been rather straightforward. Now we
+  will show a very general specification for [fold_right].
 *)
 Definition fold_right : val :=
   rec: "fold_right" "f" "v" "l" :=

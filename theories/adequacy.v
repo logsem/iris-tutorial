@@ -15,7 +15,9 @@ From solutions Require Import spin_lock.
 
   HeapLang is defined using a step relation. This relation defines how
   an expression can be reduced in a single step.
-  [prim_step e1 σ1 κs e2 σ2 efs]
+
+    [prim_step e1 σ1 κs e2 σ2 efs]
+
   Here [e1] is the expression we want to reduce, and [σ1] is the
   current state of the machine. [e2] and [σ2] are then the new
   expression and state. [efs] is a list of expressions representing new
@@ -69,10 +71,12 @@ Definition not_stuck e σ :=
   specifies whether adequacy includes the first condition.
 
   The proof that the weakest precondition implies adequacy is:
-  [heap_adequacy Σ `{!heapGpreS Σ} s e σ φ :
-    ∀ _ : heapGS Σ, inv_heap_inv -∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝}} →
-    adequate s e σ (λ v σ, φ v)
-  ]
+
+  [[
+    heap_adequacy Σ `{!heapGpreS Σ} s e σ φ :
+      ∀ _ : heapGS Σ, inv_heap_inv -∗ WP e @ s; ⊤ {{ v, ⌜φ v⌝}} →
+      adequate s e σ (λ v σ, φ v)
+  ]]
 
   To use this statement we have to actually instantiate Σ. It needs to
   contain all the kinds of resources we needed to prove the weakest

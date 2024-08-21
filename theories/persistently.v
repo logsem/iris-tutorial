@@ -55,7 +55,7 @@ Context `{!heapGS Σ}.
 Lemma pers_context (P Q : iProp Σ) `{!Persistent P} : P -∗ Q -∗ P ∗ Q.
 Proof.
   (**
-    The introduction pattern "#_" allows us to place a persistent
+    The introduction pattern ["#_"] allows us to place a persistent
     hypothesis into the persistent context.
   *)
   iIntros "#HP HQ".
@@ -173,7 +173,7 @@ Proof.
     (**
       By default, [iFrame] will not frame propositions from the
       persistent context. To make it do so, we have to give it the
-      argument "#".
+      argument ["#"].
     *)
     iFrame "#".
 (* BEGIN SOLUTION *)
@@ -299,7 +299,9 @@ Qed.
   All Hoare triples are persistent. This probably does not come as a
   surprise, if the reader recalls how we defined Hoare triples in the
   [specifications] chapter. As a reminder, here is the definition again.
+
       [□( ∀ Φ, P -∗ ▷ (∀ r0 .. rn, Q -∗ Φ v) -∗ WP e {{v, Φ v }})]
+
   The outermost part of the definition is the persistently modality! As
   such, Hoare triples can be duplicated and reused.
 

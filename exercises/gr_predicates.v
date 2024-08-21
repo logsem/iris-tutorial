@@ -49,7 +49,9 @@ Definition is_list (v : val) (Φ : val → iProp Σ) : iProp Σ :=
   requires explicitly finding the list of values. Alternatively, we
   can define the is_list predicate as the solution to a recursive
   definition. This means defining a function:
+
     [F : (A → iProp Σ) → (A → iProp Σ)]
+
   A solution is then a function [f] satisfying [f = F f]. Solutions to
   such equations are called fixpoints as [f] doesn't change under [F].
 *)

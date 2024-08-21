@@ -172,9 +172,9 @@ Proof.
   iPoseProof (own_alloc Start) as "H".
   (** We are naturally only allowed to allocate valid resources *)
   { done. }
-  (** We can remove the bupd from "H" as we are proving a bupd *)
+  (** We can remove the bupd from ["H"] as we are proving a bupd *)
   iMod "H" as "H".
-  (** We can now use iModIntro or the "!>" introduction pattern. *)
+  (** We can now use iModIntro or the ["!>"] introduction pattern. *)
   iModIntro.
   done.
 Qed.
@@ -303,5 +303,6 @@ End proofs.
   [csum (excl ()) (agree ())].
 
   The available cameras can be found here:
-  https://gitlab.mpi-sws.org/iris/iris/-/tree/master/iris/algebra
+
+  <<https://gitlab.mpi-sws.org/iris/iris/-/tree/master/iris/algebra>>
 *)

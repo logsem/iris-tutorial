@@ -145,7 +145,9 @@ Example lambda : expr :=
   symbolically execute these kinds of expressions, e.g. [wp_let] for let
   expressions, [wp_lam] for applications, and [wp_op] for arithmetic. A
   list of all tactics for HeapLang expressions can be found at
-  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md#tactics.
+
+  <<https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md#tactics>>
+
   These tactics similarly apply the underlying rules of the logic,
   however we shall from now on refrain from explicitly mentioning the
   rules applied. Through experience, the reader should get an intuition
@@ -369,11 +371,13 @@ Proof.
     The expression now matches the [prog_spec] specification, but the
     postcondition still does not match. To fix this, we can use
     monotonicity of WP. That is,
+
       [WP e {{ Φ }} ∗ (∀ v, Φ v -∗ Ψ v) ⊢ WP e {{ Ψ }}].
+
     With this it suffices to prove that the postcondition of [prog_spec]
     implies the postcondition in our current goal. This is achieved with
-    the [wp_wand] lemma, which generates two subgoals, one
-    corresponding to [WP e {{ Φ }}] and one to [(∀ v, Φ v -∗ Ψ v)].
+    the [wp_wand] lemma, which generates two subgoals, one corresponding
+    to [WP e {{ Φ }}] and one to [(∀ v, Φ v -∗ Ψ v)].
   *)
   iApply wp_wand; simpl.
   { iApply prog_spec. }
@@ -450,7 +454,9 @@ Qed.
 
   In Iris, Hoare triples are actually defined in terms of weakest
   preconditions. The definition is as follows:
-    [□( ∀ Φ, P -∗ ▷ (∀ r0 .. rn, Q -∗ Φ v) -∗ WP e {{v, Φ v }})].
+
+    [□( ∀ Φ, P -∗ ▷ (∀ r0 .. rn, Q -∗ Φ v) -∗ WP e {{v, Φ v }})]
+
   This is quite a lengthy definition, so let us break it down.
   Firstly, inspired by the [prog_spec_2] example from the previous
   section, this definition makes the postcondition generic.

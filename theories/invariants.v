@@ -160,7 +160,7 @@ Lemma inv_open_example_attempt_2 (N : namespace) (l : loc) :
 Proof.
   iIntros "#Hinv".
   (**
-    We now first bind the expression (!#l), which _is_ atomic.
+    We now first bind the expression ([!#l]), which _is_ atomic.
   *)
   wp_bind (!#l)%E.
   (**
@@ -305,7 +305,7 @@ Qed.
 End inv_intro.
 
 (* ================================================================= *)
-(** ** A Motivating Example - Take Two *)
+(** ** A Motivating Example – Take Two *)
 
 (**
   Armed with the knowledge of invariants, let us attempt to prove the

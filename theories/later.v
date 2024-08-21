@@ -166,7 +166,7 @@ Lemma count_spec (x : Z) : ⊢ WP count #x {{_, False}}.
 Proof.
   (**
     The tactic for Löb induction, [iLöb], requires us to specify the
-    name of the induction hypothesis, which we here call "IH".
+    name of the induction hypothesis, which we here call ["IH"].
     Optionally, it can also forall quantify any of our variables before
     performing induction. We here forall quantify [x] as it changes for
     every recursive call.

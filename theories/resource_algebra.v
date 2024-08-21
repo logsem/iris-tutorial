@@ -87,6 +87,7 @@ Print RAMixin.
 (**
   For convenience, we include the definition of [RAMixin] here as well.
 
+  [[
   Record RAMixin A `{Equiv A, PCore A, Op A, Valid A} := {
     (* setoids *)
     ra_op_proper (x : A) : Proper ((≡) ==> (≡)) (op x);
@@ -102,6 +103,7 @@ Print RAMixin.
       x ≼ y → pcore x = Some cx → ∃ cy, pcore y = Some cy ∧ cx ≼ cy;
     ra_valid_op_l (x y : A) : ✓ (x ⋅ y) → ✓ x
   }.
+  ]]
 
   The `setoids' rules state that equivalence of elements is respected by
   the operation, the core, and validity. For instance, [ra_op_proper]
@@ -112,7 +114,9 @@ Print RAMixin.
   commutative semigroup, which means that we can make all resource
   algebras a preorder through the extension order, written [x ≼ y]. The
   extension order is defined as:
+
         [x ≼ y = ∃z, y ≡ x ⋅ z]
+
   Intuitively, the resource [x] is _included_ in [y], if we can express
   [y] in terms of [x] and some [z].
 
@@ -162,7 +166,8 @@ Check dfrac_ra_mixin : RAMixin dfrac.
   core, and a subset of valid elements, and these satisfy the properties
   specified in the fields of [RAMixin]. We proceed to discuss each of
   these in turn. The full definitions of the components can be found at
-  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/iris/algebra/dfrac.v
+
+  <<https://gitlab.mpi-sws.org/iris/iris/-/blob/master/iris/algebra/dfrac.v>>
 *)
 
 (* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - *)
@@ -574,7 +579,8 @@ END TEMPLATE *)
   The collection of resource algebras we present here is by no means
   exhaustive – Iris ships with a myriad of useful resource algebras,
   which can be found at
-  https://gitlab.mpi-sws.org/iris/iris/-/tree/master/iris/algebra.
+
+  <<https://gitlab.mpi-sws.org/iris/iris/-/tree/master/iris/algebra>>.
 *)
 
 (* ----------------------------------------------------------------- *)
@@ -952,7 +958,8 @@ Context `{!heapGS Σ}.
 
 (**
   For additional information, please consult:
-  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/resource_algebras.md
+
+  <<https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/resource_algebras.md>>
 *)
 
 (* ----------------------------------------------------------------- *)

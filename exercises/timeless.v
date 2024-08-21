@@ -12,10 +12,10 @@ Context `{!heapGS Σ}.
 
 (**
   A large class of propositions do not depend on time; they are either
-  always true or always false. Take for instance equalities –
-  [2 + 2 = 4] is always true. We call such propositions _timeless_. All
-  pure propositions are timeless and ownership of resources is timeless
-  if the resource comes from a resource algebra (this includes points-to
+  always true or always false. An example is equalities; [2 + 2 = 4] is
+  always true. We call such propositions _timeless_. All pure
+  propositions are timeless and ownership of a resource is timeless if
+  the resource comes from a resource algebra (this includes points-to
   predicates). Further, timelessness is preserved by most connectives.
   As a rule of thumb, a predicate is timeless if
   - it does not contain a [▷]
@@ -46,7 +46,7 @@ Proof.
 Qed.
 
 (**
-  As usual, we can use the notation ">" to invoke [iMod]. This is how we
+  As usual, we can use the notation [">"] to invoke [iMod]. This is how we
   will usually invoke [iMod] to strip laters. The above proof can hence
   be shortened as follows.
 *)

@@ -38,7 +38,9 @@ From iris.heap_lang Require Import lang notation spawn par.
   with development versions of Iris. The interpreter is not required for
   the tutorial, but it can optionally be installed for this chapter. To
   install it, run:
-    [opam install coq-iris-unstable].
+
+    <<opam install coq-iris-unstable>>
+
   This also updates Iris to a development version. To access the
   interpreter, uncomment the import below.
 *)
@@ -48,7 +50,9 @@ From iris.heap_lang Require Import lang notation spawn par.
 (**
   To return to a release version of Iris known to be compatible with the
   rest of the tutorial, run:
-    [opam install . --deps-only].
+
+    <<opam install . --deps-only>>
+
   This also uninstalls the interpreter.
 *)
 

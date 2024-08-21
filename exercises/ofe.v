@@ -129,7 +129,8 @@ Qed.
 
   [dist_later] is defined differently from what you might have seen
   elsewhere, but it is still equivalent to the usual definition.
-  [dist_later n x y := ∀ m, m < n → x ≡{m}≡ y]
+
+    [dist_later n x y := ∀ m, m < n → x ≡{m}≡ y]
 *)
 Global Instance SCons_contractive x : Contractive (SCons x).
 Proof.
@@ -340,7 +341,7 @@ CoFixpoint stream_map (f : nat → nat) (s : stream) : stream :=
   can't just build this as a fixpoint on streams. Instead, we need to
   build a fixpoint on [stream → stream]. However, this is not equipped
   with a canonical OFE structure. Instead, we need to write
-  [stream -d> streamO]. Here "d" is short for discrete, meaning we
+  [stream -d> streamO]. Here [d] stands for discrete, meaning we
   don't consider any OFE structure on the domain. As such, we are
   allowed to change the parameter arbitrarily on recursive calls.
 *)

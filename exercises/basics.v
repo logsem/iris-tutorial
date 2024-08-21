@@ -100,7 +100,7 @@ Proof.
   *)
   iIntros "H".
   (**
-    This adds [P] to the spatial context with the identifier "H". To
+    This adds [P] to the spatial context with the identifier ["H"]. To
     finish the proof, one would normally use either [exact] or [apply].
     So in Iris we use either [iExact] or [iApply].
   *)
@@ -113,14 +113,18 @@ Qed.
 (**
   In Coq, the context and the goal is a sequent (we use [⊢ₓ] for
   the Coq entailment to distinguish it from the Iris entailment [⊢]):
+
                     [H₁ : Φ₁, ..., Hₙ : Φₙ ⊢ₓ Ψ]
+
   Here, the left-hand side of the Coq entailment [⊢ₓ] is the
   (non-spatial) context and the right-hand side is the goal. This
   sequent is equivalent to the entailment [Φ₁ ∧ ... ∧ Φₙ ⊢ₓ Ψ].
 
   The Iris Proof Mode mimics this in the sense that the spatial context
   and the goal is an Iris sequent:
+
                     ["H₁" : Φ₁, ..., "Hₙ" : Φₙ ⊢ Ψ]
+
   However, as Iris is a separation logic, this is equivalent to the
   entailment [Φ₁ ∗ ... ∗ Φₙ ⊢ Ψ].
 
@@ -165,7 +169,7 @@ Definition and_success (P Q : iProp Σ) := (P ∧ Q)%I.
   in its introduction rule:
 
   [[
-        P1 ⊢ Q1       P2 ⊢ Q2
+        P1 ⊢ Q1⠀⠀⠀⠀⠀⠀P2 ⊢ Q2
         ----------------------
           P1 ∗ P2 ⊢ Q1 ∗ Q2
   ]]
@@ -239,7 +243,9 @@ Admitted.
   Manually splitting a separation can become tedious. To alleviate this,
   we can use the [iFrame] tactic. This tactic pairs up hypotheses with
   pieces of a separation sequence. Its full use is described in
-  https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md?ref_type=heads#separation-logic-specific-tactics
+  
+  <<https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md?ref_type=heads#separation-logic-specific-tactics>>
+  
 *)
 Lemma sep_comm_v2 (P Q : iProp Σ) : P ∗ Q ⊢ Q ∗ P.
 Proof.
@@ -266,9 +272,9 @@ Lemma wand_adj_1 (P Q R : iProp Σ) : (P -∗ Q -∗ R) ∗ P ∗ Q ⊢ R.
 Proof.
   iIntros "(H & HP & HQ)".
   (**
-    When applying "H", we get the subgoals [P] and [Q]. To specify that
-    we want to use "HP" to prove the first subgoal, and "HQ" the second,
-    we add "HP" in the first square bracket, and "HQ" in the second.
+    When applying ["H"], we get the subgoals [P] and [Q]. To specify that
+    we want to use ["HP"] to prove the first subgoal, and ["HQ"] the second,
+    we add ["HP"] in the first square bracket, and ["HQ"] in the second.
   *)
   iApply ("H" with "[HP] [HQ]").
   - iApply "HP".
@@ -321,7 +327,7 @@ Admitted.
   Iris has existential and universal quantifiers over any Coq type.
   Existential quantifiers are proved using the [iExists] tactic, using
   the same syntax as for [exists]. Elimination of existentials is done
-  through the pattern "[%_ _]" or as part of a "(_&..&_)" with a "%" in
+  through the pattern ["[%_ _]"] or as part of a ["(_&..&_)"] with a [%] in
   front of the existential variable.
 *)
 Lemma sep_ex_distr {A} (P : iProp Σ) (Φ : A → iProp Σ) :

@@ -30,7 +30,7 @@ jobs:
           ocaml_version: ${{ matrix.ocaml_version }}
           before_script: |
             sudo chown -R coq:coq . # workaround a permission issue
-            sudo apt install gawk
+            sudo apt install gawk -y
           script: |
             startGroup Build
               make ci -j2

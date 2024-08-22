@@ -14,9 +14,9 @@ jobs:
     strategy:
       matrix:
         coq_version:
-          - '8.17.1'
+          - '8.19.2'
         ocaml_version:
-          - '4.14.1-flambda'
+          - '4.14.2-flambda'
       max-parallel: 4
       # don't cancel all in-progress jobs if one matrix job fails:
       fail-fast: false

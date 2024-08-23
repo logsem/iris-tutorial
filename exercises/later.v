@@ -130,6 +130,26 @@ Qed.
   context, similarly to [iNext].
 *)
 
+(**
+  Further, it turns out that in many cases, a [▷] on an assumption can
+  be safely ignored. For instance, in the example below, we only own the
+  points-to predicate _later_, yet we can still perform the load.
+*)
+
+Lemma later_points_to (l : loc) : ▷ (l ↦ #5) -∗ WP !#l + #1 {{v, ⌜v = #6⌝}}.
+Proof.
+  iIntros "Hl".
+  wp_load.
+  by wp_pures.
+Qed.
+
+(**
+  The technical reason for this is that points-to predicates are
+  so-called _timeless_ propositions, and the `wp' tactics are aware of
+  this fact. We study timeless propositions further in a separate
+  chapter.
+*)
+
 (* ================================================================= *)
 (** ** Löb Induction *)
 

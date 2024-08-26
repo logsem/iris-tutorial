@@ -14,7 +14,7 @@ jobs:
     container: ghcr.io/logsem/iris-tutorial
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
       - name: install-gawk
         run: apt install gawk -y
       - name: make-ci

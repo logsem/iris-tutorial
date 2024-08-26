@@ -2,13 +2,8 @@
 - Have a file showcasing advanced Coq tactics.
 - Add example with "Landin's knot" (recursion through the store).
 - Add some exercises from Persistently chapter in ILN to Persistently chapter.
-- Remaining examples from ILN
-  - Ch. 16 - fixpoints
-- Detailed description of cmra with exercises on defining new ones.
-  - Defining a discrete cmra
-  - What is an ofe
-  - Generic cmra
-  - Higher order cmra
+- Introduce Generic CMRAs
+- Introduce Higher Order CMRAs
 - Internal equivalence and validity (Plainly, SIProp)
 - Inner workings of BI and using Iris proofmode on other logics.
   - Incompatibility of excluded middle.

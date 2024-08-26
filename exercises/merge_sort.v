@@ -1,29 +1,35 @@
 From stdpp Require Export sorting.
 From iris.heap_lang Require Import array lang proofmode notation par.
 
+(* ################################################################# *)
+(** * Case Study: Merge Sort *)
+
+(* ================================================================= *)
+(** ** Implementation *)
+
 (**
   Let us implement a simple multithreaded merge sort on arrays. Merge
   sort consists of splitting the array in half until we are left with
-  pieces of size 0 or 1. Then each pair of pieces is merged into a
+  pieces of size [0] or [1]. Then each pair of pieces is merged into a
   new sorted array.
 *)
 
 (**
-  We merge two arrays a1 and a2 of lengths n1 and n2 into an array b
-  of length n1 + n2.
+  We begin by implementing a function which merges two arrays [a1] and
+  [a2] of lengths [n1] and [n2] into an array [b] of length [n1 + n2].
 *)
 Definition merge : val :=
   rec: "merge" "a1" "n1" "a2" "n2" "b" :=
-  (** If a1 is empty, we simply copy the second a2 into b *)
+  (** If [a1] is empty, we simply copy the second [a2] into [b]. *)
   if: "n1" = #0 then
     array_copy_to "b" "a2" "n2"
-  (** Likewise if a2 is empty instead *)
+  (** Likewise if [a2] is empty instead. *)
   else if: "n2" = #0 then
     array_copy_to "b" "a1" "n1"
   else
   (**
-    Otherwise, we compare the first elements of a1 and a2. The least is
-    removed and written to b. Rinse and repeat.
+    Otherwise, we compare the first elements of [a1] and [a2]. The
+    smallest is removed and written to [b]. Rinse and repeat.
   *)
     let: "x1" := !"a1" in
     let: "x2" := !"a2" in
@@ -35,8 +41,9 @@ Definition merge : val :=
       "merge" "a1" "n1" ("a2" +ₗ #1) ("n2" - #1) ("b" +ₗ #1).
 
 (**
-  To sort we simply split the array in half. Sort them on separate
-  threads. Then the results are merged together and copied back into the array.
+  To sort an array [a], we split the array in half, sort each sub-array
+  recursively on separate threads, and merge the sorted sub-arrays using
+  [merge], writing the elements back into the array.
 *)
 Definition merge_sort_inner : val :=
   rec: "merge_sort_inner" "a" "b" "n" :=
@@ -48,8 +55,8 @@ Definition merge_sort_inner : val :=
     merge "b" "n1" ("b" +ₗ "n1") "n2" "a".
 
 (**
-  HeapLang requires array allocations to contain at least 1 element. So
-  we need to treat this case separatly.
+  HeapLang requires array allocations to contain at least one element.
+  As such, we need to treat this case separately.
 *)
 Definition merge_sort : val :=
   λ: "a" "n",
@@ -60,17 +67,21 @@ Definition merge_sort : val :=
     merge_sort_inner "a" "b" "n".
 
 (**
-  Our desired specification will be that sort produces a new sorted
-  array that's a permutation of the input.
+  Our desired specification will be that [merge_sort] produces a new
+  sorted array which, importantly, is a permutation of the input.
 *)
+
+(* ================================================================= *)
+(** ** Specifications *)
 
 Section proofs.
 Context `{!heapGS Σ, !spawnG Σ}.
 
 (**
-  To merge two arrays a1 and a2, we require that they are both already
-  sorted. Furthermore, we need the result array b to have enough space,
-  though we don't care what it contains.
+  We begin by giving a specification for the [merge] function. To merge
+  two arrays [a1] and [a2], we require that they are both already
+  sorted. Furthermore, we need the result array [b] to have enough
+  space, though we don't care what it contains.
 *)
 Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
   {{{
@@ -93,7 +104,7 @@ Proof.
 Admitted.
 
 (**
-  With this we can prove that sort actually sorts the output.
+  With this, we can prove that sort actually sorts the output.
 *)
 Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
   {{{
@@ -111,6 +122,9 @@ Proof.
   (* exercise *)
 Admitted.
 
+(**
+  Finally, we lift this result to the outer [merge_sort] function.
+*)
 Lemma merge_sort_spec (a : loc) (l : list Z) :
   {{{a ↦∗ ((λ x : Z, #x) <$> l)}}}
     merge_sort #a #(length l)

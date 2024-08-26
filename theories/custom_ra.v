@@ -2,10 +2,15 @@ From iris.algebra Require Import cmra.
 From iris.heap_lang.lib Require Export par.
 From iris.heap_lang Require Import proofmode notation.
 
+(* ################################################################# *)
+(** * Custom Resource Algebra *)
+
+(* ================================================================= *)
+(** ** A Motivating Example *)
+
 (**
-  In this file, we will define a new cmra (pronounced camera) from
-  scratch. These are used as an abstract state of the program called
-  ghost state. To motivate the camera we will look at the following
+  In this chapter, we will define a new resource algebra from scratch.
+  To motivate the resource algebra, we will look at the following
   program:
 *)
 Definition prog : expr :=
@@ -15,16 +20,16 @@ Definition prog : expr :=
 
 (**
   We wish to show that the program terminates with a number that is at
-  least 5. To do this we will use an invariant separated into the
-  different abstract states of our program. At the outset, the
-  location will map to 4. During the execution of the threads, the
-  location will be changed to either 5 or 6. However, we just care about
-  that it must become greater than 4. As such we will have the
-  following states.
+  least [5]. To do this we will use an invariant separated into the
+  different abstract states of our program. At the outset, the location
+  will map to [4]. During the execution of the threads, the location
+  will be changed to either [5] or [6]. However, we just care about that
+  it must become greater than [4]. As such we will have the following
+  states.
 *)
 
 Inductive state :=
-  (** The starting state *)
+  (** The starting state. *)
   | Start
   (** The state after the location has been increased. *)
   | Final
@@ -35,38 +40,48 @@ Inductive state :=
   | Invalid.
 
 (**
-  Now we need to define an equivalence relation on the state. However,
-  we just want states to be equivalent exactly when they are equal.
+  The [state] data structure will be our carrier for the RA. To use
+  [state] as a resource algebra we need to turn it into a resource
+  algebra, meaning we need it to adhere to [RAMixin]. As such, we must
+  define an equivalence relation, composition, the core, and valid
+  elements, and prove that these definitions satisfy the fields in
+  [RAMixin].
+*)
+
+(* ================================================================= *)
+(** ** Defining the State RA *)
+
+Section state.
+
+(**
+  First, we define an equivalence relation on the state. We just want
+  states to be equivalent exactly when they are equal.
 *)
 Global Instance state_equiv_instance : Equiv state := eq.
 Global Instance state_equiv_equivalence : Equivalence (≡@{state}) := _.
 (**
   To help convert between equivalence and equality we can tell Iris
-  that they coincide. Which in this case is trivial.
+  that they coincide, which in this case is trivial.
 *)
 Global Instance state_leibniz_equiv : LeibnizEquiv state := _.
 
 (**
-  To define a camera we first need to define its ofe (Ordered family
-  of equivalences). An ofe encodes a kind of time dependence, but most
-  cameras don't depend on time and are thus what is called discrete.
-  To quickly define a discrete ofe, we can use [discrete_ofe_mixin].
-  This will produce a warning because we are reusing a definition in
-  a canonical projection. However, this warning can be safely ignored
-  in this case.
+  Recall that resource algebras are discrete cameras, and that cameras
+  build on OFEs (Ordered family of equivalences). As such, to define a
+  resources algebra, we must first define its OFE. An OFE encodes a kind
+  of time dependence, but when the camera is _discrete_ and hence a
+  resource algebra, it does not depend on time. To quickly define a
+  discrete OFE, we can use [discrete_ofe_mixin]. This will produce a
+  warning because we are reusing a definition in a canonical projection.
+  However, this warning can be safely ignored in this case.
 *)
 Canonical stateO := Ofe state (discrete_ofe_mixin _).
 
 (**
-  To use the state as a resource we need to turn it into a camera.
-*)
-Section cmra.
-
-(**
-  First of all, we need to define how fragments of state can be
-  combined. We define [Final ⋅ Final] as [Final], and make every other
-  combination [Invalid]. In particular, this means that [Start] will
-  be exclusive, while [Final] can be shared.
+  Next, we define how elements of [state] can be combined. We define
+  [Final ⋅ Final] as [Final], and make every other combination
+  [Invalid]. In particular, this means that [Start] will be exclusive,
+  while [Final] can be shared.
 *)
 Local Instance state_op_instance : Op state := λ s1 s2,
   match s1, s2 with
@@ -75,7 +90,16 @@ Local Instance state_op_instance : Op state := λ s1 s2,
   end.
 
 (**
-  Next, we have to define which fragments of state are valid.
+  The core then simply reflects that [Start] is exclusive.
+*)
+Local Instance state_pcore_instance : PCore state := λ s,
+  match s with
+  | Start => None
+  | _ => Some s
+  end.
+
+(**
+  Finally, we have to define which elements of [state] are valid.
   Naturally, we define everything except for [Invalid] as valid.
 *)
 Local Instance state_valid_instance : Valid state := λ s,
@@ -85,18 +109,8 @@ Local Instance state_valid_instance : Valid state := λ s,
   end.
 
 (**
-  Finally, we need to define the core. This defines what ownership is
-  persistent.
-*)
-Local Instance state_pcore_instance : PCore state := λ s,
-  match s with
-  | Start => None
-  | _ => Some s
-  end.
-
-(**
-  Because our camera is discrete, we only need to prove RAMixin,
-  rather than the full CmraMixin.
+  With everything defined, we can move on to prove [RAMixin] for
+  [state].
 *)
 Lemma state_ra_mixin : RAMixin state.
 Proof.
@@ -116,18 +130,28 @@ Proof.
 Qed.
 
 (**
-  We can now package this into a cmra which will add one more
-  operation [✓{_} _]. For discrete cameras this is the same as [✓ _].
+  The final step is to package this into a CMRA structure, allowing us
+  to use the resource algebra in proofs (using Coq's Context mechanism).
 *)
 Canonical Structure stateR := discreteR state state_ra_mixin.
+
 (**
   To help the Iris Proof Mode, we will register [stateR] as a discrete
-  cmra.
+  CMRA.
 *)
 Global Instance state_cmra_discrete : CmraDiscrete state.
 Proof. apply discrete_cmra_discrete. Qed.
 
-End cmra.
+End state.
+
+(* ================================================================= *)
+(** ** Properties of State *)
+
+(**
+  To alleviate working with the State RA, we here show some useful facts
+  about the resource algebra. Firstly, [Start] is exclusive and [Final]
+  is shareable.
+*)
 
 Global Instance Start_exclusive : Exclusive Start.
 Proof. by intros []. Qed.
@@ -137,30 +161,32 @@ Proof. red. done. Qed.
 
 (**
   We want the ability to change the state from [Start] to [Final].
-  However, we will instead prove a more general fact: That any state
-  can update to [Final].
+  However, we will instead prove a more general fact: That any state can
+  update to [Final].
 *)
 Lemma state_update s : s ~~> Final.
 Proof.
   (**
-    As we are working with a discrete cmra we can simplify this
+    As we are working with a discrete CMRA we can simplify this
     statement as follows.
   *)
-  unfold "~~>".
-  setoid_rewrite <-cmra_discrete_valid_iff.
-  intros _ mz H.
+  rewrite cmra_discrete_update.
+  intros mz H.
   by destruct s, mz as [[| |]|].
 Qed.
 
-Section proofs.
-Context `{!heapGS Σ, !spawnG Σ, !inG Σ stateR}.
+(**
+  Next, we give lemmas that help working with the State RA _in Iris_.
+*)
 
-Let N := nroot .@ "state".
+Section properties.
+Context `{!inG Σ stateR}.
 
 (**
-  We can create new resources via the basic update modality [|==> P].
-  This operation states that P holds after an update of resources.
-  To work with the basic update modality we can use two facts:
+  Our first lemma shows how a new State resource is created. We can
+  create new resources via the basic update modality [|==> P]. This
+  operation states that P holds after an update of resources. To work
+  with the update modality we can use two facts:
   - [P ⊢ |==> P]
   - [(P ⊢ |==> Q) ⊢ (|==> P ⊢ |==> Q)]
   Rather than working with these facts directly, we can use
@@ -168,21 +194,19 @@ Let N := nroot .@ "state".
 *)
 Lemma alloc_Start : ⊢ |==> ∃ γ, own γ Start.
 Proof.
-  (** To allocate a new resource we use [own_alloc] *)
-  iPoseProof (own_alloc Start) as "H".
-  (** We are naturally only allowed to allocate valid resources *)
-  { done. }
-  (** We can remove the bupd from ["H"] as we are proving a bupd *)
-  iMod "H" as "H".
-  (** We can now use iModIntro or the ["!>"] introduction pattern. *)
-  iModIntro.
+  (** To allocate a new resource we use [own_alloc]. *)
+  iApply own_alloc.
+  (**
+    We are naturally only allowed to allocate valid resources, but since
+    [Start] is valid, this is no problem.
+  *)
   done.
 Qed.
 
 (**
-  Likewise, owning a resource means it is valid.
-  A quick note: [✓ _] and [⌜✓ _⌝] are different, they only coincide
-  when the cmra is discrete.
+  Likewise, owning a resource means that it is valid.
+  A quick note: [✓ _] and [⌜✓ _⌝] are different, they only coincide when
+  the CMRA is discrete.
 *)
 Lemma state_valid γ (s : state) : own γ s ⊢ ⌜✓ s⌝.
 Proof.
@@ -192,7 +216,7 @@ Proof.
 Qed.
 
 (**
-  Next, we can lift [state_update] to ownership using [own_valid].
+  Next, we can lift [state_update] to ownership using [own_update].
   As a shorthand for [_ -∗ |==> _] we write [_ ==∗ _].
 *)
 Lemma state_bupd γ (s : state) : own γ s ==∗ own γ Final.
@@ -201,18 +225,36 @@ Proof.
   apply state_update.
 Qed.
 
+End properties.
+
+(* ================================================================= *)
+(** ** Using the State RA in Proofs *)
+
 (**
-  We can now define the invariant as follows
+  Let us return to the motivating example from the first section of this
+  chapter. We will be using the State RA to prove that [prog] terminates
+  with a value that is at least [5].
+*)
+
+Section proofs.
+
+Context `{!heapGS Σ, !spawnG Σ, !inG Σ stateR}.
+
+Let N := nroot .@ "state".
+
+(**
+  We can now define the invariant we hinted to in the beginning as
+  follows.
 *)
 Definition state_inv γ (l : loc) (x : Z) : iProp Σ :=
   ∃ y : Z, l ↦ #y ∗ (own γ Start ∗ ⌜x = y⌝ ∨ own γ Final ∗ ⌜x < y⌝%Z).
 
 (**
-  Rather than proving the entire program at once, we will split it
-  into 3 pieces. Starting with the 2 threads.
+  Rather than proving the entire program at once, we will split it into
+  3 pieces, starting with the 2 threads.
 
-  Note that WP contains a bupd, meaning we can update resources in
-  between steps.
+  Note that WP contains an update modality, meaning we can update
+  resources in between steps.
 *)
 Lemma thread_spec γ l (x : Z) : {{{inv N (state_inv γ l x)}}} #l <- !#l + #1 {{{RET #(); own γ Final}}}.
 (* SOLUTION *) Proof.
@@ -240,8 +282,7 @@ Lemma thread_spec γ l (x : Z) : {{{inv N (state_inv γ l x)}}} #l <- !#l + #1 {
   wp_store.
   iMod (state_bupd with "Hγ") as "#Hγ".
   iModIntro.
-  iSplitR "HΦ".
-  2: { by iApply "HΦ". }
+  iSplitR "HΦ"; last by iApply "HΦ".
   iNext.
   iExists (y + 1)%Z.
   iFrame.
@@ -297,12 +338,12 @@ Qed.
 End proofs.
 
 (**
-  Iris ships with a bunch of different cmras you can use out of the
+  Iris ships with a bunch of different CMRAs that you can use out of the
   box. Rather than creating new resources for every new situation, we
-  can instead compose existing cmras. Our state camera corresponds to
-  [csum (excl ()) (agree ())].
+  can instead compose existing CMRAs. For instance, our State resource
+  algebra corresponds to [csum (excl ()) (agree ())].
 
-  The available cameras can be found here:
+  Some of the available CMRAs can be found here:
 
   <<https://gitlab.mpi-sws.org/iris/iris/-/tree/master/iris/algebra>>
 *)

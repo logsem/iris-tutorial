@@ -1,17 +1,28 @@
 From iris.heap_lang Require Import lang proofmode notation.
 
+(* ################################################################# *)
+(** * Arrays *)
+
+(**
+  In the Linked List chapter, we saw that we could use references to
+  implement a list data structure. However, HeapLang also supports
+  arrays that we can use for this purpose. The expression [AllocN n v]
+  allocates [n] contiguous copies of [v] and returns the location of the
+  first element. We then access a specific value by calculating its
+  offset [l +ₗ i] from the first element. This results in a location
+  which we can load from or write to.
+*)
+
+(* ================================================================= *)
+(** ** Copy *)
+
 Section proofs.
 Context `{heapGS Σ}.
 
 (**
-  Thus far we've looked at linked lists as our main list
-  implementation. However, heaplang also supports arrays. [AllocN n v]
-  allocates n contiguous copies of v and returns the location of the
-  first element. Then to access a value we can perform offsets
-  [l +ₗ i] and then perform a load.
-
-  To see arrays in action, let's implement a function that copies an
-  array, while keeping the original intact.
+  To see arrays in action, let's implement a function, [copy], that
+  copies an array, while keeping the original intact. We define it in
+  terms of a more general function, [copy_to].
 *)
 
 Definition copy_to : val :=
@@ -28,9 +39,9 @@ Definition copy : val :=
   "dst".
 
 (**
-  Just as with is_list, arrays have a predicate we can use written
-  [l ↦∗ vs]. Where l is the location of the first element in the array,
-  and vs is the list of values currently stored at each location of
+  Just as with [isList], arrays have a predicate we can use, written
+  [l ↦∗ vs]. Here, [l] is the location of the first element in the array,
+  and [vs] is the list of values currently stored at each location of
   the array.
 *)
 
@@ -40,22 +51,26 @@ Lemma copy_to_spec a1 a2 l1 l2 :
   {{{RET #(); a1 ↦∗ l1 ∗ a2 ↦∗ l1}}}.
 Proof.
   iIntros "%Φ (H1 & H2 & %H) HΦ".
+  (**
+    We proceed by Löb induction and case distinction on the contents of
+    [l1].
+  *)
   iLöb as "IH" forall (a1 a2 l1 l2 H).
   destruct l1 as [|v1 l1], l2 as [|v2 l2]; try done.
   - wp_rec; wp_pures.
     (**
-      The empty array predicate is trivial, as it says nothing about
-      the values on the heap. So we can use [array_nil] to rewrite them
-      into emp, which in Iris is just a synonym for True.
+      The empty array predicate is trivial, as it says nothing about the
+      values on the heap. So we can use [array_nil] to rewrite them into
+      [emp], which in Iris is just a synonym for [True].
     *)
     rewrite !array_nil.
     iModIntro.
     by iApply "HΦ".
   - wp_rec; wp_pures.
     (**
-      For the cons case, we can use array_cons to split the array into
-      a mapsto on the first location, with the remaining array
-      starting at the next location.
+      For the cons case, we can use [array_cons] to split the array into
+      a mapsto on the first location, with the remaining array starting
+      at the next location.
     *)
     rewrite !array_cons.
     iDestruct "H1" as "[H1 Hl1]".
@@ -98,8 +113,13 @@ Proof.
   by iFrame.
 Qed.
 
+(* ================================================================= *)
+(** ** Increment *)
+
 (**
-  Now let's reimplement some of the functions we use for linked lists.
+  As arrays can be thought of as a type of list, we can re-implement
+  some of the functions we wrote for linked lists. For instance, the
+  increment function.
 *)
 Definition inc : val :=
   rec: "inc" "arr" "len" :=
@@ -134,9 +154,13 @@ Lemma inc_spec a l :
     iFrame.
 Qed.
 
+(* ================================================================= *)
+(** ** Reverse *)
+
 (**
-  To reverse an array, we will swap the first and last values. Then
-  we'll recursively repeat this process on the remaining array.
+  Another common list operation is reversing the list. One way of
+  reversing an array is by swapping the first and last elements of the
+  array, and recursively repeating this process on the remaining array.
 *)
 Definition reverse : val :=
   rec: "reverse" "arr" "len" :=

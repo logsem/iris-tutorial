@@ -1,6 +1,6 @@
 # Possible future topics
 - Have a file showcasing advanced Coq tactics.
-- Add example with "Landin's knot" (recursion through the store) to showcase use of invariants for sequential programs.
+- Add example with "Landin's knot" (recursion through the store) to showcase use of dicardable fractions or invariants for sequential programs
 - Add some exercises from Persistently chapter in ILN to Persistently chapter.
 - Introduce Generic CMRAs
 - Introduce Higher Order CMRAs

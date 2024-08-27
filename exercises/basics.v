@@ -243,9 +243,9 @@ Admitted.
   Manually splitting a separation can become tedious. To alleviate this,
   we can use the [iFrame] tactic. This tactic pairs up hypotheses with
   pieces of a separation sequence. Its full use is described in
-  
+
   <<https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md?ref_type=heads#separation-logic-specific-tactics>>
-  
+
 *)
 Lemma sep_comm_v2 (P Q : iProp Σ) : P ∗ Q ⊢ Q ∗ P.
 Proof.

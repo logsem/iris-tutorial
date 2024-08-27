@@ -15,6 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: set up opam environment
+        run: eval $(opam env)
       - name: make-ci
-        shell: bash -l {0}
         run: make ci -j2

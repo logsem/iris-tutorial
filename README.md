@@ -1,7 +1,7 @@
 # Iris Tutorial
 The Iris Tutorial is an introduction to the [Iris separation logic framework](https://iris-project.org/) and how to work with its [Coq formalization](https://gitlab.mpi-sws.org/iris/iris/).
 
-The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Coq proof assistant is assumed. Advanced Coq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning.
+The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. We assume that readers are already motivated to learn Iris and thus present the material in a bottom-up fashion, rather than starting out with cool motivating examples. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Coq proof assistant is assumed. Advanced Coq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning.
 
 The tutorial comes in two versions:
 

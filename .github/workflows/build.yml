@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/logsem/iris-tutorial/docker-x86-64
+      image: ghcr.io/logsem/iris-tutorial/docker-x86-64:latest
       options: --user root
 
     steps:

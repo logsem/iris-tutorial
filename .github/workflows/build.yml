@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: whomai
+        run: whoami
       - name: make-ci
         shell: bash -l {0}
         run: make ci -j2

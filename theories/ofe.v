@@ -322,7 +322,7 @@ Definition repeat_with_sep_pre (l : list nat) (x : nat) (s : stream) :=
 Global Instance repeat_with_sep_contractive (l : list nat) (x : nat) : Contractive (repeat_with_sep_pre l x).
 Proof. solve_contractive. Qed.
 
-(*
+(**
   To get a fixpoint for such a function we need three things:
   - The type we wish to produce an element of (stream) must have a COFE
     structure, which we defined earlier.

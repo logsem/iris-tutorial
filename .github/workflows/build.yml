@@ -11,11 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/logsem/iris-tutorial
+    container: ghcr.io/logsem/iris-tutorial/docker-x86-64
 
     steps:
-      - uses: actions/checkout@v3
-      - name: install-gawk
-        run: apt install gawk -y
+      - uses: actions/checkout@v4
       - name: make-ci
         run: make ci -j2

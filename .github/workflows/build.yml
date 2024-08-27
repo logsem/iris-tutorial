@@ -19,4 +19,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: make-ci
         shell: bash -l {0}
-        run: export HOME=/root; echo $HOME; make ci -j2
+        run: export HOME=/root; eval $(opam env); make ci -j2

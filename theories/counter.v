@@ -55,7 +55,7 @@ Definition is_counter1 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ l ↦ #n.
 
 (**
-  This predicate is however not persistent, so our value would not be
+  This predicate is, however, not persistent, so our value would not be
   shareable across threads. To fix this we can put the knowledge into an
   invariant.
 *)
@@ -75,14 +75,14 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (∃ m : nat, l ↦ #m ∗ ⌜n ≤ m⌝).
 
 (**
-  Now we can change the what the pointer maps to, but we still can't
+  Now we can change the what the pointer maps to, but we still cannot
   refine the lower bound.
 
   The final step is to use ghost state. The idea is to link [n] and [m]
   to pieces of ghost state in such a way that the validity of their
   composite is [n ≤ m].
 
-  To achieve this we can use the _authoritative_ resource algebra,
+  To achieve this we will use the _authoritative_ resource algebra,
   [auth]. This resource algebra is parametrised by a CMRA, [A]. There
   are two types of elements in the carrier of the authoritative RA:
   - [● x] called an authoritative element
@@ -90,11 +90,10 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   where [x, y ∈ A].
 
   The idea of the authoritative RA is as follows. The authoritative
-  element represents the whole of the resource, while the fragments
-  act as the pieces. To achieve this the authoritative element acts
-  like the exclusive RA, while the fragment inherits all the
-  operations of [A]. Furthermore, validity of [● x ⋅ ◯ y] is defined as
-  [✓ x ∧ y ≼ x].
+  element represents the whole of the resource, while the fragments act
+  as the pieces. To achieve this, the authoritative element acts like
+  the exclusive RA, while the fragment inherits all the operations of
+  [A]. Furthermore, validity of [● x ⋅ ◯ y] is defined as [✓ x ∧ y ≼ x].
 
   In our case, we will use the authoritative RA over the [max_nat]
   resource algebra. The carrier of [max_nat] is the natural numbers, and
@@ -112,7 +111,8 @@ Definition is_counter (v : val) (γ : gname) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ MaxNat n) ∗
     inv N (∃ m : nat, l ↦ #m ∗ own γ (● MaxNat m)).
 
-Global Instance is_counter_persistent v γ n : Persistent (is_counter v γ n) := _.
+Global Instance is_counter_persistent v γ n :
+  Persistent (is_counter v γ n) := _.
 
 (* ================================================================= *)
 (** ** Properties of the Authoritative RA with MaxNat *)
@@ -281,7 +281,7 @@ END TEMPLATE *)
 (** ** A Simple Counter Client *)
 
 (**
-  To illustrate how this counter specification work, let us consider a
+  To illustrate how this counter specification works, let us consider a
   simple concurrent client of our counter module, which increments a
   counter twice in parallel. Our specification will simply be that the
   value of the counter will be at least [1] afterwards.
@@ -326,16 +326,16 @@ Section spec2.
   non-persistent, as we need to aggregate the knowledge to conclude the
   total value.
 
-  To this end, we will use fractions. The [frac] camera is similar to
-  [dfrac], but without the capability of discarding fractions. As such,
-  [frac] consists of non-negative rationals with addition as
-  composition, and a fraction is only valid if it is less than or equal
-  to [1]. This means that all the fractions can at most add up to [1].
-  Combining [frac] with other cameras allows us to keep track of how
-  much of the resource we own, meaning we can do the exact kind of
-  aggregation we need. So this time we will use the camera [authR
-  (optionUR (prodR fracR natR))]. Here, [natR] is the natural numbers
-  under addition.
+  To this end, we will use fractions. The [frac] resource algebra is
+  similar to [dfrac], but without the capability of discarding
+  fractions. As such, [frac] consists of non-negative rationals with
+  addition as composition, and a fraction is only valid if it is less
+  than or equal to [1]. This means that all the fractions can add up to
+  at most [1]. Combining [frac] with other resource algebras allows us
+  to keep track of how much of the resource we own, meaning we can do
+  the exact kind of aggregation we need. So this time we will use the
+  resource algebra [authR (optionUR (prodR fracR natR))]. Here, [natR]
+  is the natural numbers with addition.
 *)
 
 Context `{!heapGS Σ, !inG Σ (authR (optionUR (prodR fracR natR)))}.
@@ -346,8 +346,8 @@ Definition is_counter (v : val) (γ : gname) (n : nat) (q : Qp) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ Some (q, n)) ∗
     inv N (∃ m : nat, l ↦ #m ∗ own γ (● Some (1%Qp, m))).
 
-(*
-  With this definition, we can now decompose access to the counter, by
+(**
+  With this definition, we can now decompose access to the counter by
   splitting the fraction, as well as splitting the knowledge of how much
   the counter has been incremented.
 *)
@@ -371,7 +371,13 @@ Proof.
     iFrame.
 Qed.
 
-Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● Some (1%Qp, 0)) ∗ own γ (◯ Some (1%Qp, 0)).
+(**
+  When allocating a new state, there will be _one_ fragment, which
+  contains the entire fraction. Using the above lemma, we can then split
+  up the fragment, and supply these fragments to participating threads.
+*)
+Lemma alloc_initial_state :
+  ⊢ |==> ∃ γ, own γ (● Some (1%Qp, 0)) ∗ own γ (◯ Some (1%Qp, 0)).
 Proof.
   setoid_rewrite <-own_op.
   iApply own_alloc.
@@ -387,9 +393,9 @@ Proof.
       done.
 Qed.
 
-(*
+(**
   The fragments of natural numbers add up to the full value, meaning
-  that in particular, they must all be less than or equal to the
+  that, in particular, they must all be less than or equal to the
   authoritative element.
 *)
 Lemma state_valid γ (n m : nat) (q : Qp) :
@@ -409,10 +415,11 @@ Proof.
   done.
 Qed.
 
-(*
+(**
   However, when a fragment has the entire fraction, then there can't be
-  any other fragments. So the count stored in the fragment must be equal
-  to the one in the authoritative element.
+  any other fragments – intuitively, we have collected all contributions
+  from all threads. So the count stored in the fragment must be equal to
+  the one in the authoritative element.
 *)
 Lemma state_valid_full γ (n m : nat) :
   own γ (● Some (1%Qp, n)) -∗
@@ -432,7 +439,7 @@ Proof.
   - done.
 Qed.
 
-(*
+(**
   Finally, when we have both the authoritative element and a fragment,
   we can increment both.
 *)

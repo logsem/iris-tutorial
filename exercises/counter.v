@@ -2,23 +2,40 @@ From iris.algebra Require Export auth excl frac numbers.
 From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation par.
 
+(* ################################################################# *)
+(** * Case Study: Counter *)
+
+(* ================================================================= *)
+(** ** Implementation *)
+
 (**
-  Let us define a simple counter module. A counter has 3 functions, a
-  constructor, an incr, and a read. The counter is initialized as 0,
-  and incr increments the counter while returning the old value. While
-  read simply returns the current value of the counter. Furthermore,
-  we want the counter to be shareable across multiple threads.
+  Let us define a simple counter module. Our counter consists of three
+  functions:
+  - a constructor, [mk_counter], which creates a new counter starting at
+    [0].
+  - an increment function, [incr], which increments the counter, and
+    returns the old value of the counter.
+  - a read function, [read], which reads the current value of the
+    counter.
+  Furthermore, we want the counter to be shareable across multiple
+  threads, so we will implement [incr] with [CAS] as the synchronisation
+  mechanism.
 *)
 
 Definition mk_counter : val :=
   λ: <>, ref #0.
+
 Definition incr : val :=
   rec: "incr" "c" :=
   let: "n" := !"c" in
   let: "m" := "n" + #1 in
   if: CAS "c" "n" "m" then "n" else "incr" "c".
+
 Definition read : val :=
   λ: "c", !"c".
+
+(* ================================================================= *)
+(** ** Defining a Representation Predicate for the Counter *)
 
 Module spec1.
 Section spec1.
@@ -38,18 +55,19 @@ Definition is_counter1 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ l ↦ #n.
 
 (**
-  This description is however not persistent, so our value would not
-  be shareable across threads. To fix this we can put the knowledge
-  into an invariant.
+  This predicate is however not persistent, so our value would not be
+  shareable across threads. To fix this we can put the knowledge into an
+  invariant.
 *)
 
 Let N := nroot .@ "counter".
+
 Definition is_counter2 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (l ↦ #n).
 
 (**
   However, with this definition, we have locked the value of the pointer
-  to always be n. To fix this we could abstract the value and instead
+  to always be [n]. To fix this we could abstract the value and instead
   only specify its lower bound.
 *)
 
@@ -57,68 +75,85 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (∃ m : nat, l ↦ #m ∗ ⌜n ≤ m⌝).
 
 (**
-  Now we can change the what the pointer mapsto, but we still can't
+  Now we can change the what the pointer maps to, but we still can't
   refine the lower bound.
 
-  The final step is to use ghost state. The idea is to link n and m to
-  pieces of ghost state in such a way that the validity of their
+  The final step is to use ghost state. The idea is to link [n] and [m]
+  to pieces of ghost state in such a way that the validity of their
   composite is [n ≤ m].
 
-  To achieve this we can use the camera [auth A]. This camera has 2
-  pieces:
-  - [● x] called an authoritative element.
-  - [◯ y] called a fragment.
+  To achieve this we can use the _authoritative_ resource algebra,
+  [auth]. This resource algebra is parametrised by a CMRA, [A]. There
+  are two types of elements in the carrier of the authoritative RA:
+  - [● x] called an authoritative element
+  - [◯ y] called a fragment
+  where [x, y ∈ A].
 
-  The idea of the authoritative camera is as follows. The authoritative
+  The idea of the authoritative RA is as follows. The authoritative
   element represents the whole of the resource, while the fragments
   act as the pieces. To achieve this the authoritative element acts
-  like the exclusive camera, while the fragment inherits all the
+  like the exclusive RA, while the fragment inherits all the
   operations of [A]. Furthermore, validity of [● x ⋅ ◯ y] is defined as
   [✓ x ∧ y ≼ x].
 
-  With this, we can use the max_nat camera whose operation is just the
-  maximum.
+  In our case, we will use the authoritative RA over the [max_nat]
+  resource algebra. The carrier of [max_nat] is the natural numbers, and
+  the operation is the maximum.
 *)
 Context `{!inG Σ (authR max_natUR)}.
 
+(**
+  As such, [● (MaxNat m)] will represent the _true_ value of the counter
+  [m], and [◯ (MaxNat n)] will represent a _fragment_ of the counter – a
+  lower bound [n].
+*)
+
 Definition is_counter (v : val) (γ : gname) (n : nat) : iProp Σ :=
-  ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ MaxNat n) ∗ inv N (∃ m : nat, l ↦ #m ∗ own γ (● MaxNat m)).
+  ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ MaxNat n) ∗
+    inv N (∃ m : nat, l ↦ #m ∗ own γ (● MaxNat m)).
 
 Global Instance is_counter_persistent v γ n : Persistent (is_counter v γ n) := _.
 
+(* ================================================================= *)
+(** ** Properties of the Authoritative RA with MaxNat *)
+
 (**
-  Before we start proving the specifications. Let's prove some useful
+  Before we start proving the specification, let us prove some useful
   lemmas about our ghost state. For starters, we need to know that we
   can allocate the initial state we need.
 *)
-Lemma alloc_initial_state : ⊢ |==> ∃ γ, own γ (● MaxNat 0) ∗ own γ (◯ MaxNat 0).
+Lemma alloc_initial_state :
+  ⊢ |==> ∃ γ, own γ (● MaxNat 0) ∗ own γ (◯ MaxNat 0).
 Proof.
   (**
     Ownership of multiple fragments of state amounts to ownership of
-    their composite. So we can simply the goal a little.
+    their composite. So we can simplify the goal a little.
   *)
-  setoid_rewrite <-own_op.
-  (** Now the goal is on the form expected by own_alloc. *)
+  setoid_rewrite <- own_op.
+  (** Now the goal is on the form expected by [own_alloc]. *)
   apply own_alloc.
   (**
     However, we are only allowed to allocate valid states. So we must
     prove that our desired state is a valid one.
 
-    The validity of auth says that the fragment must be included in
+    The validity of [auth] says that the fragment must be included in
     the authoritative element and the authoritative element must be
     valid.
   *)
   apply auth_both_valid_discrete.
   split.
-  - (** Inclusion for max_nat turns out to be the natural ordering. *)
+  - (** Inclusion for [max_nat] turns out to be the natural ordering. *)
     apply max_nat_included; simpl.
     reflexivity.
-  - (** All elements of max_nat are valid. *)
+  - (** All elements of [max_nat] are valid. *)
     cbv.
     done.
 Qed.
 
-Lemma state_valid γ n m : own γ (● MaxNat n) -∗ own γ (◯ MaxNat m) -∗ ⌜ m ≤ n ⌝.
+Lemma state_valid γ n m :
+  own γ (● MaxNat n) -∗
+  own γ (◯ MaxNat m) -∗
+  ⌜m ≤ n⌝.
 Proof.
   iIntros "Hγ Hγ'".
   iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
@@ -129,18 +164,20 @@ Proof.
   done.
 Qed.
 
-Lemma update_state γ n : own γ (● MaxNat n) ==∗ own γ (● MaxNat (S n)) ∗ own γ (◯ MaxNat (S n)).
+Lemma update_state γ n :
+  own γ (● MaxNat n) ==∗
+  own γ (● MaxNat (S n)) ∗ own γ (◯ MaxNat (S n)).
 Proof.
   iIntros "H".
-  rewrite -own_op.
+  rewrite <- own_op.
   (**
-    [own] can be updated using frame-preserving updates. These are
-    updates that will not invalidate any other own that could
-    exist.
+    As we saw in the Resource Algebra chapter, to update a resource, we
+    must show that we can perform a frame preserving update to the
+    updated resource.
   *)
   iApply (own_update with "H").
   (**
-    [auth] has its own special version of these called local updates,
+    [auth] has its own special version of these called _local updates_,
     as we know what the whole of the state is.
   *)
   apply auth_update_alloc.
@@ -148,17 +185,30 @@ Proof.
   by apply le_S.
 Qed.
 
-Lemma mk_counter_spec : {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0}}}.
+(* ================================================================= *)
+(** ** Proving the Counter Specification *)
+
+(**
+  We are finally ready to give and prove specifications for the three
+  counter functions. We begin with [mk_counter].
+*)
+
+Lemma mk_counter_spec :
+  {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0}}}.
 Proof.
   (* exercise *)
 Admitted.
 
-Lemma read_spec c γ n : {{{ is_counter c γ n }}} read c {{{ (u : nat), RET #u; ⌜n ≤ u⌝ }}}.
+Lemma read_spec c γ n :
+  {{{ is_counter c γ n }}} read c {{{ (u : nat), RET #u; ⌜n ≤ u⌝ }}}.
 Proof.
   (* exercise *)
 Admitted.
 
-Lemma incr_spec c γ n : {{{ is_counter c γ n }}} incr c {{{ (u : nat), RET #u; ⌜n ≤ u⌝ ∗ is_counter c γ (S n) }}}.
+Lemma incr_spec c γ n :
+  {{{ is_counter c γ n }}}
+    incr c
+  {{{ (u : nat), RET #u; ⌜n ≤ u⌝ ∗ is_counter c γ (S n) }}}.
 Proof.
   iIntros "%Φ (%l & -> & #Hγ' & #HI) HΦ".
   iLöb as "IH".
@@ -180,6 +230,16 @@ Proof.
     (* exercise *)
 Admitted.
 
+(* ================================================================= *)
+(** ** A Simple Counter Client *)
+
+(**
+  To illustrate how this counter specification work, let us consider a
+  simple concurrent client of our counter module, which increments a
+  counter twice in parallel. Our specification will simply be that the
+  value of the counter will be at least [1] afterwards.
+*)
+
 Context `{!spawnG Σ}.
 
 Lemma par_incr :
@@ -195,35 +255,42 @@ Admitted.
 End spec1.
 End spec1.
 
-(**
-  Our first specification only allowed us to find a lower bound for
-  the value in par_incr. Any solution to this problem has to be
-  non-persistent, as we need to aggregate the knowledge to conclude
-  the total value.
-
-  To this end, we will use fractions. The frac camera consists of
-  non-negative rationals under addition. However, a fraction is only
-  valid if it is less than or equal to 1. This means that all the
-  fractions can at most add up to 1. Combining frac with other cameras
-  allows us to keep track of how much of the resource we own, meaning
-  we can do the exact kind of aggregation we need. So this time we
-  will use the camera [auth (option (frac * nat))], where nat is the
-  natural numbers under addition.
-*)
+(* ================================================================= *)
+(** ** A Stronger Counter Specification *)
 
 Module spec2.
 Section spec2.
+
+(**
+  Our first specification only allowed us to find a lower bound for the
+  value in [par_incr]. Any solution to this problem has to be
+  non-persistent, as we need to aggregate the knowledge to conclude the
+  total value.
+
+  To this end, we will use fractions. The [frac] camera is similar to
+  [dfrac], but without the capability of discarding fractions. As such,
+  [frac] consists of non-negative rationals with addition as
+  composition, and a fraction is only valid if it is less than or equal
+  to [1]. This means that all the fractions can at most add up to [1].
+  Combining [frac] with other cameras allows us to keep track of how
+  much of the resource we own, meaning we can do the exact kind of
+  aggregation we need. So this time we will use the camera [authR
+  (optionUR (prodR fracR natR))]. Here, [natR] is the natural numbers
+  under addition.
+*)
+
 Context `{!heapGS Σ, !inG Σ (authR (optionUR (prodR fracR natR)))}.
 
 Let N := nroot .@ "counter".
 
 Definition is_counter (v : val) (γ : gname) (n : nat) (q : Qp) : iProp Σ :=
-  ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ Some (q, n)) ∗ inv N (∃ m : nat, l ↦ #m ∗ own γ (● Some (1%Qp, m))).
+  ∃ l : loc, ⌜v = #l⌝ ∗ own γ (◯ Some (q, n)) ∗
+    inv N (∃ m : nat, l ↦ #m ∗ own γ (● Some (1%Qp, m))).
 
 (*
   With this definition, we can now decompose access to the counter, by
-  splitting the fraction, as well as splitting the knowledge of how
-  much the counter has been incremented.
+  splitting the fraction, as well as splitting the knowledge of how much
+  the counter has been incremented.
 *)
 Lemma is_counter_add (c : val) (γ : gname) (n m : nat) (p q : Qp) :
   is_counter c γ (n + m) (p + q) ⊣⊢ is_counter c γ n p ∗ is_counter c γ m q.
@@ -263,9 +330,13 @@ Qed.
 
 (*
   The fragments of natural numbers add up to the full value, meaning
-  that in particular, they must all be less than or equal to the auth.
+  that in particular, they must all be less than or equal to the
+  authoritative element.
 *)
-Lemma state_valid γ (n m : nat) (q : Qp) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (q, m)) -∗ ⌜m ≤ n⌝.
+Lemma state_valid γ (n m : nat) (q : Qp) :
+  own γ (● Some (1%Qp, n)) -∗
+  own γ (◯ Some (q, m)) -∗
+  ⌜m ≤ n⌝.
 Proof.
   iIntros "Hγ Hγ'".
   iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
@@ -280,11 +351,14 @@ Proof.
 Qed.
 
 (*
-  However, when a fragment has the entire fraction it becomes,
-  then there can't be any other fragments. So the count stored in the
-  fragment must be equal to the one in the auth.
+  However, when a fragment has the entire fraction, then there can't be
+  any other fragments. So the count stored in the fragment must be equal
+  to the one in the authoritative element.
 *)
-Lemma state_valid_full γ (n m : nat) : own γ (● Some (1%Qp, n)) -∗ own γ (◯ Some (1%Qp, m)) -∗ ⌜m = n⌝.
+Lemma state_valid_full γ (n m : nat) :
+  own γ (● Some (1%Qp, n)) -∗
+  own γ (◯ Some (1%Qp, m)) -∗
+  ⌜m = n⌝.
 Proof.
   iIntros "Hγ Hγ'".
   iPoseProof (own_valid_2 with "Hγ Hγ'") as "%H".
@@ -300,10 +374,12 @@ Proof.
 Qed.
 
 (*
-  Finally, when we have both the auth and a fragment, we can increment
-  both.
+  Finally, when we have both the authoritative element and a fragment,
+  we can increment both.
 *)
-Lemma update_state γ n m (q : Qp) : own γ (● Some (1%Qp, n)) ∗ own γ (◯ Some (q, m)) ==∗ own γ (● Some (1%Qp, S n)) ∗ own γ (◯ Some (q, S m)).
+Lemma update_state γ n m (q : Qp) :
+  own γ (● Some (1%Qp, n)) ∗ own γ (◯ Some (q, m)) ==∗
+  own γ (● Some (1%Qp, S n)) ∗ own γ (◯ Some (q, S m)).
 Proof.
   iIntros "H".
   rewrite -!own_op.
@@ -315,6 +391,12 @@ Proof.
   done.
 Qed.
 
+(**
+  Let us prove the specifications for the counter functions again. This
+  time, however, we will have two specifications for [read] – one with
+  an arbitrary fraction, and one with the whole fraction.
+*)
+
 Lemma mk_counter_spec :
   {{{ True }}} mk_counter #() {{{ c γ, RET c; is_counter c γ 0 1}}}.
 Proof.
@@ -322,7 +404,9 @@ Proof.
 Admitted.
 
 Lemma read_spec (c : val) (γ : gname) (n : nat) (q : Qp) :
-  {{{ is_counter c γ n q }}} read c {{{ (u : nat), RET #u; is_counter c γ n q ∗ ⌜n ≤ u⌝ }}}.
+  {{{ is_counter c γ n q }}}
+    read c
+  {{{ (u : nat), RET #u; is_counter c γ n q ∗ ⌜n ≤ u⌝ }}}.
 Proof.
   (* exercise *)
 Admitted.
@@ -334,7 +418,9 @@ Proof.
 Admitted.
 
 Lemma incr_spec (c : val) (γ : gname) (n : nat) (q : Qp) :
-  {{{ is_counter c γ n q }}} incr c {{{ (u : nat), RET #u; ⌜n ≤ u⌝ ∗ is_counter c γ (S n) q }}}.
+  {{{ is_counter c γ n q }}}
+    incr c
+  {{{ (u : nat), RET #u; ⌜n ≤ u⌝ ∗ is_counter c γ (S n) q }}}.
 Proof.
   iIntros "%Φ (%l & -> & Hγ' & #I) HΦ".
   iLöb as "IH".

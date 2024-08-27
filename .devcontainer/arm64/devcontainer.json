@@ -1,6 +1,6 @@
 {
-	"name": "iris-tutorial container",
-	"image": "ghcr.io/logsem/iris-tutorial",
+	"name": "iris-tutorial arm64 container",
+	"image": "ghcr.io/logsem/iris-tutorial/docker-arm64",
 	"customizations": {
 		"vscode": {
 		  "extensions": ["maximedenes.vscoq"]

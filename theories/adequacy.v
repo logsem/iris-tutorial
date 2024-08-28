@@ -1,4 +1,5 @@
 From iris.algebra Require Import excl.
+From iris.base_logic.lib Require Export token.
 From iris.heap_lang Require Import adequacy lang proofmode notation par.
 From solutions Require Import spin_lock.
 
@@ -87,7 +88,7 @@ Definition not_stuck e σ :=
 *)
 Definition progΣ := #[
   heapΣ; (* The resources required for heaplang itself *)
-  GFunctor (exclR unitO) (* The camera we used for spin-lock *)
+  tokenΣ (* The camera we used for spin-lock *)
 ].
 
 (** Finally we can combine the pieces to prove adequacy. *)
@@ -95,7 +96,5 @@ Lemma prog_adequacy σ : adequate NotStuck prog σ (λ v _, v = #0 ∨ v = #1).
 Proof.
   apply (heap_adequacy progΣ).
   iIntros "%_ _".
-  unshelve iApply prog_spec.
-  apply (subG_inG _ (GFunctor (exclR unitO))).
-  apply subG_app_r, subG_refl.
+  iApply prog_spec.
 Qed.

@@ -9,8 +9,8 @@ theories/lang.v
 theories/specifications.v
 theories/persistently.v
 theories/linked_lists.v
-theories/arrays.v
 theories/later.v
+theories/arrays.v
 theories/gr_predicates.v
 theories/resource_algebra.v
 theories/invariants.v
@@ -30,8 +30,8 @@ exercises/lang.v
 exercises/specifications.v
 exercises/persistently.v
 exercises/linked_lists.v
-exercises/arrays.v
 exercises/later.v
+exercises/arrays.v
 exercises/gr_predicates.v
 exercises/resource_algebra.v
 exercises/invariants.v

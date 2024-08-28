@@ -47,8 +47,8 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
   basic resources, Hoare triples, and basic concurrency
 - [persistently](/exercises/persistently.v) - The persistently modality
 - [linked_lists](/exercises/linked_lists.v) - Linked lists
-- [arrays](/exercises/arrays.v) - Arrays in HeapLang
 - [later](/exercises/later.v) - The later modality and recursive functions
+- [arrays](/exercises/arrays.v) - Arrays in HeapLang
 - [gr_predicates](/exercises/gr_predicates.v) - Guarded Recursive Predicates
 - [resource_algebra](/exercises/resource_algebra.v) - Introduction to resource algebras
 - [invariants](/exercises/invariants.v) - Invariants
@@ -77,6 +77,7 @@ graph TD;
 
   later --> invariants;
   later --> grp[gr_predicates];
+  later --> arrays;
 
   linklist --> grp;
   linklist --> arrays;
@@ -110,8 +111,8 @@ To get a good understanding of the fundamental concepts of Iris, it is recommend
 4. [specifications](/exercises/specifications.v)
 5. [persistently](/exercises/persistently.v)
 6. [linked_lists](/exercises/linked_lists.v)
-7. [arrays](/exercises/arrays.v)
-8. [later](/exercises/later.v)
+7. [later](/exercises/later.v)
+8. [arrays](/exercises/arrays.v)
 9. [resource_algebra](/exercises/resource_algebra.v)
 10. [invariants](/exercises/invariants.v)
 11. [timeless](/exercises/timeless.v)
@@ -122,7 +123,7 @@ To get a good understanding of the fundamental concepts of Iris, it is recommend
 16. [adequacy](/exercises/adequacy.v)
 
 ## Exercises
-To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`. 
+To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`.
 
 After you are done with a file, run `make` (with your working directory being the repository root, where the `Makefile` is located) to compile and check the exercises.
 

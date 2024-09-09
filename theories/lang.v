@@ -7,7 +7,7 @@ From iris.heap_lang Require Import lang notation spawn par.
 (** ** Introduction *)
 
 (**
-  HeapLang is a untyped concurrent programming language with a heap. It
+  HeapLang is an untyped concurrent programming language with a heap. It
   is an ML-like language, sporting many of the usual constructs such as
   let expressions, lambda abstractions, and recursive functions. It also
   supports higher-order functions. The evaluation order is right to left
@@ -15,7 +15,7 @@ From iris.heap_lang Require Import lang notation spawn par.
 
   The syntax for HeapLang is fairly standard, but there are some quirks
   as we are working inside Coq. As the features of HeapLang are fairly
-  standard, the focus in this chapter is manly on showcasing the syntax
+  standard, the focus in this chapter is mainly on showcasing the syntax
   of the language through simple examples.
 *)
 
@@ -28,7 +28,7 @@ From iris.heap_lang Require Import lang notation spawn par.
   [iris.unstable.heap_lang]. The interpreter provides the function
   [exec], which takes as input some fuel and an expression. The
   expression is then executed until it terminates at a value [v], the
-  execution runs out fuel, or the program gets stuck. In case of
+  execution runs out of fuel, or the program gets stuck. In case of
   termination, [inl v] is returned. Otherwise [inr err] is returned,
   with [err] describing the error.
 *)
@@ -268,7 +268,7 @@ Example cas : expr :=
   instruction [Fork e] creates a new thread which executes [e]. The
   invoking thread continues execution after creation. If the computation
   of [e] terminates, then the resulting value is simply thrown away.
-  Hence, [e] is only run for its side-effects.
+  Hence, [e] is only run for its side effects.
 *)
 
 Example fork : expr :=

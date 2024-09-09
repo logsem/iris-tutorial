@@ -44,7 +44,7 @@ Example arith : expr :=
 (**
   This program should evaluate to [16]. We can express this in the logic
   with a weakest precondition. In general, a weakest precondition has
-  the form [WP e {{v, Φ v}}]. This asserts that, if the HeapLang program
+  the form [WP e {{v, Φ v}}]. This asserts that if the HeapLang program
   [e] terminates at some value [v], then [v] satisfies the predicate
   [Φ]. The double curly brackets [{{v, Φ v}}] is called the
   `postcondition'. For the case of [arith], we would express its
@@ -149,7 +149,7 @@ Example lambda : expr :=
   <<https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md#tactics>>
 
   These tactics similarly apply the underlying rules of the logic,
-  however we shall from now on refrain from explicitly mentioning the
+  however, we shall from now on refrain from explicitly mentioning the
   rules applied. Through experience, the reader should get an intuition
   for how each tactic manipulates the goal.
 
@@ -177,7 +177,7 @@ END TEMPLATE *)
   resource of heaps. As mentioned in basics.v, propositions in Iris
   describe/assert ownership of resources. To describe resources in the
   resource of heaps, we use the `points-to' predicate, written [l ↦ v].
-  Intuitively, this describes all heap fragments that has value [v]
+  Intuitively, this describes all heap fragments that have value [v]
   stored at location [l]. The proposition [l1 ↦ #1 ∗ l2 ↦ #2] then
   describes all heap fragments that map [l1] to [#1] and [l2] to [#2].
 
@@ -243,7 +243,7 @@ Qed.
   subgoals. The first corresponds to the case where the [CmpXchg]
   instruction succeeded. Thus, we get to assume [H1 : v = v1], and our
   points-to predicate for [l] is updated to [l ↦ v2]. The second
-  corresponds to case where [CmpXchg] failed. We instead get
+  corresponds to the case where [CmpXchg] failed. We instead get
   [H2 : v ≠ v1], and our points-to predicate for [l] is unchanged.
 
   Let us demonstrate this with a simple example program which simply
@@ -290,7 +290,7 @@ Example cas : expr :=
       #().
 
 (**
-  The result of both [CAS] instructions are predetermined. Hence, we can
+  The result of both [CAS] instructions is predetermined. Hence, we can
   use the [wp_cmpxchg_suc] and [wp_cmpxchg_fail] tactics to symbolically
   execute them (remember that [CAS l v1 v2] is syntactic sugar for
   [Snd (CmpXchg l v1 v2)]).
@@ -374,10 +374,10 @@ Proof.
 
       [WP e {{ Φ }} ∗ (∀ v, Φ v -∗ Ψ v) ⊢ WP e {{ Ψ }}].
 
-    With this it suffices to prove that the postcondition of [prog_spec]
-    implies the postcondition in our current goal. This is achieved with
-    the [wp_wand] lemma, which generates two subgoals, one corresponding
-    to [WP e {{ Φ }}] and one to [(∀ v, Φ v -∗ Ψ v)].
+    With this, it suffices to prove that the postcondition of
+    [prog_spec] implies the postcondition in our current goal. This is
+    achieved with the [wp_wand] lemma, which generates two subgoals, one
+    corresponding to [WP e {{ Φ }}] and one to [(∀ v, Φ v -∗ Ψ v)].
   *)
   iApply wp_wand; simpl.
   { iApply prog_spec. }
@@ -412,9 +412,9 @@ Qed.
 Lemma prog_add_2_spec' : ⊢ WP prog + #2 {{ v, ⌜v = #5⌝ }}.
 Proof.
   wp_bind prog.
-  (** The goal is now on the exact form required by [prog_spec_2] *)
+  (** The goal is now on the exact form required by [prog_spec_2]. *)
   iApply prog_spec_2.
-  (** And the proof proceeds as before *)
+  (** And the proof proceeds as before. *)
   iIntros "%w ->".
   wp_pure.
   done.
@@ -422,7 +422,7 @@ Qed.
 
 (**
   We can even simplify this proof further by using the [wp_apply]
-  tactic which automatically applies [wp_bind] for us.
+  tactic, which automatically applies [wp_bind] for us.
 *)
 Lemma prog_add_2_spec'' : ⊢ WP prog + #2 {{ v, ⌜v = #5⌝ }}.
   wp_apply prog_spec_2.
@@ -440,7 +440,7 @@ Qed.
   precondition does not explicitly specify which conditions must be met
   before executing the program. It only talks about which conditions are
   met after – the postcondition. Hoare triples build on weakest
-  preconditions by requiring us to explicitly mention the the conditions
+  preconditions by requiring us to explicitly mention the conditions
   that must hold before running the program – the precondition.
 
   The syntax for Hoare triples is as follows:
@@ -521,12 +521,12 @@ Proof.
 Qed.
 
 (**
-  A convention in Iris is to write specifications using Hoare triples,
+  A convention in Iris is to write specifications using Hoare triples
   but prove them by converting them to weakest preconditions as in the
   examples above. There are several reasons for this. Firstly, it
   ensures that all specifications are generic in the postcondition.
   Secondly, specifications written in terms of Hoare triples are usually
-  easier to read, as they name explicitly what must be obtained before
+  easier to read, as they explicitly name what must be obtained before
   the program can be executed. Finally, proving Hoare triples directly
   can be quite awkward and burdensome, especially in Coq.
 *)
@@ -597,7 +597,7 @@ Proof.
   iIntros (Φ _) "HΦ".
   rewrite /par_client.
   (**
-    The program starts by creating two fresh location, [l1] and [l2].
+    The program starts by creating two fresh locations, [l1] and [l2].
   *)
   wp_alloc l1 as "Hl1".
   wp_let.
@@ -615,7 +615,7 @@ Proof.
   (**
     We can now apply the [wp_par] specification. Note how we transfer
     ownership of [l1 ↦ #0] to the first thread, and [l2 ↦ #0] to the
-    second. This allows each thread to perform their store operations.
+    second. This allows each thread to perform its store operation.
   *)
   wp_apply (wp_par t1_post t2_post with "[Hl1] [Hl2]").
   (**

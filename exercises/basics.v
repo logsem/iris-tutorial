@@ -8,7 +8,7 @@ From iris.proofmode Require Import proofmode.
 (** ** Introduction *)
 
 (**
-  In short, Iris is `higher-order concurrent separation logic
+  In short, Iris is a `higher-order concurrent separation logic
   framework'. That is quite a mouthful, so let us break it down.
 
   Firstly, the `framework' part means that Iris is not tied to any
@@ -38,7 +38,7 @@ From iris.proofmode Require Import proofmode.
   Finally, `higher-order' refers to the fact that predicates may depend
   on other predicates. Being a program logic means that programs are
   proved correct with respect to some specification – a description of
-  the programs behavior and interaction with resources. As programs are
+  the program's behavior and interaction with resources. As programs are
   usually composed of other programs, we would want our specifications
   to be generic so that they may be used in a myriad of contexts. Having
   support for higher-order predicates means that program specifications
@@ -72,7 +72,7 @@ Context {Σ: gFunctors}.
   - [P ⊢ Q] asks whether [Q] holds assuming [P]
 
   Iris is built on top of Coq, so to smoothen the experience, we will be
-  working with the Iris Proof Mode (IPM). The practical implications of
+  working with the Iris Proof Mode (IPM). The practical implication of
   this is that we get a new context, called the spatial context, in
   addition to the usual context, now called the non-spatial context.
   Hypotheses from both contexts can be used to prove the goal.
@@ -102,7 +102,7 @@ Proof.
   (**
     This adds [P] to the spatial context with the identifier ["H"]. To
     finish the proof, one would normally use either [exact] or [apply].
-    So in Iris we use either [iExact] or [iApply].
+    So in Iris, we use either [iExact] or [iApply].
   *)
   iApply "H".
 Qed.
@@ -165,7 +165,7 @@ Definition and_success (P Q : iProp Σ) := (P ∧ Q)%I.
 (**
   The core connective in separation logic is the `separating
   conjunction', written [P ∗ Q], for propositions [P] and [Q].
-  Separating conjunction differs from regular conjunction particularly
+  Separating conjunction differs from regular conjunction, particularly
   in its introduction rule:
 
   [[
@@ -191,16 +191,16 @@ Proof.
     Unlike [∧], [∗] is not idempotent. Specifically, there are Iris
     propositions for which [¬(P ⊢ P ∗ P)]. Because of this, it is
     generally not possible to use [iSplit] to introduce [∗]. The
-    [iSplit] tactic would duplicate the spatial context, and is
-    therefore not available when the context is non-empty.
+    [iSplit] tactic would duplicate the spatial context and is therefore
+    not available when the context is non-empty.
   *)
   Fail iSplit.
   (**
     Instead, Iris introduces the tactics [iSplitL] and [iSplitR]. These
     allow you to specify how you want to separate your resources to
-    prove each of the subgoals. The hypotheses mentioned by [iSplitL]
-    are given to the left subgoal, and the remaining to the right.
-    Conversely for [iSplitR].
+    prove each subgoal. The hypotheses mentioned by [iSplitL] are given
+    to the left subgoal, and the remaining to the right. Conversely for
+    [iSplitR].
   *)
   iSplitL "HQ".
   - iApply "HQ".
@@ -213,7 +213,7 @@ Qed.
   introduces it with separating conjunction. This connective is written
   as [P -∗ Q] and pronounced `magic wand' or simply `wand'. Separation
   is so widely used that [P -∗ Q] is treated specially; instead of
-  writing [P ⊢ Q] we can write [P -∗ Q], with the [⊢] being implicit.
+  writing [P ⊢ Q], we can write [P -∗ Q], with the [⊢] being implicit.
   That is, [⊢ P -∗ Q] is notationally equivalent to [P -∗ Q].
 
   Writing a wand instead of entailment makes currying more natural. Here
@@ -255,7 +255,7 @@ Qed.
 
 (**
   Bi-entailment of Iris propositions is denoted [P ⊣⊢ Q]. It is an
-  equivalence relation and most connectives preserve this relation. It
+  equivalence relation, and most connectives preserve this relation. It
   is encoded using the setoid library with the typeclass [Proper]. It is
   therefore possible to use the [rewrite] tactic inside the Iris Proof
   Mode. Bi-entailment is defined as [(P -∗ Q) ∧ (Q -∗ P)], so it can be
@@ -284,7 +284,7 @@ Qed.
 (**
   Hypotheses that fit arguments exactly can be supplied directly without
   a square bracket to avoid trivial subgoals, as in the above. Try this
-  in following exercise.
+  in the following exercise.
 *)
 Lemma wand_adj (P Q R : iProp Σ) : (P -∗ Q -∗ R) ⊣⊢ (P ∗ Q -∗ R).
 Proof.
@@ -327,8 +327,8 @@ Admitted.
   Iris has existential and universal quantifiers over any Coq type.
   Existential quantifiers are proved using the [iExists] tactic, using
   the same syntax as for [exists]. Elimination of existentials is done
-  through the pattern ["[%_ _]"] or as part of a ["(_&..&_)"] with a [%] in
-  front of the existential variable.
+  through the pattern ["[%_ _]"] or as part of a ["(_&..&_)"] with a [%]
+  in front of the existential variable.
 *)
 Lemma sep_ex_distr {A} (P : iProp Σ) (Φ : A → iProp Σ) :
   (P ∗ ∃ x, Φ x) ⊣⊢ ∃ x, P ∗ Φ x.

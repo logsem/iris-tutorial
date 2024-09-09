@@ -62,9 +62,9 @@ Qed.
   It is quite easy to show that the propositions [⌜5 = 5⌝] and [⌜x = y⌝]
   from above are pure. However, it can become quite burdensome for more
   complicated Iris propositions. Fortunately, Iris has two typeclasses
-  [IntoPure] and [FromPure] which can identify pure propositions for us.
-  These are used by the [iPureIntro] tactic to automatically identify
-  pure propositions.
+  [IntoPure] and [FromPure] that can identify pure propositions for us.
+  These are used by the [iPureIntro] tactic to identify pure
+  propositions automatically.
 *)
 
 (** [True] is pure. *)

@@ -21,7 +21,7 @@ Context `{heapGS Σ}.
 
 (**
   To see arrays in action, let's implement a function, [copy], that
-  copies an array, while keeping the original intact. We define it in
+  copies an array while keeping the original intact. We define it in
   terms of a more general function, [copy_to].
 *)
 
@@ -87,8 +87,8 @@ Proof.
 Qed.
 
 (**
-  When allocating arrays, heaplang requires the size to be greater
-  than zero. So we add this to our precondition.
+  When allocating arrays, HeapLang requires the size to be greater than
+  zero. So we add this to our precondition.
 *)
 Lemma copy_spec a l :
   {{{a ↦∗ l ∗ ⌜0 < length l⌝}}}
@@ -173,10 +173,10 @@ Definition reverse : val :=
     "reverse" ("arr" +ₗ #1) ("len" - #2).
 
 (**
-  Notice we are not following structural induction on the list of
-  values as we remove elements from both the front and the back. As
-  such you need to use either löb induction or strong induction on the
-  size of the list.
+  Notice we are not following structural induction on the list of values
+  as we remove elements from both the front and the back. As such, you
+  need to use either löb induction or strong induction on the size of
+  the list.
 *)
 Lemma reverse_spec a l :
   {{{a ↦∗ l}}}

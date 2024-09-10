@@ -110,7 +110,7 @@ Print RAMixin.
   expresses that, if [y ≡ z], then [x ⋅ y ≡ x ⋅ z], for all [x].
 
   The fields [ra_assoc] and [ra_comm] assert that the operation [⋅]
-  should be associative and commutative. This in effect makes [A] a
+  should be associative and commutative. This, in effect, makes [A] a
   commutative semigroup, which means that we can make all resource
   algebras a preorder through the extension order, written [x ≼ y]. The
   extension order is defined as:
@@ -121,7 +121,7 @@ Print RAMixin.
   [y] in terms of [x] and some [z].
 
   The fields [ra_pcore_l] and [ra_pcore_idemp] capture the idea that the
-  core extracts the shareable part of a resource, and how shareable
+  core extracts the shareable part of a resource and how shareable
   resources behave. [ra_pcore_l] expresses that including the same
   shareable resource multiple times does not change a resource, and
   [ra_pcore_idemp] states that invoking the core on a resource twice
@@ -411,14 +411,14 @@ Qed.
   update resources – resources are used to reason about programs, and
   programs update resources. One has to be careful with how resources
   are allowed to be updated; in Iris, only _valid_ resources can be
-  owned. It should always be the case that, if we combine the resources
+  owned. It should always be the case that if we combine the resources
   owned by all threads in the system, the resulting resource should be
   valid. Otherwise, we could easily derive falsehood. Hence, when a
   thread updates its resources, it must ensure that it does not
   introduce the possibility of obtaining an invalid element. We call
-  such an update a `frame preserving Update', and write [x ~~> y] to
-  mean that we can perform a frame preserving update from resource [x]
-  to resource [y]. The formal definition for this notion turns out to be
+  such an update a `frame preserving Update' and write [x ~~> y] to mean
+  that we can perform a frame preserving update from resource [x] to
+  resource [y]. The formal definition for this notion turns out to be
   quite succinct:
 
                 [x ~~> y = ∀z, ✓(x ⋅ z) → ✓(y ⋅ z)]
@@ -427,7 +427,7 @@ Qed.
   also valid with [y]. If this is the case, then it is okay to update
   [x] to [y]. Since [z] is forall quantified, [z] also represents the
   resource we get by combining the resources from all other threads.
-  That is to say, [x ~~> y] ensures that, if the combination of all
+  That is to say, [x ~~> y] ensures that if the combination of all
   resources was valid before the update, it still is after. As [z]
   represents all the other resources, it is called the `frame', and the
   proposition [x ~~> y] expresses that the validity of [z] – the frame –
@@ -555,7 +555,7 @@ Admitted.
   concepts of resource algebra. While dfrac has some use cases on its
   own, it is especially useful when composed with other resource algebra
   (e.g. it is used to define the points-to predicate). Hence, in this
-  section, we will introduce some often used resource algebras.
+  section, we will introduce some often-used resource algebras.
 
   Unlike dfrac, the resource algebras we study in this section are
   parametrised by other resource algebras (or OFEs, or CMRAs). This
@@ -636,7 +636,7 @@ End exclusive.
 
 (**
   So how is this resource algebra useful? While it is a key component in
-  many fairly complex resource algebras, it has a super simple, yet
+  many fairly complex resource algebras, it has a super simple yet
   extremely practical use case. Together with the OFE [unitO], we can
   create the resource algebra of `tokens'.
 *)
@@ -684,7 +684,7 @@ Context {A : ofe}.
   carrier of resource algebra), and all it cares about is whether two
   resources are equivalent. That is, whether they _agree_. As such, the
   carrier of agree is the same as the carrier of the underlying resource
-  algebra, and all resources in [agree A] are valid – irregardless of
+  algebra, and all resources in [agree A] are valid – regardless of
   their validity in the original resource algebra.
 *)
 
@@ -771,7 +771,7 @@ Admitted.
 (**
   The usefulness of the agree construction is demonstrated by the fact
   that it is used to define the resource of heaps. The inclusion of the
-  agree RA allows us to conclude that, if we have two points-to
+  agree RA allows us to conclude that if we have two points-to
   predicates for the same location, [l ↦{dq1} v1] and [l ↦{dq2} v2],
   then they _agree_ on the value stored at the location: [v1 = v2].
 *)
@@ -817,7 +817,7 @@ About pair_op.
 About pair_valid.
 
 (**
-  A pair is included in another pair, if the components of the first are
+  A pair is included in another pair if the components of the first are
   included in the components of the second.
 *)
 
@@ -854,7 +854,7 @@ Qed.
 
 (**
   The product RA is often used in conjunction with dfrac and agree, with
-  the first component being a dfrac, and the second being an element of
+  the first component being a dfrac and the second being an element of
   some resource algebra wrapped in agree. This pattern is common enough
   that it has been added to Iris' library of resource algebras.
 *)
@@ -889,7 +889,7 @@ Section ghost.
   in Iris have type [iProp Σ]. The [Σ] can be thought of as a global
   list of resource algebras that are available in the logic. The [Σ] is
   always universally quantified to enable composition of proofs.
-  However, we may put _restrictions_ on [Σ], to specify that the list
+  However, we may put _restrictions_ on [Σ] to specify that the list
   must contain some specific resource algebra of our choosing. The
   typeclass [inG Σ R] expresses that the resource algebra [R] is in the
   [G]lobal list of resource algebras [Σ]. If we add this to the Coq
@@ -945,7 +945,7 @@ Context `{!heapGS Σ}.
   [R] into the logic: the proposition [own γ r] asserts _ownership_ of
   the resource [r] in an instance of the resource algebra [R] named [γ].
   That is to say, in Iris, once we have added a [R] to [Σ], we may
-  create multiple instances of [R], so that the same resource in [R] may
+  create multiple instances of [R] so that the same resource in [R] may
   be owned multiple times. To distinguish between instances, we use
   `ghost names' (sometimes also called `ghost variables' or `ghost
   locations'), which is usually written with a lower-case gamma: [γ].
@@ -968,7 +968,7 @@ Definition token (γ : gname) := own γ (Excl ()).
   defined in terms of [own]. That is, [l ↦ v] is just notation denoting
   ownership of a resource in the resource of heaps! But where is the
   ghost name [γ]? When adding the resource of heaps to [Σ], we do it
-  with the [heapGS Σ] typeclass. Here, the [S] stands for `singleton',
+  with the [heapGS Σ] typeclass. Here, the [S] stands for `singleton'
   and signifies that only _one_ instance of the resource of heaps
   exists. As such, we do not need ghost names to distinguish between
   instances.
@@ -1054,7 +1054,7 @@ Qed.
 (**
   Recall that the core extracts the shareable part of a resource. If the
   core of some resource is itself, then that resource is freely
-  shareable – in particular ownership of the resource is duplicable.
+  shareable – in particular, ownership of the resource is duplicable.
   That is, if [pcore r = Some r], then [own γ r] is persistent.
 *)
 
@@ -1166,7 +1166,7 @@ Admitted.
 About own_alloc.
 
 (**
-  That is, if we have some resource algebra [A], and wish to create and
+  That is, if we have some resource algebra [A] and wish to create and
   get ownership of resource [a] in [A], then, as long as [a] is valid,
   we may update our resources to get ownership of [a] in a _fresh_
   instance of [A], identified by a fresh ghost name [γ].
@@ -1216,7 +1216,7 @@ Proof.
 Qed.
 
 (**
-  Exercise: Use [own_dfrac_update] to prove the following hoare triple.
+  Exercise: Use [own_dfrac_update] to prove the following Hoare triple.
 *)
 
 Lemma hoare_triple_dfrac (γ : gname):

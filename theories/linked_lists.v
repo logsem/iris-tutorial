@@ -25,7 +25,7 @@ Fixpoint isList (l : val) (xs : list val) : iProp Σ :=
 *)
 
 (**
-  Now we can define HeapLang functions that act on lists, such as [inc].
+  We can now define HeapLang functions that act on lists, such as [inc].
   The [inc] function recursively increments all the values of a list.
 *)
 Definition inc : val :=
@@ -41,7 +41,7 @@ Definition inc : val :=
 
 (**
   Intuitively, the specification we give for this function should state
-  that the linked list should only contain integers, and that, after
+  that the linked list should only contain integers and that, after
   executing the function, each integer has been incremented. As such, we
   parametrise the specification not by a list of values, but by a list
   of integers. We then map each integer to a HeapLang value using [# _],
@@ -139,7 +139,7 @@ Admitted.
 END TEMPLATE *)
 
 (**
-  We will implement reverse using a helper function, called
+  We will implement reverse using a helper function called
   [reverse_append], which takes two arguments, [l] and [acc], and
   returns the list [rev l ++ acc].
 *)
@@ -155,7 +155,7 @@ Definition reverse_append : val :=
     end.
 
 (**
-  When acc is the empty list, it should thus simply return the reverse
+  When [acc] is the empty list, it should thus simply return the reverse
   of [l].
 *)
 Definition reverse : val :=
@@ -194,7 +194,7 @@ Admitted.
 END TEMPLATE *)
 
 (**
-  Now we use the specification of [reverse_append] to prove the
+  Now, we use the specification of [reverse_append] to prove the
   specification of [reverse].
 *)
 Lemma reverse_spec (l : val) (xs : list val) :
@@ -249,7 +249,7 @@ Definition fold_right : val :=
   - Importantly, we do not change the original list. So we put
     [isList l xs] in the postcondition.
 
-  Note that Hoare triples are persistent and persistent predicates are
+  Note that Hoare triples are persistent, and persistent predicates are
   closed under universal quantification. Hence, in the proof, the
   assumption for [f] will move into the persistent context.
 *)

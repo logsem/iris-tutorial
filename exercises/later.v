@@ -18,7 +18,7 @@ Context `{!heapGS Σ}.
 
   The later modality is used quite extensively in Iris. We have already
   seen that it is used to define Hoare triples, but it has many more
-  uses. For instance, it is a prime tool to reason about recursive
+  uses. For instance, it is a prime tool for reasoning about recursive
   programs. It can be used to write specifications that capture the
   minimum number of steps taken by a program. It is also an integral
   part of working with invariants, which we introduce in a later
@@ -26,11 +26,11 @@ Context `{!heapGS Σ}.
 *)
 
 (**
-  The later modality is monotone meaning that if we know [P ⊢ Q], then
+  The later modality is monotone, meaning that if we know [P ⊢ Q], then
   we can also conclude [▷ P ⊢ ▷ Q]. In words, if we know that [P]
-  entails [Q], then we also know that, if we get [P] after one step, we
+  entails [Q], then we also know that if we get [P] after one step, we
   will also get [Q] after one step. This is captured by the [iNext]
-  tactic, which introduces a later, while stripping laters from our
+  tactic, which introduces a later while stripping laters from our
   hypotheses.
 *)
 
@@ -72,7 +72,7 @@ Qed.
 
 (**
   The later modality distributes over [∧], [∨], [∗], and is preserved
-  by [∃] and [∀]. This means that we can destruct these constructs
+  by [∃] and [∀]. This means we can destruct these constructs
   regardless of being prefaced by any laters.
 *)
 
@@ -111,8 +111,8 @@ Admitted.
 
   To see this in action, let us look at a simple program: [1 + 2 + 3].
   This program takes two steps to evaluate, so we can prove that if a
-  proposition holds after two steps, then it will hold after the program
-  has terminated.
+  proposition holds after two steps, it will hold after the program has
+  terminated.
 *)
 
 Lemma take_2_steps (P : iProp Σ) : ▷ ▷ P -∗ WP #1 + #2 + #3 {{_, P}}.
@@ -154,15 +154,15 @@ Qed.
 (** ** Löb Induction *)
 
 (**
-  The later modality allows for a strong induction principle, called Löb
-  induction. Essentially, Löb induction states that, to prove a
+  The later modality allows for a strong induction principle called Löb
+  induction. Essentially, Löb induction states that to prove a
   proposition [P], we are allowed to assume that [P] holds later, i.e.
   [▷ P]. Formally, we have [□ (▷ P -∗ P) -∗ P]. Recall that [▷]
   represents a single step in the logic. Löb induction essentially
   performs induction in the number of steps. Intuitively, Löb induction
-  states that, if we can show that whenever [P] holds for strictly
-  smaller than [n] steps we can prove that [P] holds for [n] steps, then
-  [P] holds for all steps.
+  states that if we can show that whenever [P] holds for strictly
+  smaller than [n] steps, we can prove that [P] holds for [n] steps,
+  then [P] holds for all steps.
 
   We can use this principle to prove many properties of recursive
   programs. To see this in action, we will define a simple recursive
@@ -174,7 +174,7 @@ Example count : val :=
 
 (**
   This function never terminates for any input as it will keep calling
-  itself with larger and larger inputs. To show this we pick the
+  itself with larger and larger inputs. To show this, we pick the
   postcondition [False]. We can now use Löb induction, along with
   [wp_rec], to prove this specification.
 *)

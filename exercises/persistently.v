@@ -14,7 +14,7 @@ Context `{!heapGS Σ}.
 (**
   In separation logic, propositions are generally not duplicable. This
   is because resources are generally exclusive. However, resources do
-  not _have_ to be exclusive. A great example of this is `read only
+  not _have_ to be exclusive. A great example of this is `read-only
   memory'. There is no danger in letting many threads access the same
   location simultaneously if they can only read from it. Hence, it would
   not make sense to require that ownership of those locations be
@@ -26,7 +26,7 @@ Context `{!heapGS Σ}.
   intuitionistic logic, which is why they are also sometimes referred to
   as intuitionistic.
 
-  A propositions is persistent when [P ⊢ □ P]. That is, assuming [P], we
+  A proposition is persistent when [P ⊢ □ P]. That is, assuming [P], we
   need to show that [P] does not rely on any exclusive resources.
   Persistency is preserved by most connectives, so proving that a
   proposition is persistent is usually a matter of showing that the
@@ -92,10 +92,10 @@ Proof.
 Admitted.
 
 (**
-  Persistent propositions satisfy a lot of nice properties, simply by
+  Persistent propositions satisfy a lot of nice properties simply by
   being duplicable [P ⊢ P ∗ P]. For example, [P ∧ Q] and [P ∗ Q]
-  coincide, when either [P] or [Q] is persistent. Likewise, [P → Q] and
-  [P -∗ Q] coincide, when [P] is persistent.
+  coincide when either [P] or [Q] is persistent. Likewise, [P → Q] and
+  [P -∗ Q] coincide when [P] is persistent.
 *)
 
 Check bi.persistent_and_sep.
@@ -111,9 +111,9 @@ Check bi.impl_wand.
 (** ** Proving Persistency *)
 
 (**
-  To prove a proposition [□ P], we have to prove [P] without assuming
-  any exclusive resources. In other words, we have to throw away the
-  spatial context when proving [P].
+  To prove a proposition [□ P], we must prove [P] without assuming any
+  exclusive resources. In other words, we have to throw away the spatial
+  context when proving [P].
 *)
 
 Lemma pers_intro (P Q : iProp Σ) `{!Persistent P} : P ∗ Q ⊢ □ P.
@@ -169,8 +169,8 @@ Proof.
     iModIntro.
     (**
       By default, [iFrame] will not frame propositions from the
-      persistent context. To make it do so, we have to give it the
-      argument ["#"].
+      persistent context. To make it do so, we must give it the argument
+      ["#"].
     *)
     iFrame "#".
   - (* exercise *)
@@ -220,7 +220,7 @@ Proof. apply _. Qed.
 (**
   For more complicated predicates, such as ones defined as a fixpoint,
   [Persistent] cannot automatically infer its persistence. The following
-  predicate asserts that all values in a given list is equal to [5].
+  predicate asserts that all values in a given list are equal to [5].
 *)
 
 Fixpoint myPredFix (xs : list val) : iProp Σ :=
@@ -259,7 +259,7 @@ Proof.
     apply _.
 Qed.
 
-(** Now, Iris recognises [myPredFix] as persistent. *)
+(** Iris now recognises [myPredFix] as persistent. *)
 
 Lemma first_is_5 (x : val) (xs : list val) :
   myPredFix (x :: xs) -∗ ⌜x = #5⌝ ∗ myPredFix (x :: xs).
@@ -278,7 +278,7 @@ Qed.
 
 (**
   Thus far, the only basic persistent propositions we have seen are pure
-  propositions, such as equalities. In this section we introduce two
+  propositions, such as equalities. In this section, we introduce two
   additional examples of persistent propositions: Hoare triples and
   persistent points-to predicates.
 *)
@@ -288,7 +288,7 @@ Qed.
 
 (**
   All Hoare triples are persistent. This probably does not come as a
-  surprise, if the reader recalls how we defined Hoare triples in the
+  surprise if the reader recalls how we defined Hoare triples in the
   [specifications] chapter. As a reminder, here is the definition again.
 
       [□( ∀ Φ, P -∗ ▷ (∀ r0 .. rn, Q -∗ Φ v) -∗ WP e {{v, Φ v }})]
@@ -343,7 +343,7 @@ Context `{spawnG Σ}.
   [l ↦ dq v], where [dq] is a `discarded fraction'. We return to the
   `discarded' part momentarily, but for now, we assume that [dq] is a
   fraction in the interval (0; 1]. The predicate [l ↦ v] is a special
-  case, where the fraction [dq] is [1]. The basic idea is that points-to
+  case where the fraction [dq] is [1]. The basic idea is that points-to
   predicates can be split up and recombined, allowing ownership of
   points-to predicates to be shared.
 *)
@@ -381,7 +381,7 @@ Abort.
 
 (**
   Fractional points-to predicates are especially useful in scenarios
-  where a location is read by multiple threads in parallel, but later
+  where a location is read by multiple threads in parallel but later
   only used by a single thread.
 *)
 
@@ -397,7 +397,7 @@ Proof.
   iIntros (Φ) "[Hl1 Hl2] HΦ".
   rewrite /par_read_write.
   (**
-    The idea is to give each thread half of the points-to predicate, and
+    The idea is to give each thread half of the points-to predicate and
     assert that both will return their halves afterwards.
   *)
   set t_post := (λ w : val, (⌜w = v⌝ ∗ l ↦{#1 / 2} v)%I).

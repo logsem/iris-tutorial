@@ -20,10 +20,10 @@ Definition mk_lock : val :=
 
 (**
   To acquire the lock, we use [CAS l false true] (compare and set). This
-  instruction atomically writes [true] to location [l], if [l] contains
+  instruction atomically writes [true] to location [l] if [l] contains
   [false]. The [CAS] instruction then returns a boolean, signifying
   whether [l] was updated. If the [CAS] fails, it means that the lock is
-  currently acquired somewhere else. So we simply try again, until the lock
+  currently acquired somewhere else. So we simply try again until the lock
   is free.
 *)
 Definition acquire : val :=
@@ -68,7 +68,7 @@ Context `{heapGS Σ}.
   algebra is generic. However, we just need one exclusive element, so we
   will instantiate the exclusive RA with the unit OFE: [exclR unitO].
   Note that this is exactly the resource algebra we used to define
-  tokens. As such, we will reuse tokens here, but rename them to clarify
+  tokens. As such, we will reuse tokens here but rename them to clarify
   their intent.
 *)
 Context `{!tokenG Σ}.
@@ -139,7 +139,7 @@ Proof.
 Qed.
 
 (**
-  Acquiring the lock should grant access to the protected resources, as
+  Acquiring the lock should grant access to the protected resources as
   well as knowledge that the lock has been locked.
 *)
 Lemma acquire_spec γ v P :

@@ -10,7 +10,7 @@ From iris.heap_lang Require Import array lang proofmode notation par.
 (**
   Let us implement a simple multithreaded merge sort on arrays. Merge
   sort consists of splitting the array in half until we are left with
-  pieces of size [0] or [1]. Then each pair of pieces is merged into a
+  pieces of size [0] or [1]. Then, each pair of pieces is merged into a
   new sorted array.
 *)
 

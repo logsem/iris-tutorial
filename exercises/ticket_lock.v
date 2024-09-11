@@ -14,12 +14,12 @@ From iris.heap_lang Require Import lang proofmode notation.
   lock makes them wait in line. It functions similarly to a ticketing
   system that one often finds in bakeries and pharmacies. Upon entering
   the shop, you pick a ticket with some number and wait until the number
-  on the screen has reached your number. Once this happen, it becomes
+  on the screen has reached your number. Once this happens, it becomes
   your turn to speak to the shop assistant. In our scenario, talking to
   the shop assistant corresponds to accessing the protected resources.
 
   To implement this, we will maintain two counters: [o] and [n]. The
-  first counter, [o], represent the number on the screen – the customer
+  first counter, [o], represents the number on the screen – the customer
   currently being served. The second counter, [n], represents the next
   number to be dispensed by the ticketing machine.
 
@@ -27,7 +27,7 @@ From iris.heap_lang Require Import lang proofmode notation.
   and keep its previous value as a ticket for a position in the queue.
   Once the ticket has been obtained, the thread must wait until the
   first counter, [o], reaches its ticket value. Once this happens, the
-  thread gets access the protected resources. The thread can then
+  thread gets access to the protected resources. The thread can then
   release the lock by incrementing the first counter.
 *)
 
@@ -55,9 +55,9 @@ Definition release : val :=
 
 (**
   As a ticket lock is a lock, we expect it to satisfy the same
-  specification as the spin-lock. This time you have to come up with the
-  necessary resource algebra and lock invariant by yourself. It might be
-  instructive to first look through all required predicates and
+  specification as the spin-lock. This time, you have to come up with
+  the necessary resource algebra and lock invariant by yourself. It
+  might be instructive to first look through all required predicates and
   specifications to figure out exactly what needs to be proven.
 *)
 

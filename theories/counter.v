@@ -13,7 +13,7 @@ From iris.heap_lang Require Import lang proofmode notation par.
   functions:
   - a constructor, [mk_counter], which creates a new counter starting at
     [0].
-  - an increment function, [incr], which increments the counter, and
+  - an increment function, [incr], which increments the counter and
     returns the old value of the counter.
   - a read function, [read], which reads the current value of the
     counter.
@@ -56,8 +56,8 @@ Definition is_counter1 (v : val) (n : nat) : iProp Σ :=
 
 (**
   This predicate is, however, not persistent, so our value would not be
-  shareable across threads. To fix this we can put the knowledge into an
-  invariant.
+  shareable across threads. To fix this, we can put the knowledge into
+  an invariant.
 *)
 
 Let N := nroot .@ "counter".
@@ -67,7 +67,7 @@ Definition is_counter2 (v : val) (n : nat) : iProp Σ :=
 
 (**
   However, with this definition, we have locked the value of the pointer
-  to always be [n]. To fix this we could abstract the value and instead
+  to always be [n]. To fix this, we could abstract the value and instead
   only specify its lower bound.
 *)
 
@@ -75,14 +75,14 @@ Definition is_counter3 (v : val) (n : nat) : iProp Σ :=
   ∃ l : loc, ⌜v = #l⌝ ∗ inv N (∃ m : nat, l ↦ #m ∗ ⌜n ≤ m⌝).
 
 (**
-  Now we can change the what the pointer maps to, but we still cannot
-  refine the lower bound.
+  We can now change what the pointer maps to, but we still cannot refine
+  the lower bound.
 
   The final step is to use ghost state. The idea is to link [n] and [m]
   to pieces of ghost state in such a way that the validity of their
   composite is [n ≤ m].
 
-  To achieve this we will use the _authoritative_ resource algebra,
+  To achieve this, we will use the _authoritative_ resource algebra,
   [auth]. This resource algebra is parametrised by a CMRA, [A]. There
   are two types of elements in the carrier of the authoritative RA:
   - [● x] called an authoritative element
@@ -327,15 +327,15 @@ Section spec2.
   total value.
 
   To this end, we will use fractions. The [frac] resource algebra is
-  similar to [dfrac], but without the capability of discarding
-  fractions. As such, [frac] consists of non-negative rationals with
-  addition as composition, and a fraction is only valid if it is less
-  than or equal to [1]. This means that all the fractions can add up to
-  at most [1]. Combining [frac] with other resource algebras allows us
-  to keep track of how much of the resource we own, meaning we can do
-  the exact kind of aggregation we need. So this time we will use the
-  resource algebra [authR (optionUR (prodR fracR natR))]. Here, [natR]
-  is the natural numbers with addition.
+  similar to [dfrac] but without the capability of discarding fractions.
+  As such, [frac] consists of non-negative rationals with addition as
+  composition, and a fraction is only valid if it is less than or equal
+  to [1]. This means that all the fractions can add up to at most [1].
+  Combining [frac] with other resource algebras allows us to keep track
+  of how much of the resource we own, meaning we can do the exact kind
+  of aggregation we need. So this time, we will use the resource algebra
+  [authR (optionUR (prodR fracR natR))]. Here, [natR] is the natural
+  numbers with addition.
 *)
 
 Context `{!heapGS Σ, !inG Σ (authR (optionUR (prodR fracR natR)))}.
@@ -374,7 +374,7 @@ Qed.
 (**
   When allocating a new state, there will be _one_ fragment, which
   contains the entire fraction. Using the above lemma, we can then split
-  up the fragment, and supply these fragments to participating threads.
+  up the fragment and supply these fragments to participating threads.
 *)
 Lemma alloc_initial_state :
   ⊢ |==> ∃ γ, own γ (● Some (1%Qp, 0)) ∗ own γ (◯ Some (1%Qp, 0)).
@@ -416,8 +416,8 @@ Proof.
 Qed.
 
 (**
-  However, when a fragment has the entire fraction, then there can't be
-  any other fragments – intuitively, we have collected all contributions
+  However, when a fragment has the entire fraction, there can't be any
+  other fragments – intuitively, we have collected all contributions
   from all threads. So the count stored in the fragment must be equal to
   the one in the authoritative element.
 *)
@@ -460,7 +460,7 @@ Qed.
 (**
   Let us prove the specifications for the counter functions again. This
   time, however, we will have two specifications for [read] – one with
-  an arbitrary fraction, and one with the whole fraction.
+  an arbitrary fraction and one with the whole fraction.
 *)
 
 Lemma mk_counter_spec :

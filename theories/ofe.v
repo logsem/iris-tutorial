@@ -10,7 +10,7 @@ From iris.algebra Require Export ofe.
   Iris. However, they form good intuition about the usefulness of OFEs.
 
   We will look at streams over natural numbers. These are infinite
-  sequences with [head] being the first value, and [tail] being the rest
+  sequences with [head] being the first value and [tail] being the rest
   of the stream. We define streams as a coinductive type. You should be
   able to follow this file without extensive knowledge of coinduction.
 *)
@@ -29,7 +29,7 @@ Add Printing Constructor stream.
 CoFixpoint zeros := SCons 0 zeros.
 
 (**
-  [CoFixpoints] allows us to build coinductive values, in the same way
+  [CoFixpoints] allows us to build coinductive values in the same way
   that [Fixpoint] allows us to use inductive types recursively.
 
   We can get the [n]'th element of the stream by iterating through the
@@ -42,7 +42,7 @@ Fixpoint nth (s : stream) (n : nat) : nat :=
   end.
 
 (**
-  We can likewise define a stream from its [n]'th elements
+  We can likewise define a stream from its [n]'th elements.
 *)
 CoFixpoint fun2stream (f : nat → nat) : stream :=
   SCons (f 0) (fun2stream (f ∘ S)).
@@ -64,11 +64,11 @@ Local Instance stream_equiv_instance : Equiv stream := λ s1 s2,
   ∀ n, nth s1 n = nth s2 n.
 
 (**
-  Now for the OFE structure, we introduce the concept of approximate
+  Now, for the OFE structure, we introduce the concept of approximate
   equivalence using the typeclass [Dist].
 
   This typeclass defines a family of equivalence relations written
-  [[x ≡{n}≡ y]] where [n] is the precision. In our case this will
+  [[x ≡{n}≡ y]] where [n] is the precision. In our case, this will
   decide how many of the elements of the stream we look at.
 *)
 Local Instance stream_dist_instance : Dist stream := λ n s1 s2,
@@ -125,8 +125,8 @@ End ofe.
 
 (**
   We can now ask the question of whether we can build values from a
-  sequence of better and better approximations. To this end we use the
-  concept of a chain. Here chains are sequences such that all elements
+  sequence of better and better approximations. To this end, we use the
+  concept of a chain. Here, chains are sequences such that all elements
   after the [n]'th element are [n]-equivalent. An OFE is complete if all
   chains approach a value. This is also called a COFE for complete OFE.
 
@@ -233,7 +233,7 @@ Fixpoint sapp (l : list nat) (s : stream) : stream :=
 (**
   This operation is [NonExpansive] when we fix the list we wish to
   prepend. Furthermore, we can prove this without unfolding the
-  definition of [dist], by using what we have proved so far.
+  definition of [dist] by using what we have proved thus far.
 *)
 Global Instance sapp_ne (l : list nat) : NonExpansive (sapp l).
 (* SOLUTION *) Proof.
@@ -247,8 +247,8 @@ Global Instance sapp_proper (l : list nat) : Proper ((≡) ==> (≡)) (sapp l).
 Proof. apply ne_proper, _. Qed.
 
 (**
-  Now let's define a stream that simply repeats a list over and over
-  again. Intuitively we should be able to define it as follows:
+  Now, let's define a stream that simply repeats a list over and over
+  again. Intuitively, we should be able to define it as follows:
 *)
 Fail CoFixpoint repeat (l : list nat) : stream :=
   sapp l (repeat l).
@@ -259,7 +259,7 @@ Fail CoFixpoint repeat (l : list nat) : stream :=
   result remains empty. So we will never end up with an infinite
   stream.
 
-  To fix this we can insert a separator in between the repetitions of
+  To fix this, we can insert a separator in between the repetitions of
   the list:
 *)
 Fail CoFixpoint repeat_with_sep (l : list nat) (x : nat) : stream :=
@@ -269,7 +269,7 @@ Fail CoFixpoint repeat_with_sep (l : list nat) (x : nat) : stream :=
   But this still fails with the same error. This is because Coq uses a
   simple syntactic check to validate co-fixpoint definitions.
 
-  To satisfy this check we are forced to syntactically produce at least
+  To satisfy this check, we are forced to syntactically produce at least
   one element of the stream per recursive call, which is violated by the
   call to [sapp]. In practice, this means that we cannot reuse most of
   our existing operations when writing new recursively defined streams.
@@ -285,8 +285,8 @@ Definition repeat_with_sep (l : list nat) (x : nat) :=
   repeat_with_sep_helper l x l.
 
 (**
-  To be sure that this definition is correct, we can show that it still
-  solves the fixpoint equation. To do this we first need to show that
+  To ensure that this definition is correct, we can show that it still
+  solves the fixpoint equation. To do this, we first need to show that
   the helper function does what it is supposed to.
 *)
 Lemma repeat_with_sep_helper_unfold (l : list nat) (x : nat) (helper : list nat) :
@@ -323,7 +323,7 @@ Global Instance repeat_with_sep_contractive (l : list nat) (x : nat) : Contracti
 Proof. solve_contractive. Qed.
 
 (**
-  To get a fixpoint for such a function we need three things:
+  To get a fixpoint for such a function, we need three things:
   - The type we wish to produce an element of (stream) must have a COFE
     structure, which we defined earlier.
   - The function we wish to find a fixpoint for must be contractive,
@@ -371,7 +371,7 @@ CoFixpoint stream_map (f : nat → nat) (s : stream) : stream :=
   just build this as a fixpoint on streams. Instead, we need to build a
   fixpoint on [stream → stream]. However, this is not equipped with a
   canonical OFE structure. Instead, we need to write
-  [stream -d> streamO]. Here [d] stands for discrete, meaning we don't
+  [stream -d> streamO]. Here, [d] stands for discrete, meaning we don't
   consider any OFE structure on the domain. As such, we are allowed to
   change the parameter arbitrarily on recursive calls.
 *)
@@ -432,7 +432,7 @@ Fail CoFixpoint power2 : stream :=
   However, this again fails the syntactic check, as we are modifying the
   tail of the stream.
 
-  To fix this we could instead define a stream starting with a number
+  To fix this, we could instead define a stream starting with a number
   [n] doubling [n] at every step.
 *)
 CoFixpoint power2_helper (n : nat) : stream :=
@@ -469,7 +469,7 @@ Definition power2_pre (s : stream) : stream :=
   SCons 1 (stream_map (λ n, n * 2) s).
 
 (**
-  This is again contractive in [s], because [SCons] is [Contractive] and
+  This is again contractive in [s] because [SCons] is [Contractive] and
   [stream_map] is [NonExpansive].
 *)
 Global Instance power2_pre_contractive : Contractive power2_pre.
@@ -497,7 +497,7 @@ Qed.
   propositions recursively, we can use [fixpoint]. Importantly, all the
   connectives of the logic are [NonExpansive]. To then use guarded
   fixpoints, we need a [Contractive] function like [SCons]. And for
-  [iProp] this is later [▷ P]. We have already run into two connectives
+  [iProp], this is later [▷ P]. We have already run into two connectives
   defined using the guarded-fixpoint, namely the weakest precondition
   [WP], and invariants [inv]. This is why we can remove laters from
   premises when taking a step in the program, as this corresponds to

@@ -25,7 +25,7 @@ From exercises Require Import spin_lock.
   Here, [e1] is the expression we want to reduce, and [σ1] is the
   current state of the machine. [e2] and [σ2] are then the new
   expression and new state. [efs] is a list of expressions representing
-  new threads spawned. Finally [κs] represents a list of something
+  new threads spawned. Finally, [κs] represents a list of something
   called observations. We won't use these, so [κs] will remain empty.
 
   This relation isn't very nice to work with by itself. To fix this, we

@@ -20,12 +20,11 @@ Definition prog : expr :=
 
 (**
   We wish to show that the program terminates with a number that is at
-  least [5]. To do this we will use an invariant separated into the
+  least [5]. To do this, we will use an invariant separated into the
   different abstract states of our program. At the outset, the location
   will map to [4]. During the execution of the threads, the location
-  will be changed to either [5] or [6]. However, we just care about that
-  it must become greater than [4]. As such we will have the following
-  states.
+  will be changed to either [5] or [6]. However, we just care about it
+  becoming greater than [4]. As such, we will have the following states.
 *)
 
 Inductive state :=
@@ -41,7 +40,7 @@ Inductive state :=
 
 (**
   The [state] data structure will be our carrier for the RA. To use
-  [state] as a resource algebra we need to turn it into a resource
+  [state] as a resource algebra, we need to turn it into a resource
   algebra, meaning we need it to adhere to [RAMixin]. As such, we must
   define an equivalence relation, composition, the core, and valid
   elements, and prove that these definitions satisfy the fields in
@@ -60,13 +59,13 @@ Section state.
 Global Instance state_equiv_instance : Equiv state := eq.
 Global Instance state_equiv_equivalence : Equivalence (≡@{state}) := _.
 (**
-  To help convert between equivalence and equality we can tell Iris
+  To help convert between equivalence and equality, we can tell Iris
   that they coincide, which in this case is trivial.
 *)
 Global Instance state_leibniz_equiv : LeibnizEquiv state := _.
 
 (**
-  Recall that resource algebras are discrete cameras, and that cameras
+  Recall that resource algebras are discrete cameras and that cameras
   build on OFEs (Ordered family of equivalences). As such, to define a
   resources algebra, we must first define its OFE. An OFE encodes a kind
   of time dependence, but when the camera is _discrete_ and hence a
@@ -167,7 +166,7 @@ Proof. red. done. Qed.
 Lemma state_update s : s ~~> Final.
 Proof.
   (**
-    As we are working with a discrete CMRA we can simplify this
+    As we are working with a discrete CMRA, we can simplify this
     statement as follows.
   *)
   rewrite cmra_discrete_update.
@@ -186,7 +185,7 @@ Context `{!inG Σ stateR}.
   Our first lemma shows how a new State resource is created. We can
   create new resources via the basic update modality [|==> P]. This
   operation states that P holds after an update of resources. To work
-  with the update modality we can use two facts:
+  with the update modality, we can use two facts:
   - [P ⊢ |==> P]
   - [(P ⊢ |==> Q) ⊢ (|==> P ⊢ |==> Q)]
   Rather than working with these facts directly, we can use
@@ -194,7 +193,7 @@ Context `{!inG Σ stateR}.
 *)
 Lemma alloc_Start : ⊢ |==> ∃ γ, own γ Start.
 Proof.
-  (** To allocate a new resource we use [own_alloc]. *)
+  (** To allocate a new resource, we use [own_alloc]. *)
   iApply own_alloc.
   (**
     We are naturally only allowed to allocate valid resources, but since
@@ -205,8 +204,8 @@ Qed.
 
 (**
   Likewise, owning a resource means that it is valid.
-  A quick note: [✓ _] and [⌜✓ _⌝] are different, they only coincide when
-  the CMRA is discrete.
+  A quick note: [✓ _] and [⌜✓ _⌝] are different – they only coincide
+  when the CMRA is discrete.
 *)
 Lemma state_valid γ (s : state) : own γ s ⊢ ⌜✓ s⌝.
 Proof.
@@ -243,15 +242,14 @@ Context `{!heapGS Σ, !spawnG Σ, !inG Σ stateR}.
 Let N := nroot .@ "state".
 
 (**
-  We can now define the invariant we hinted to in the beginning as
-  follows.
+  We can now define the invariant we hinted at in the beginning.
 *)
 Definition state_inv γ (l : loc) (x : Z) : iProp Σ :=
   ∃ y : Z, l ↦ #y ∗ (own γ Start ∗ ⌜x = y⌝ ∨ own γ Final ∗ ⌜x < y⌝%Z).
 
 (**
   Rather than proving the entire program at once, we will split it into
-  3 pieces, starting with the 2 threads.
+  three pieces, starting with the two threads.
 
   Note that WP contains an update modality, meaning we can update
   resources in between steps.

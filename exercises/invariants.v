@@ -36,8 +36,8 @@ Proof.
   *)
   wp_apply (wp_fork with "[Hl]").
   (**
-    As such we have to pick a thread to own [l]. But as both threads
-    need to access [l], we are stuck.
+    As such, we must pick a thread to own [l]. But as both threads need
+    to access [l], we are stuck.
   *)
 Abort.
 
@@ -49,11 +49,11 @@ Section inv_intro.
 (**
   As the above program illustrates, some resources are required by
   multiple threads simultaneously. If those resources are not shareable
-  (i.e. persistent), then we will get stuck, as in the example above.
-  To get around this problem, we can devise an invariant for said
+  (i.e. persistent), then we will get stuck, as in the example above. To
+  get around this problem, we can devise an invariant for said
   resources. That is, we come up with a proposition [P] which describes
   the resources in a way that is always true, no matter where in the
-  program we are, or how threads have interleaved. We can then use Iris'
+  program we are or how threads have interleaved. We can then use Iris'
   invariant functionality to assert that [P] is an invariant: [inv N P].
   Here, [N] is a `namespace', which we may think of as the name of the
   invariant.
@@ -119,13 +119,13 @@ Abort.
   Another example of a goal permitting invariant openings is the _fancy
   update modality_, which essentially just adds a mask to the update
   modality. A fancy update modality is written [|={E}=>] for a mask [E].
-  The fancy update modality is like the update modality, but with
-  support for invariants: if the goal contains [|={E}=>], then we are
-  allowed to open all invariants in [E].
+  The fancy update modality is like the update modality but with support
+  for invariants: if the goal contains [|={E}=>], then we are allowed to
+  open all invariants in [E].
 *)
 
 (**
-  Another restriction on invariant openings is that, when the goal is a
+  Another restriction on invariant openings is that when the goal is a
   weakest precondition [WP e {{Φ}}], an invariant can be open for at
   most one program step. This is enforced by requiring [e] to be an
   atomic expression, meaning it reduces to a value in one step. After
@@ -168,7 +168,7 @@ Proof.
   *)
   iInv "Hinv" as "Hl".
   (**
-    This tactic did quit a bit, so let us break it down.
+    This tactic did quite a bit, so let us break it down.
 
     Firstly, notice that we got the points-to predicate from the
     invariant. A small caveat is that we only get the predicate later.
@@ -176,7 +176,7 @@ Proof.
     cases, which we discuss in a later chapter.
 
     Secondly, the postcondition of the weakest precondition in the goal
-    got augmented with [|={⊤ ∖ ↑N}=> ▷ l ↦ #1]. After stepping through
+    was augmented with [|={⊤ ∖ ↑N}=> ▷ l ↦ #1]. After stepping through
     the current WP, we will have to prove this proposition to show that
     the invariant [l ↦ #1] still holds. The fancy update modality is
     there to stop us from opening the invariant to prove that the
@@ -224,7 +224,7 @@ Proof.
   (**
     We have now used the invariant to reduce the right-hand [!#l].
     Reducing the left-hand dereference is done analogously.
-    First we bind the dereference.
+    First, we bind the dereference.
   *)
   wp_bind (!#l)%E.
   (** Then we open the invariant. *)
@@ -299,7 +299,7 @@ Qed.
   Side note: The above proof demonstrates why, when we have to prove the
   postcondition of a WP, we have to prove it _behind_ a fancy update
   modality. Having the fancy update modality in the goal allows us to
-  allocate/open invariants, and allocate/update resources.
+  allocate/open invariants and allocate/update resources.
 *)
 
 End inv_intro.
@@ -329,7 +329,7 @@ Proof.
   rewrite /prog.
   wp_alloc l as "Hl".
   wp_pures.
-  (** We now allocate our [prog_inv] invariant, using [inv_alloc]. *)
+  (** We now allocate our [prog_inv] invariant using [inv_alloc]. *)
   iMod (inv_alloc N _ (prog_inv l) with "[Hl]") as "#Hinv".
   (** We prove that the invariant is currently true. *)
   {
@@ -369,7 +369,7 @@ End proofs.
 
 (**
   Let us look at another program. This program will create a thread to
-  continuously increment a counter, while the main thread will read the
+  continuously increment a counter while the main thread will read the
   counter at some point. As such, this program should produce some
   non-negative number. However, we will only prove that it returns a
   number. Later, we will see other tools that will allow us to refine

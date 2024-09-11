@@ -25,7 +25,7 @@ From iris.heap_lang Require Import lang proofmode notation.
 
   The library definitions additionally give and prove specifications for
   the constructs, which we have used in previous chapters. In this
-  chapter, we will define the constructs from scratch, and write our own
+  chapter, we will define the constructs from scratch and write our own
   specifications for them.
 *)
 
@@ -46,11 +46,11 @@ From iris.heap_lang Require Import lang proofmode notation.
 About wp_fork.
 
 (**
-  For convenience, we included it here as well in `simplified' form.
+  For convenience, we include it here as well in `simplified' form.
 
     [WP e {{_, True}} -∗ ▷ Φ #() -∗ WP Fork e {{v, Φ v}}]
 
-  That is, to show a weakest precondition of [Fork e] we have to show
+  That is, to show a weakest precondition of [Fork e], we have to show
   the weakest precondition of [e] for a trivial postcondition. The key
   point is that we only require the forked-off thread to be safe – we do
   not care about its return value, hence the trivial postcondition.
@@ -101,12 +101,12 @@ Definition join: val :=
     {{{ P }}} spawn f {{{ h, RET h; join_handle h Ψ }}}
   ]]
 
-  This states that, to get a specification for [spawn f], we first must
+  This states that to get a specification for [spawn f], we first must
   prove a specification for [f] which captures which resources [f]
   needs, [P], and what the value [f] terminates at satisfies, [Ψ]. If we
   can prove such a specification for [f], then, given [P], we can also
   run [spawn f], which will return a value [h] which satisfies a
-  `join-handle' predicate. This predicate is a promise that, if we
+  `join-handle' predicate. This predicate is a promise that if we
   invoke [join] with [h], then the value we get back satisfies [Ψ]. This
   is reflected in the specification for [join]:
 
@@ -123,7 +123,7 @@ Context `{!heapGS Σ}.
 Let N := nroot .@ "handle".
 
 (**
-  Since we are using a shared channel we will use an invariant to allow
+  Since we are using a shared channel, we will use an invariant to allow
   the two (concurrently running) threads to access it. An initial
   attempt at stating this invariant looks as follows.
 *)
@@ -132,7 +132,7 @@ Definition handle_inv1 (l : loc) (Ψ : val → iProp Σ) : iProp Σ :=
 
 (**
   The stated invariant governs the shared channel (some location [l])
-  and states that either no value has been sent yet, or some value has
+  and states that either no value has been sent yet or some value has
   been sent that satisfies the predicate [Ψ].
 
   We can then use the invariant to define the [join_handle] predicate.
@@ -162,8 +162,10 @@ Proof.
     by iApply "IH".
   - wp_load.
     iModIntro.
-    (** Now we need [HΨ] to reestablish the invariant but we also need it for
-        the postcondition. We are stuck... *)
+    (** 
+      Now we need [HΨ] to reestablish the invariant, but we also need it
+      for the postcondition. We are stuck... 
+    *)
 Abort.
 
 (**
@@ -189,7 +191,7 @@ Definition handle_inv (γ : gname) (l : loc) (Ψ : val → iProp Σ) : iProp Σ 
 (**
   This enables the owner of the token to open the invariant, extract
   [Ψ w], and close the invariant in the case that mentions the token. As
-  such, we include the token in the join handle, so that [join] gets
+  such, we include the token in the join handle so that [join] gets
   access to the token.
 *)
 
@@ -364,7 +366,7 @@ Proof.
   wp_pures.
   (**
     Next, we execute [e2] in the current thread using its specification,
-    ["H2"], which gives us that, if [e2] terminates at some value [v2],
+    ["H2"], which gives us that if [e2] terminates at some value [v2],
     then [Q2 v2].
   *)
   wp_apply ("H2" with "HP2").

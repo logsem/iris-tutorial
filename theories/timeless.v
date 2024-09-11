@@ -14,7 +14,7 @@ Context `{!heapGS Σ}.
   A large class of propositions do not depend on time; they are either
   always true or always false. An example is equalities; [2 + 2 = 4] is
   always true. We call such propositions _timeless_. All pure
-  propositions are timeless and ownership of a resource is timeless if
+  propositions are timeless, and ownership of a resource is timeless if
   the resource comes from a resource algebra (this includes points-to
   predicates). Further, timelessness is preserved by most connectives.
   As a rule of thumb, a predicate is timeless if
@@ -89,7 +89,7 @@ Qed.
 
 (**
   The last scenario we mention is when the goal contains a later. In
-  this case, we may remove laters from timeless hypotheses, without
+  this case, we may remove laters from timeless hypotheses without
   removing the later from the goal.
 *)
 
@@ -105,7 +105,7 @@ Qed.
 
 (**
   Timeless propositions are especially useful in connection with
-  invariants. Recall from the invariants chapter that, when we open an
+  invariants. Recall from the invariants chapter that when we open an
   invariant, [inv N P], we only get the resources _later_, [▷P]. Often,
   however, we require the resources now. Consider the following example.
 *)

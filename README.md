@@ -1,7 +1,7 @@
 # Iris Tutorial
 The Iris Tutorial is an introduction to the [Iris separation logic framework](https://iris-project.org/) and how to work with its [Coq formalization](https://gitlab.mpi-sws.org/iris/iris/).
 
-The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. We assume that readers are already motivated to learn Iris and thus present the material in a bottom-up fashion, rather than starting out with cool motivating examples. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Coq proof assistant is assumed. Advanced Coq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning.
+The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. We assume that readers are already motivated to learn Iris and thus present the material in a bottom-up fashion, rather than starting out with cool motivating examples. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Coq proof assistant is assumed. Advanced Coq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning. We demonstrate more advanced tactics in chapter [ticket_lock_advanced](/theories/ticket_lock_advanced.v).
 
 The tutorial comes in two versions:
 
@@ -57,6 +57,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [counter](/exercises/counter.v) - The authoritative camera
 - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
 - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
+- [ticket_lock_advanced](/theories/ticket_lock_advanced.v) - Advanced Coq tactics
 - [adequacy](/exercises/adequacy.v) - Adequacy
 - [merge_sort](/exercises/merge_sort.v) - Merge sort
 - [custom_ra](/exercises/custom_ra.v) - Defining resource algebras from scratch
@@ -193,6 +194,21 @@ is replaced by
 
 ### Contact
 If you have specific requests or questions about the tutorial, please contact:
+
+**Amin Timany**\
+Aarhus University\
+<timany@cs.au.dk>
+
+### Contributors
+Below is a list of people who have contributed to the tutorial, sorted by last name. If you have contributed to the project, please add yourself to the list.
+
+**Lars Birkedal**\
+Aarhus University\
+<birkedal@cs.au.dk>
+
+**Mathias Pedersen**\
+Aarhus University\
+<mp@cs.au.dk>
 
 **Amin Timany**\
 Aarhus University\

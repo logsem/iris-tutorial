@@ -1,5 +1,11 @@
+# Fixes
+- Clean up proofs in some chapters
+  - Reduce use of SSreflect
+  - Simplify proofs
+
 # Possible future topics
-- Have a file showcasing advanced Coq tactics.
+- Chapter on prophecies
+- Chapter on HOCAP-style specifications
 - Chapters "Linked List", "Arrays", and "Merge Sort" all use list functionality from std++ (e.g. fmap and lookup). These should be introduced beforehand, for example in an appendix, with the chapters referring to the appendix.
 - Consider introducing commands "About", "Locate", "Print", etc. in an introductory chapter.
 - Add example with "Landin's knot" (recursion through the store) to showcase use of dicardable fractions or invariants for sequential programs

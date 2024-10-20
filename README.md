@@ -206,6 +206,10 @@ Below is a list of people who have contributed to the tutorial, sorted by last n
 Aarhus University\
 <birkedal@cs.au.dk>
 
+**Simon Gregersen**\
+Aarhus University\
+<gregersen@cs.au.dk>
+
 **Mathias Adam Møller**\
 Aarhus University\
 <mathias.adam.moeller@gmail.com>

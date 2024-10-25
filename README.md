@@ -145,7 +145,10 @@ The hope is that the maintenance and extension of this tutorial becomes a collab
 
 If you have suggestions for future topics or improvements for existing ones, please add them to [TODO.md](TODO.md).
 
+**Note**: by contributing to the Iris Tutorial you agree that your contributions will be released under the terms of Iris Tutorial's license — see [the LICENSE file](LICENSE).
+
 ### How to Contribute
+
 To contribute, we recommend following these steps:
 
 1. Fork the repository.

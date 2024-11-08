@@ -324,10 +324,9 @@ Proof.
 Qed.
 
 Lemma dfrac_valid_discarded : ✓ (DfracDiscarded).
-(* Solution *) Proof.
-  rewrite dfrac_valid.
-  done.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 Lemma dfrac_invalid_own : ¬ (✓ (DfracOwn (2/3) ⋅ DfracOwn (2/3))).
 Proof.
@@ -392,16 +391,14 @@ Proof.
 Qed.
 
 Lemma dfrac_pre_disc_both : DfracDiscarded ≼ DfracBoth (3/4).
-(* Solution *) Proof.
-  exists (DfracOwn (3/4)).
-  compute_done.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 Lemma dfrac_pre_own_both : DfracOwn (2/4) ≼ DfracBoth (3/4).
-(* Solution *) Proof.
-  exists (DfracBoth (1/4)).
-  compute_done.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 (* ----------------------------------------------------------------- *)
 (** *** Frame Preserving Update *)
@@ -748,12 +745,9 @@ Qed.
 
 Lemma agree_valid_opL (a b : A) : ✓ (to_agree a ⋅ to_agree b) →
   to_agree a ⋅ to_agree b ≡ to_agree a.
-(* Solution *) Proof.
-  intros Hvalid.
-  apply to_agree_op_valid in Hvalid.
-  rewrite Hvalid.
-  apply agree_idemp.
-Qed.
+Proof.
+  (* exercise *)
+Admitted.
 
 (**
   Due to idempotency and the fact that the combination of equivalent

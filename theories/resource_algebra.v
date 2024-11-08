@@ -327,7 +327,7 @@ Proof.
 Qed.
 
 Lemma dfrac_valid_discarded : ✓ (DfracDiscarded).
-(* Solution *) Proof.
+(* SOLUTION *) Proof.
   rewrite dfrac_valid.
   done.
 Qed.
@@ -395,13 +395,13 @@ Proof.
 Qed.
 
 Lemma dfrac_pre_disc_both : DfracDiscarded ≼ DfracBoth (3/4).
-(* Solution *) Proof.
+(* SOLUTION *) Proof.
   exists (DfracOwn (3/4)).
   compute_done.
 Qed.
 
 Lemma dfrac_pre_own_both : DfracOwn (2/4) ≼ DfracBoth (3/4).
-(* Solution *) Proof.
+(* SOLUTION *) Proof.
   exists (DfracBoth (1/4)).
   compute_done.
 Qed.
@@ -762,7 +762,7 @@ Qed.
 
 Lemma agree_valid_opL (a b : A) : ✓ (to_agree a ⋅ to_agree b) →
   to_agree a ⋅ to_agree b ≡ to_agree a.
-(* Solution *) Proof.
+(* SOLUTION *) Proof.
   intros Hvalid.
   apply to_agree_op_valid in Hvalid.
   rewrite Hvalid.

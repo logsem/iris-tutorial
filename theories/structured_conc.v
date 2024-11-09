@@ -336,7 +336,7 @@ Context `{!heapGS Σ, !tokenG Σ}.
 
 (**
   It is actually quite straightforward to prove the [par] specification
-  as most of the heavy lifting is done by [spawn_spec] and [par_spec].
+  as most of the heavy lifting is done by [spawn_spec] and [join_spec].
 *)
 Lemma par_spec (P1 P2 : iProp Σ) (e1 e2 : expr) (Q1 Q2 : val → iProp Σ) :
   {{{ P1 }}} e1 {{{ v, RET v; Q1 v }}} -∗

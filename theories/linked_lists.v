@@ -53,9 +53,9 @@ Lemma inc_spec (l : val) (xs : list Z) :
   {{{ RET #(); isList l ((λ x, #(x + 1)) <$> xs)}}}.
 Proof.
   (**
-    The proof proceeds by structural induction in [xs]. As [l] changes
-    in each iteration, we must forall quantify it to strengthen the
-    induction hypothesis.
+    The proof proceeds by structural induction in [xs]. As [l] changes in each
+    iteration, we must universally quantify over it to strengthen the induction
+    hypothesis.
   *)
   revert l.
   induction xs as [|x xs' IH]; simpl.

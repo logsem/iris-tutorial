@@ -188,12 +188,12 @@ Proof.
     The tactic for Löb induction, [iLöb], requires us to specify the
     name of the induction hypothesis, which we here call ["IH"].
     Optionally, it can also universally quantify over any of our variables
-    before performing induction. We here forall quantify [x] as it changes for
-    every recursive call.
+    before performing induction. We here universally quantify over [x] as it
+    changes for every recursive call.
   *)
   iLöb as "IH" forall (x).
   (**
-    [iLöb] automatically introduces the forall quantified variables in
+    [iLöb] automatically introduces the universally quantified variables in
     the goal, so we can proceed to execute the function.
   *)
   wp_rec.

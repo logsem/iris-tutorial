@@ -219,7 +219,7 @@ Aarhus University\
 
 **Mathias Pedersen**\
 Aarhus University\
-<mp@cs.au.dk>
+<mathiasp9999@gmail.com>
 
 **Amin Timany**\
 Aarhus University\

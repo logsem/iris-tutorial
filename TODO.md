@@ -1,4 +1,5 @@
 # Fixes
+- The chapter [gr_predicates.v] does actually not talk about guarded fixpoints, only least fixpoints
 - Clean up proofs in some chapters
   - Reduce use of SSreflect
   - Simplify proofs

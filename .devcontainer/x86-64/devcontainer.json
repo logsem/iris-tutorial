@@ -3,7 +3,7 @@
 	"image": "ghcr.io/logsem/iris-tutorial/docker-x86-64",
 	"customizations": {
 		"vscode": {
-		  "extensions": ["maximedenes.vscoq"]
+			"extensions": ["maximedenes.vscoq@2.2.0"]
 		},
 		"settings": {
 			"terminal.integrated.profiles.linux": {

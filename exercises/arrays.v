@@ -105,7 +105,7 @@ Proof.
   {
     iPureIntro.
     symmetry.
-    apply replicate_length.
+    apply length_replicate.
   }
   iIntros "[Ha Ha']".
   wp_pures.

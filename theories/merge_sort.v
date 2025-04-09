@@ -340,7 +340,7 @@ Lemma merge_sort_spec (a : loc) (l : list Z) :
   rewrite Nat2Z.id.
   wp_pures.
   wp_apply (wp_array_copy_to with "[$Hb $Ha]").
-  { by rewrite replicate_length. }
+  { by rewrite length_replicate. }
   { by rewrite fmap_length. }
   iIntros "[Hb Ha]".
   wp_pures.

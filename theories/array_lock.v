@@ -196,7 +196,7 @@ Proof.
     + iPoseProof (lookup_array _ _ _ (t `mod` cap) #true with "Ha") as "[Ht Ha]".
       {
         apply list_lookup_insert.
-        rewrite replicate_length.
+        rewrite length_replicate.
         apply Nat.mod_upper_bound.
         by apply Nat.lt_neq in Hcap.
       }
@@ -425,7 +425,7 @@ Proof.
   iPoseProof (update_array _ _ _ (o `mod` cap) #true with "Ha") as "[Ht Ha]".
   {
     apply list_lookup_insert.
-    rewrite replicate_length.
+    rewrite length_replicate.
     apply Nat.mod_upper_bound.
     by apply Nat.lt_neq in Hcap.
   }

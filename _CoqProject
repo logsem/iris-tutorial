@@ -19,10 +19,12 @@ theories/structured_conc.v
 theories/counter.v
 theories/spin_lock.v
 theories/ticket_lock.v
+theories/array_lock.v
 theories/adequacy.v
 theories/merge_sort.v
 theories/custom_ra.v
 theories/ofe.v
+
 
 exercises/basics.v
 exercises/pure.v
@@ -40,6 +42,7 @@ exercises/structured_conc.v
 exercises/counter.v
 exercises/spin_lock.v
 exercises/ticket_lock.v
+exercises/array_lock.v
 exercises/adequacy.v
 exercises/merge_sort.v
 exercises/custom_ra.v

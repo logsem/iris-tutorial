@@ -255,8 +255,8 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
     - by apply firstn_length_le.
   }
   clear H.
-  rewrite app_length in Hlen.
-  rewrite app_length.
+  rewrite length_app in Hlen.
+  rewrite length_app.
   replace (length l1 + length l2 - length l1) with (length l2) by lia.
   rewrite fmap_app !array_app length_fmap.
   iDestruct "Ha" as "[Ha1 Ha2]".
@@ -288,7 +288,7 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
     {
       iPureIntro.
       split_and!; [done..|].
-      rewrite app_length.
+      rewrite length_app.
       by f_equal.
     }
     iIntros "%l (Hb1 & Hb2 & Ha & Hl & %Hl)".

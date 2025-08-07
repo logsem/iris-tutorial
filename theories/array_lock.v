@@ -123,7 +123,7 @@ Proof.
   - intros [[d ->]|[d ->]].
     all: rewrite (comm Nat.add) Nat.mul_comm.
     2: symmetry.
-    all: by apply Nat.mod_add.
+    all: by apply Nat.Div0.mod_add.
 Qed.
 
 Lemma invitation_add (γ : name) (n m : nat) : invitation γ (n + m) ⊣⊢ invitation γ n ∗ invitation γ m.
@@ -171,9 +171,8 @@ Proof.
   iFrame "Ha Hn Hγ Hι".
   iLeft.
   iFrame.
-  rewrite Nat2Z.id Nat.mod_0_l.
-  - done.
-  - by apply Nat.lt_neq in Hcap.
+  rewrite Nat2Z.id Nat.Div0.mod_0_l.
+  by apply Nat.lt_neq in Hcap.
 Qed.
 
 Lemma wait_spec (γ : name) (l : val) (t cap : nat) (R : iProp Σ) :
@@ -196,7 +195,7 @@ Proof.
     + iPoseProof (lookup_array _ _ _ (t `mod` cap) #true with "Ha") as "[Ht Ha]".
       {
         apply list_lookup_insert.
-        rewrite replicate_length.
+        rewrite length_replicate.
         apply Nat.mod_upper_bound.
         by apply Nat.lt_neq in Hcap.
       }
@@ -425,7 +424,7 @@ Proof.
   iPoseProof (update_array _ _ _ (o `mod` cap) #true with "Ha") as "[Ht Ha]".
   {
     apply list_lookup_insert.
-    rewrite replicate_length.
+    rewrite length_replicate.
     apply Nat.mod_upper_bound.
     by apply Nat.lt_neq in Hcap.
   }

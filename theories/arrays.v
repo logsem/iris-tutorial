@@ -201,9 +201,9 @@ Lemma reverse_spec a l :
     destruct l as [|v1 l]; first done.
     clear H.
     change (v1 :: ?l) with ([v1] ++ l) at 2.
-    rewrite !rev_app_distr app_length Nat2Z.inj_add /=.
+    rewrite !rev_app_distr length_app Nat2Z.inj_add /=.
     rewrite !array_cons !array_app !array_singleton.
-    rewrite rev_length Loc.add_assoc.
+    rewrite length_rev Loc.add_assoc.
     iDestruct "Ha" as "(Hv1 & Hl & Hv2)".
     wp_pures.
     wp_load.

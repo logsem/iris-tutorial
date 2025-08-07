@@ -160,7 +160,7 @@ To contribute, we recommend following these steps:
 For more detailed instructions, see [first-contributions](
 https://github.com/firstcontributions/first-contributions).
 
-### RocqdocJS
+### CoqdocJS
 This tutorial uses [CoqdocJS](https://github.com/coq-community/coqdocjs), so please make sure to format your changes accordingly. To see what your changes will look like in the documentation, run
 ```
 git submodule update --init

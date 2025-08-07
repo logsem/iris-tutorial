@@ -106,22 +106,22 @@ Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
   wp_pures.
   destruct l1 as [|x1 l1].
   {
-    rewrite nil_length Nat.add_0_l in H.
+    rewrite length_nil Nat.add_0_l in H.
     wp_pures.
     iApply (wp_array_copy_to with "[$Hb $Ha2]").
     - by rewrite H.
-    - by rewrite fmap_length.
+    - by rewrite length_fmap.
     - iIntros "!> [Hb Ha2]".
       iApply "HΦ".
       by iFrame.
   }
   destruct l2 as [|x2 l2].
   {
-    rewrite nil_length Nat.add_0_r in H.
+    rewrite length_nil Nat.add_0_r in H.
     wp_pures.
     iApply (wp_array_copy_to with "[$Hb $Ha1]").
     - by rewrite H.
-    - by rewrite fmap_length.
+    - by rewrite length_fmap.
     - iIntros "!> [Hb Ha1]".
       iApply "HΦ".
       iFrame.
@@ -130,7 +130,7 @@ Lemma merge_spec (a1 a2 b : loc) (l1 l2 : list Z) (l : list val) :
   apply StronglySorted_inv in Hl1 as [H1 Hl1].
   apply StronglySorted_inv in Hl2 as [H2 Hl2].
   wp_pures.
-  rewrite !cons_length Nat.add_succ_l Nat.add_succ_r in H.
+  rewrite !length_cons Nat.add_succ_l Nat.add_succ_r in H.
   destruct l as [|y l]; first done.
   cbn in H.
   injection H as H.
@@ -225,7 +225,7 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
     iApply "HΦ".
     iFrame.
     iPureIntro.
-    rewrite fmap_length.
+    rewrite length_fmap.
     split; last done.
     apply (Nat2Z.inj_le _ 1) in Hlen.
     destruct l as [|i1 [|i2 l]].
@@ -258,7 +258,7 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
   rewrite app_length in Hlen.
   rewrite app_length.
   replace (length l1 + length l2 - length l1) with (length l2) by lia.
-  rewrite fmap_app !array_app fmap_length.
+  rewrite fmap_app !array_app length_fmap.
   iDestruct "Ha" as "[Ha1 Ha2]".
   iDestruct "Hb" as "[Hb1 Hb2]".
   wp_apply (par_spec
@@ -293,13 +293,13 @@ Lemma merge_sort_inner_spec (a b : loc) (l : list Z) :
     }
     iIntros "%l (Hb1 & Hb2 & Ha & Hl & %Hl)".
     iCombine "Hb1 Hb2" as "Hb".
-    erewrite <-fmap_length, <-array_app, <-fmap_app.
+    erewrite <-length_fmap, <-array_app, <-fmap_app.
     iApply "HΦ".
     iFrame.
     iPureIntro.
     split.
     + by rewrite Hl1 Hl2.
-    + rewrite fmap_length.
+    + rewrite length_fmap.
       by apply Permutation_length.
 Qed.
 
@@ -340,8 +340,8 @@ Lemma merge_sort_spec (a : loc) (l : list Z) :
   rewrite Nat2Z.id.
   wp_pures.
   wp_apply (wp_array_copy_to with "[$Hb $Ha]").
-  { by rewrite replicate_length. }
-  { by rewrite fmap_length. }
+  { by rewrite length_replicate. }
+  { by rewrite length_fmap. }
   iIntros "[Hb Ha]".
   wp_pures.
   wp_apply (merge_sort_inner_spec with "[$Ha $Hb]").

@@ -1,30 +1,30 @@
 # Iris Tutorial
-The Iris Tutorial is an introduction to the [Iris separation logic framework](https://iris-project.org/) and how to work with its [Coq formalization](https://gitlab.mpi-sws.org/iris/iris/).
+The Iris Tutorial is an introduction to the [Iris separation logic framework](https://iris-project.org/) and how to work with its [Rocq formalization](https://gitlab.mpi-sws.org/iris/iris/).
 
-The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. We assume that readers are already motivated to learn Iris and thus present the material in a bottom-up fashion, rather than starting out with cool motivating examples. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Coq proof assistant is assumed. Advanced Coq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning. We demonstrate more advanced tactics in chapter [ticket_lock_advanced](/theories/ticket_lock_advanced.v).
+The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. We assume that readers are already motivated to learn Iris and thus present the material in a bottom-up fashion, rather than starting out with cool motivating examples. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Rocq prover is assumed. Advanced Rocq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning. We demonstrate more advanced tactics in chapter [ticket_lock_advanced](/theories/ticket_lock_advanced.v).
 
 The tutorial comes in two versions:
 
 - The folder `exercises`: a skeleton development with exercises left admitted.
 - The folder `theories`: the full development with solutions.
 
-The tutorial consists of several chapters, each corresponding to a Coq file. The graph in [Chapter Dependencies](README.md#chapter-dependencies) illustrates possible ways to go through the tutorial. However, the recommended order is specified in the [Recommended Learning Path](README.md#recommended-learning-path).
+The tutorial consists of several chapters, each corresponding to a Rocq file. The graph in [Chapter Dependencies](README.md#chapter-dependencies) illustrates possible ways to go through the tutorial. However, the recommended order is specified in the [Recommended Learning Path](README.md#recommended-learning-path).
 
 ## Setup
 This version is known to compile with
 
-- Coq 8.20.1
+- Rocq 8.20.1
 - Iris 4.3.0
 
 The recommended way to install the dependencies is through [opam](https://opam.ocaml.org/doc/Install.html).
 
 1. Install [opam](https://opam.ocaml.org/doc/Install.html) if not already installed (a version greater than 2.0 is required).
-2. Install a new switch and link it to the project.
+2. Install a new switch and link it to the project. From the root of the repository, execute
 ```
 opam switch create iris_tutorial 5.2.0
 opam switch link iris_tutorial .
 ```
-3. Add the Coq opam repository.
+3. Add the Rocq opam repository.
 ```
 opam repo add coq-released https://coq.inria.fr/opam/released
 opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
@@ -41,7 +41,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 ## Chapter Overview
 - [basics](/exercises/basics.v) - Introduction to the separation
   logic and the Iris Proof Mode
-- [pure](/exercises/pure.v) - Distinction between the Coq context and the Iris context
+- [pure](/exercises/pure.v) - Distinction between the Rocq context and the Iris context
 - [lang](/exercises/lang.v) - Introduction to HeapLang
 - [specifications](/exercises/specifications.v) - Weakest precondition,
   basic resources, Hoare triples, and basic concurrency
@@ -57,7 +57,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [counter](/exercises/counter.v) - The authoritative camera
 - [spin_lock](/exercises/spin_lock.v) - Specification of a spin lock
 - [ticket_lock](/exercises/ticket_lock.v) - Specification of a ticket lock
-- [ticket_lock_advanced](/theories/ticket_lock_advanced.v) - Advanced Coq tactics
+- [ticket_lock_advanced](/theories/ticket_lock_advanced.v) - Advanced Rocq tactics
 - [adequacy](/exercises/adequacy.v) - Adequacy
 - [merge_sort](/exercises/merge_sort.v) - Merge sort
 - [custom_ra](/exercises/custom_ra.v) - Defining resource algebras from scratch
@@ -160,7 +160,7 @@ To contribute, we recommend following these steps:
 For more detailed instructions, see [first-contributions](
 https://github.com/firstcontributions/first-contributions).
 
-### CoqdocJS
+### RocqdocJS
 This tutorial uses [CoqdocJS](https://github.com/coq-community/coqdocjs), so please make sure to format your changes accordingly. To see what your changes will look like in the documentation, run
 ```
 git submodule update --init

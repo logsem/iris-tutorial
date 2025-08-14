@@ -30,7 +30,7 @@ From iris.heap_lang Require Import lang proofmode notation.
   A small side note: in Iris, resource algebras are specialisations of
   the more general structure `CMRA' (in particular, resource algebras
   are `discrete' CMRAs). In turn, CMRAs are built on top of `Ordered
-  Families of Equations' (shortened to `OFE'). The exact details of
+  Families of Equivalences' (shortened to `OFE'). The exact details of
   these concepts are not important for this chapter, but we mention them
   as they appear a few times throughout the chapter. CMRAs and OFEs are
   covered in more detail in later chapters.

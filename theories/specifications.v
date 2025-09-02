@@ -461,7 +461,7 @@ Qed.
   Firstly, inspired by the [prog_spec_2] example from the previous
   section, this definition makes the postcondition generic.
   Next, the precondition [P] implies the generic weakest precondition,
-  signifying that we must first prove [P] before we can apply
+  signifying that we must first prove [P] before we can apply the
   specification for [e].
   Finally, the definition uses two modalities that we have yet to cover.
   The persistently modality [□] signifies that the specification can be

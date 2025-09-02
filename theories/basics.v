@@ -129,7 +129,7 @@ Qed.
   entailment [Φ₁ ∗ ... ∗ Φₙ ⊢ Ψ].
 
   Technically, since Iris is built on top of Coq, proving an Iris
-  entailment in Coq corresponds to proving ⊢ₓ (P ⊢ Q). In other
+  entailment in Coq corresponds to proving [⊢ₓ (P ⊢ Q)]. In other
   words, the spatial context is part of the Coq goal. This is the reason
   why the regular Coq tactics no longer suffice. The new tactics work
   with both the non-spatial and the spatial contexts.

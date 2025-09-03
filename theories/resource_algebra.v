@@ -17,9 +17,9 @@ From iris.heap_lang Require Import lang proofmode notation.
   resources uniformly – we define a fixed set of criteria that a notion
   of resource must satisfy in order to be used in the logic. If the
   notion satisfies those criteria, then it is a `resource algebra'
-  (often shorted to `RA'). We can then have a small handful of rules for
-  resource algebras in general, and we hence do not need to change the
-  logic every time we wish to use a new notion of a resource.
+  (often shortened to `RA'). We can then have a small handful of rules
+  for resource algebras in general, and we hence do not need to change
+  the logic every time we wish to use a new notion of a resource.
 
   In this way, resource algebras are oblivious to the existence of Iris
   – they exist as a separate thing. Iris then has a mechanism to embed
@@ -419,7 +419,7 @@ Qed.
   valid. Otherwise, we could easily derive falsehood. Hence, when a
   thread updates its resources, it must ensure that it does not
   introduce the possibility of obtaining an invalid element. We call
-  such an update a `frame preserving Update' and write [x ~~> y] to mean
+  such an update a `frame preserving update' and write [x ~~> y] to mean
   that we can perform a frame preserving update from resource [x] to
   resource [y]. The formal definition for this notion turns out to be
   quite succinct:
@@ -971,7 +971,7 @@ Context `{!heapGS Σ}.
   exactly one way of embedding a resource [r] from some resource algebra
   [R] into the logic: the proposition [own γ r] asserts _ownership_ of
   the resource [r] in an instance of the resource algebra [R] named [γ].
-  That is to say, in Iris, once we have added a [R] to [Σ], we may
+  That is to say, in Iris, once we have added an [R] to [Σ], we may
   create multiple instances of [R] so that the same resource in [R] may
   be owned multiple times. To distinguish between instances, we use
   `ghost names' (sometimes also called `ghost variables' or `ghost

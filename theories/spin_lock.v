@@ -210,7 +210,7 @@ Definition prog : expr :=
 
 (**
   [x] can take on the values of [0], [1], and [7]. However, we should
-  not observe [7], as it is overridden before the lock is released.
+  not observe [7], as it is overwritten before the lock is released.
 *)
 Lemma prog_spec : ⊢ WP prog {{ v, ⌜v = #0 ∨ v = #1⌝}}.
 Proof.

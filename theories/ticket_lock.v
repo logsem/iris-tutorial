@@ -271,46 +271,20 @@ Qed.
 Lemma release_spec γ l P :
   {{{ is_lock γ l P ∗ locked γ ∗ P }}} release l {{{ RET #(); True }}}.
 (* SOLUTION *) Proof.
-  iIntros "%Φ ((%lo & %ln & -> & #I) & [%o Hexcl] & HP) HΦ".
+  iIntros "%Φ ((%lo & %ln & -> & #I) & [%o0 Hexcl] & HP) HΦ".
   wp_lam.
   wp_pures.
   wp_bind (! _)%E.
-  iInv "I" as "(%o' & %n & Hlo & Hln & [Hγ [[>Hexcl' _]|Ho]])".
-  {
-    iPoseProof (own_valid_2 with "Hexcl Hexcl'") as "%H".
-    rewrite auth_frag_valid /= in H.
-    rewrite pair_valid /= in H.
-    by destruct H as [H _].
-  }
+  iInv "I" as "(%o & %n & Hlo & Hln & Hγ)".
   wp_load.
-  iPoseProof (own_valid_2 with "Hγ Hexcl") as "%H".
-  rewrite auth_both_valid_discrete /= in H.
-  destruct H as [H _].
-  rewrite pair_included in H.
-  destruct H as [H _].
-  rewrite Excl_included in H.
-  destruct H.
   iModIntro.
-  iSplitL "Hlo Hln Hγ Ho".
+  iSplitL "Hlo Hln Hγ".
   { iExists o, n. iFrame. }
   clear n.
   wp_pures.
   rewrite Z.add_comm -(Nat2Z.inj_add 1) /=.
-  iInv "I" as "(%o' & %n & Hlo & Hln & [Hγ [[>Hexcl' _]|Ho]])".
-  {
-    iPoseProof (own_valid_2 with "Hexcl Hexcl'") as "%H".
-    rewrite auth_frag_valid /= in H.
-    rewrite pair_valid /= in H.
-    by destruct H as [H _].
-  }
+  iInv "I" as "(%o2 & %n & Hlo & Hln & Hγ & _)".
   wp_store.
-  iPoseProof (own_valid_2 with "Hγ Hexcl") as "%H".
-  rewrite auth_both_valid_discrete /= in H.
-  destruct H as [H _].
-  rewrite pair_included in H.
-  destruct H as [H _].
-  rewrite Excl_included in H.
-  destruct H.
   iCombine "Hγ Hexcl" as "Hγ".
   iMod (own_update _ _ (● (Excl' (S o), GSet (set_seq 0 n)) ⋅ ◯ (Excl' (S o), ε)) with "Hγ") as "[Hγ Hexcl]".
   {

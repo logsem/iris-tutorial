@@ -1,4 +1,5 @@
 From iris.algebra Require Import auth excl gset numbers.
+From iris.base_logic.lib Require Export invariants.
 From iris.heap_lang Require Import lang proofmode notation par.
 
 Lemma lookup_array `{!heapGS_gen hlc Σ} l dq vs off v :

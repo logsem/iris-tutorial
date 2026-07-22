@@ -14,14 +14,29 @@
     {
       devShells.${system}.default = pkgs.mkShell {
         buildInputs = with pkgs; [
-          rocq-core
-          rocqPackages.stdlib
+          # OPAM tool and build dependencies
+          opam
+          gmp
+          pkg-config
+          rsync
+          unzip
+          patch
+
+          # Rocq & language server (Commented out because installed via opam)
+          # rocq-core
+          # rocqPackages.stdlib
           # rocqPackages.stdpp
           # rocqPackages.iris
-          rocqPackages.vsrocq-language-server
+          # rocqPackages.vsrocq-language-server
+
           gawk
           git
         ];
+
+        shellHook = ''
+          # Automatically load opam environment variables if an opam switch exists
+          eval $(opam env 2>/dev/null)
+        '';
       };
 
       checks.${system}.default = pkgs.stdenv.mkDerivation {

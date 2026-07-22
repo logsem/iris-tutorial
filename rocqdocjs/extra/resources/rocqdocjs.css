@@ -109,7 +109,7 @@ html, body {
 @media only screen { /* no div with internal scrolling to allow printing of whole content */
     body {
         display: flex;
-        flex-direction: column 
+        flex-direction: column
     }
 
     #content {

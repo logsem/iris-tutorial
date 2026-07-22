@@ -13,7 +13,7 @@ RUN rm -rf opam
 
 RUN opam init
 RUN eval $(opam env)
-RUN opam repo add --set-default coq-released https://coq.inria.fr/opam/released
+RUN opam repo add --set-default rocq-released https://rocq-prover.org/opam/released
 RUN opam repo add --set-default iris-dev https://gitlab.mpi-sws.org/iris/opam.git
 
 RUN opam switch create stable ocaml.5.2.0

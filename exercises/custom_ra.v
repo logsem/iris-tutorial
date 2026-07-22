@@ -130,7 +130,7 @@ Qed.
 
 (**
   The final step is to package this into a CMRA structure, allowing us
-  to use the resource algebra in proofs (using Coq's Context mechanism).
+  to use the resource algebra in proofs (using Rocq's Context mechanism).
 *)
 Canonical Structure stateR := discreteR state state_ra_mixin.
 

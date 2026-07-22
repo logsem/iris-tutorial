@@ -62,7 +62,7 @@ Proof.
   *)
   wp_op.
   (**
-    Note that the expression [#2 * #3] turned into [#(2 * 3)] – the Coq
+    Note that the expression [#2 * #3] turned into [#(2 * 3)] – the Rocq
     expression [2 * 3] is treated as a value in HeapLang.
 
     In particular, [wp_op] has here applied three underlying rules:
@@ -528,7 +528,7 @@ Qed.
   Secondly, specifications written in terms of Hoare triples are usually
   easier to read, as they explicitly name what must be obtained before
   the program can be executed. Finally, proving Hoare triples directly
-  can be quite awkward and burdensome, especially in Coq.
+  can be quite awkward and burdensome, especially in Rocq.
 *)
 
 (* ================================================================= *)

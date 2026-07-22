@@ -70,7 +70,7 @@ From iris.heap_lang Require Import lang proofmode notation.
 
   Finally, the core, written [pcore x] for a resource [x], is a partial
   function which extracts exactly the _shareable_ part of a resource. We
-  handle partiality in Coq by letting the core return an option. We
+  handle partiality in Rocq by letting the core return an option. We
   write [pcore x = Some y] to mean that the shareable part of resource
   [x] is [y]. Similarly, we write [pcore x = None] to mean that [x] has
   no shareable part. For resources [x] that are entirely shareable, we
@@ -908,7 +908,7 @@ Section ghost.
 *)
 
 (* ----------------------------------------------------------------- *)
-(** ** Accessing Resource Algebras in Coq *)
+(** ** Accessing Resource Algebras in Rocq *)
 
 (**
   To use a resource algebra inside the Iris logic, we first need to make
@@ -919,7 +919,7 @@ Section ghost.
   However, we may put _restrictions_ on [Σ] to specify that the list
   must contain some specific resource algebra of our choosing. The
   typeclass [inG Σ R] expresses that the resource algebra [R] is in the
-  [G]lobal list of resource algebras [Σ]. If we add this to the Coq
+  [G]lobal list of resource algebras [Σ]. If we add this to the Rocq
   Context, then we may assume that [Σ] contains [R], allowing us to use
   [R] inside the logic.
 
@@ -933,7 +933,7 @@ Context `{!inG Σ (exclR unitO)}.
 (**
   Similarly, if we want to use the resource algebra of discardable
   fractions, we assert that [Σ] must contain [dfracR] – the name of the
-  resource algebra in Coq.
+  resource algebra in Rocq.
 *)
 
 Context `{!inG Σ dfracR}.
@@ -943,7 +943,7 @@ Context `{!inG Σ dfracR}.
   typeclasses so that they do not have to expose the details of the
   resource algebras to clients. For instance, the [spawn] library
   includes its required resource algebras in the [spawnG Σ] typeclass.
-  As such, adding this to the Coq Context makes the resource algebras
+  As such, adding this to the Rocq Context makes the resource algebras
   required by [spawn] available.
 *)
 

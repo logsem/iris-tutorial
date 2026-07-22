@@ -245,7 +245,7 @@ Fail CoFixpoint repeat_with_sep (l : list nat) (x : nat) : stream :=
   sapp l (SCons x (repeat_with_sep l x)).
 
 (**
-  But this still fails with the same error. This is because Coq uses a
+  But this still fails with the same error. This is because Rocq uses a
   simple syntactic check to validate co-fixpoint definitions.
 
   To satisfy this check, we are forced to syntactically produce at least

@@ -1,30 +1,30 @@
 SOLUTIONS := $(wildcard theories/*.v)
 EXERCISES := $(addprefix exercises/,$(notdir $(SOLUTIONS)))
 
-EXTRA_DIR:=coqdocjs/extra
-COQDOCFLAGS:= \
+EXTRA_DIR:=rocqdocjs/extra
+ROCQDOCFLAGS:= \
   --toc --toc-depth 2 --html --interpolate \
   --index indexpage --no-lib-name --parse-comments \
   --with-header $(EXTRA_DIR)/header.html --with-footer $(EXTRA_DIR)/footer.html
-export COQDOCFLAGS
+export ROCQDOCFLAGS
 
-all: Makefile.coq
-	+make -f Makefile.coq all
+all: Makefile.rocq
+	+make -f Makefile.rocq all
 .PHONY: all
 
-clean: Makefile.coq
-	+make -f Makefile.coq clean
-	rm -f Makefile.coq
+clean: Makefile.rocq
+	+make -f Makefile.rocq clean
+	rm -f Makefile.rocq
 .PHONY: clean
 
-html: Makefile.coq _CoqProject
+html: Makefile.rocq _RocqProject
 	rm -fr html
-	+make -f Makefile.coq $@
+	+make -f Makefile.rocq $@
 	cp -R $(EXTRA_DIR)/resources html
 .PHONY: html
 
-Makefile.coq: _CoqProject
-	rocq makefile -f _CoqProject -o Makefile.coq
+Makefile.rocq: _RocqProject
+	rocq makefile -f _RocqProject -o Makefile.rocq
 
 exercises: $(EXERCISES)
 .PHONY: exercises

@@ -16,8 +16,8 @@
         buildInputs = with pkgs; [
           rocq-core
           rocqPackages.stdlib
-          rocqPackages.stdpp
-          rocqPackages.iris
+          # rocqPackages.stdpp
+          # rocqPackages.iris
           rocqPackages.vsrocq-language-server
           gawk
           git

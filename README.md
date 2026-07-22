@@ -1,4 +1,5 @@
 # Iris Tutorial
+
 The Iris Tutorial is an introduction to the [Iris separation logic framework](https://iris-project.org/) and how to work with its [Rocq formalization](https://gitlab.mpi-sws.org/iris/iris/).
 
 The exposition is intended for a broad range of readers from advanced undergraduates to PhD students and researchers. We assume that readers are already motivated to learn Iris and thus present the material in a bottom-up fashion, rather than starting out with cool motivating examples. The tutorial material is intended to be self-contained. No specific background in logic or programming languages is assumed but some familiarity with basic programming languages theory and discrete mathematics will be beneficial, see e.g. [TAPL](https://www.cis.upenn.edu/~bcpierce/tapl/). Additionally, basic knowledge of the Rocq prover is assumed. Advanced Rocq tactics have been purposefully kept to a minimum, and some proofs are longer than necessary to facilitate learning. We demonstrate more advanced tactics in chapter [ticket_lock_advanced](/theories/ticket_lock_advanced.v).
@@ -11,34 +12,42 @@ The tutorial comes in two versions:
 The tutorial consists of several chapters, each corresponding to a Rocq file. The graph in [Chapter Dependencies](README.md#chapter-dependencies) illustrates possible ways to go through the tutorial. However, the recommended order is specified in the [Recommended Learning Path](README.md#recommended-learning-path).
 
 ## Setup
+
 This version is known to compile with
 
-- Rocq 8.20.1
-- Iris 4.3.0
+- Rocq 9.1.1
+- Iris 4.5.0
 
 The recommended way to install the dependencies is through [opam](https://opam.ocaml.org/doc/Install.html).
 
 1. Install [opam](https://opam.ocaml.org/doc/Install.html) if not already installed (a version greater than 2.0 is required).
 2. Install a new switch and link it to the project. From the root of the repository, execute
-```
+
+```sh
 opam switch create iris_tutorial 5.2.0
 opam switch link iris_tutorial .
 ```
+
 3. Add the Rocq opam repository.
-```
-opam repo add coq-released https://coq.inria.fr/opam/released
+
+```sh
+opam repo add rocq-released https://rocq-prover.org/opam/released
 opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
 opam update
 ```
+
 4. Install the right version of the dependencies as specified in the `iris-tutorial.opam` file.
-```
+
+```sh
 opam install . --deps-only
 ```
 
 ## Editor
+
 Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/editor.md) describes how to set up your favorite editor.
 
 ## Chapter Overview
+
 - [basics](/exercises/basics.v) - Introduction to the separation
   logic and the Iris Proof Mode
 - [pure](/exercises/pure.v) - Distinction between the Rocq context and the Iris context
@@ -64,6 +73,7 @@ Iris makes extensive use of Unicode characters. [This guide](https://gitlab.mpi-
 - [ofe](/exercises/ofe.v) - Detailed introduction to OFEs
 
 ## Chapter Dependencies
+
 ```mermaid
 graph TD;
   basics --> pure;
@@ -104,6 +114,7 @@ graph TD;
 ```
 
 ## Recommended Learning Path
+
 To get a good understanding of the fundamental concepts of Iris, it is recommended to study the following chapters in the given order.
 
 1. [basics](/exercises/basics.v)
@@ -124,6 +135,7 @@ To get a good understanding of the fundamental concepts of Iris, it is recommend
 16. [adequacy](/exercises/adequacy.v)
 
 ## Exercises
+
 To work on the exercises, simply edit the files in the `exercises/` folder. Some proofs and definitions are admitted and marked as `(* exercise *)`---your task is to fill in those definitions and complete the proofs all the way to `Qed`.
 
 After you are done with a file, run `make` (with your working directory being the repository root, where the `Makefile` is located) to compile and check the exercises.
@@ -131,6 +143,7 @@ After you are done with a file, run `make` (with your working directory being th
 If you are stuck, you can find solutions in the corresponding file in the `theories/` folder.
 
 ## Documentation
+
 This [cheatsheet](/cheatsheet.md) contains a table of the most important tactics for each logical connective. A full description of the Iris Proof Mode tactics can be found in the files [proof_mode.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/proof_mode.md) and [heap_lang.md](https://gitlab.mpi-sws.org/iris/iris/-/blob/master/docs/heap_lang.md).
 
 ## Optional Reading
@@ -160,42 +173,55 @@ To contribute, we recommend following these steps:
 For more detailed instructions, see [first-contributions](
 https://github.com/firstcontributions/first-contributions).
 
-### CoqdocJS
-This tutorial uses [CoqdocJS](https://github.com/coq-community/coqdocjs), so please make sure to format your changes accordingly. To see what your changes will look like in the documentation, run
-```
+### RocqdocJS
+
+This tutorial uses [RocqdocJS](https://github.com/rocq-community/rocqdocjs), so please make sure to format your changes accordingly. To see what your changes will look like in the documentation, run
+
+```sh
 git submodule update --init
 make html
 ```
+
 Then open `html/toc.html` in a browser, and navigate to the chapter(s) containing your changes.
 
 ### Generating the Exercises
+
 Note that the files in `exercises/` are generated from the corresponding files in `theories/`. As such, if you wish to make changes to a chapter, please make those changes to the `theories`-version of the chapter. Afterwards, the `exercises`-version can be re-generated by running `make exercises`. This requires `gawk` to be installed (which should be available on Linux, and on macOS can be installed via `brew install gawk`).
 
 The syntax for the solution files is as follows:
 
+```rocq
     (* SOLUTION *) Proof.
       solution here.
     Qed.
+```
 
 is replaced by
 
+```rocq
     Proof.
       (* exercise *)
     Admitted.
+```
 
 and the more powerful
 
+```rocq
     (* BEGIN SOLUTION *)
       solution here.
     (* END SOLUTION BEGIN TEMPLATE
       exercise template here.
     END TEMPLATE *)
+```
 
 is replaced by
 
+```rocq
       exercise template here.
+```
 
 ### Contact
+
 If you have specific requests or questions about the tutorial, please contact:
 
 **Amin Timany**\
@@ -203,6 +229,7 @@ Aarhus University\
 <timany@cs.au.dk>
 
 ### Contributors
+
 Below is a list of people who have contributed to the tutorial, sorted by last name. If you have contributed to the project, please add yourself to the list.
 
 **Lars Birkedal**\

@@ -1,6 +1,6 @@
-var coqdocjs = coqdocjs || {};
+var rocqdocjs = rocqdocjs || {};
 
-coqdocjs.repl = {
+rocqdocjs.repl = {
     "forall": "∀",
     "exists": "∃",
     "~": "¬",
@@ -56,7 +56,7 @@ coqdocjs.repl = {
     "Xi": "Ξ"
 };
 
-coqdocjs.subscr = {
+rocqdocjs.subscr = {
   "0" : "₀",
   "1" : "₁",
   "2" : "₂",
@@ -69,4 +69,4 @@ coqdocjs.subscr = {
   "9" : "₉",
 };
 
-coqdocjs.replInText = ["==>","<=>", "=>", "->", "<-", ":="];
+rocqdocjs.replInText = ["==>","<=>", "=>", "->", "<-", ":="];

@@ -1,10 +1,12 @@
 # Fixes
+
 - The chapter [gr_predicates.v] does actually not talk about guarded fixpoints, only least fixpoints
 - Clean up proofs in some chapters
   - Reduce use of SSreflect
   - Simplify proofs
 
 # Possible future topics
+
 - Chapter on prophecies
 - Chapter on HOCAP-style specifications
 - Chapters "Linked List", "Arrays", and "Merge Sort" all use list functionality from std++ (e.g. fmap and lookup). These should be introduced beforehand, for example in an appendix, with the chapters referring to the appendix.
@@ -24,5 +26,6 @@
 - How to define logical relations models of type systems in Iris.
 
 # Features
-- Make tutorial accessible as an interactive webpage (jscoq)
-  - See e.g. https://jscoq.github.io/ext/sf/
+
+- Make tutorial accessible as an interactive webpage (jsrocq)
+  - See e.g. <https://jsrocq.github.io/ext/sf/>

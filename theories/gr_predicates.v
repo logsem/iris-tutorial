@@ -6,12 +6,12 @@ From iris.heap_lang Require Import lang proofmode notation.
 
 (**
   In the Linked List chapter, we defined a representation predicate for
-  linked lists using Coq's Fixpoint mechanism. In this chapter, we
+  linked lists using Rocq's Fixpoint mechanism. In this chapter, we
   present an alternative approach to defining representation predicates,
   which instead uses fixpoints of predicates. The high-level point to
   notice is that we can define fixpoints of monotone functions on Iris
   predicates, much in the same way as one can define fixpoints of
-  monotone function on Coq predicates. Later on, we will discuss
+  monotone function on Rocq predicates. Later on, we will discuss
   different kinds of fixpoints in more detail.
 *)
 
@@ -20,9 +20,10 @@ Context `{!heapGS Σ}.
 
 (**
   As we have already seen, we can define a predicate for linked lists
-  representing a list of specific values, using Coq's notion of fixpoint
-  for the inductive Coq type [list val].
+  representing a list of specific values, using Rocq's notion of fixpoint
+  for the inductive Rocq type [list val].
 *)
+
 Fixpoint is_list_of (v : val) (xs : list val) : iProp Σ :=
   match xs with
   | [] => ⌜v = NONEV⌝
@@ -33,7 +34,7 @@ Fixpoint is_list_of (v : val) (xs : list val) : iProp Σ :=
   However, sometimes we don't care about the exact list and instead, we
   only want to know that each value of the list satisfies some
   predicate. This can be captured by using a helper predicate [all]
-  expressing that all elements of a Coq list satisfy a predicate.
+  expressing that all elements of a Rocq list satisfy a predicate.
 *)
 Fixpoint all (xs : list val) (Φ : val → iProp Σ) : iProp Σ :=
   match xs with

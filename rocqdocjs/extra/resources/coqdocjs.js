@@ -1,4 +1,4 @@
-var coqdocjs = coqdocjs || {};
+var rocqdocjs = rocqdocjs || {};
 (function(){
 
 function replace(s){
@@ -7,14 +7,14 @@ function replace(s){
     return replace(m[1])+"'";
   } else if (m = s.match(/^([A-Za-z]+)_?(\d+)$/)) {
     return replace(m[1])+m[2].replace(/\d/g, function(d){
-      if (coqdocjs.subscr.hasOwnProperty(d)) {
-        return coqdocjs.subscr[d];
+      if (rocqdocjs.subscr.hasOwnProperty(d)) {
+        return rocqdocjs.subscr[d];
       } else {
         return d;
       }
     });
-  } else if (coqdocjs.repl.hasOwnProperty(s)){
-    return coqdocjs.repl[s]
+  } else if (rocqdocjs.repl.hasOwnProperty(s)){
+    return rocqdocjs.repl[s]
   } else {
     return s;
   }
@@ -25,7 +25,7 @@ function toArray(nl){
 }
 
 function replInTextNodes() {
-  coqdocjs.replInText.forEach(function(toReplace){
+  rocqdocjs.replInText.forEach(function(toReplace){
     toArray(document.getElementsByClassName("code")).concat(toArray(document.getElementsByClassName("inlinecode"))).forEach(function(elem){
       toArray(elem.childNodes).forEach(function(node){
         if (node.nodeType != Node.TEXT_NODE) return;
@@ -185,5 +185,5 @@ function postprocess(){
 fixTitle();
 document.addEventListener('DOMContentLoaded', postprocess);
 
-coqdocjs.toggleProofs = toggleProofs;
+rocqdocjs.toggleProofs = toggleProofs;
 })();

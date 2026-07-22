@@ -14,7 +14,7 @@ From iris.heap_lang Require Import lang notation spawn par.
   and it is a call-by-value language.
 
   The syntax for HeapLang is fairly standard, but there are some quirks
-  as we are working inside Coq. As the features of HeapLang are fairly
+  as we are working inside Rocq. As the features of HeapLang are fairly
   standard, the focus in this chapter is mainly on showcasing the syntax
   of the language through simple examples.
 *)
@@ -39,7 +39,7 @@ From iris.heap_lang Require Import lang notation spawn par.
   the tutorial, but it can optionally be installed for this chapter. To
   install it, run:
 
-    <<opam install coq-iris-unstable>>
+    <<opam install rocq-iris-unstable>>
 
   This also updates Iris to a development version. To access the
   interpreter, uncomment the import below.
@@ -73,7 +73,7 @@ Example arith : expr :=
 (**
   If the interpreter was installed, the expression can now be executed
   using [(exec 10 arith)], where [10] is the amount of fuel. To evaluate
-  the execution inside Coq, we can use the [Compute] command. Uncomment
+  the execution inside Rocq, we can use the [Compute] command. Uncomment
   the command below to see this in action.
 *)
 (* Compute (exec 10 arith). *)

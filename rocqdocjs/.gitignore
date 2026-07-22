@@ -21,7 +21,7 @@
 *.vok
 *.vos
 .DS_Store
-.coq-native/
+.rocq-native/
 .csdp.cache
 .lia.cache
 .nia.cache

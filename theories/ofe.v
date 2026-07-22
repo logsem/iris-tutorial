@@ -1,4 +1,4 @@
-From iris.algebra Require Export ofe.
+From iris.algebra Require Export ofe stepindex_finite.
 
 (* ################################################################# *)
 (** * Ordered Families of Equivalences (OFE) *)
@@ -82,7 +82,7 @@ Local Instance stream_dist_instance : Dist stream := λ n s1 s2,
   - [equiv_dist : ∀ x y, x ≡ y ↔ (∀ n, x ≡{n}≡ y)]
     This states that, as the `precision' of the approximation approaches
     infinity, the equivalences approach true equivalence.
-  - [dist_lt : ∀ n m x y, x ≡{n}≡ y → m < n → x ≡{m}≡ y]
+  - [dist_le : ∀ n m x y, x ≡{n}≡ y → m ≤ n → x ≡{m}≡ y]
     This means that reducing the precision can only make more things
     approximately equivalent.
 *)
@@ -109,7 +109,7 @@ Proof.
       * by apply H2.
   - intros n m s1 s2 H Hm i Hi.
     apply H.
-    lia.
+    transitivity m; done.
 Qed.
 (* END SOLUTION BEGIN TEMPLATE
   (* exercise *)
@@ -136,6 +136,7 @@ End ofe.
 *)
 Global Program Instance stream_cofe : Cofe streamO := {|
   compl c := fun2stream (λ i, nth (c i) i);
+  lbcompl n Hn c := match SIdx.limit_finite n Hn with end;
 |}.
 Next Obligation.
   intros n [c Hc] i Hi; simpl.
@@ -143,6 +144,12 @@ Next Obligation.
   specialize (Hc i n Hi i).
   symmetry.
   by apply Hc.
+Qed.
+Next Obligation.
+  intros n Hn. destruct (SIdx.limit_finite n Hn).
+Qed.
+Next Obligation.
+  intros n Hn. destruct (SIdx.limit_finite n Hn).
 Qed.
 
 (**
@@ -215,7 +222,8 @@ Proof.
   constructor.
   intros m Hm i Hi.
   apply (H (S i)).
-  lia.
+  transitivity (S m); [lia|].
+  by apply Hm.
 Qed.
 
 

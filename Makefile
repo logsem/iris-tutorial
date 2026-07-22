@@ -24,7 +24,7 @@ html: Makefile.coq _CoqProject
 .PHONY: html
 
 Makefile.coq: _CoqProject
-	coq_makefile -f _CoqProject -o Makefile.coq
+	rocq makefile -f _CoqProject -o Makefile.coq
 
 exercises: $(EXERCISES)
 .PHONY: exercises

@@ -167,7 +167,7 @@ Proof.
   iApply inv_alloc.
   iNext.
   iExists 0, 0, _.
-  rewrite (right_id ε (⋅)).
+  rewrite (right_id _ _).
   iFrame "Ha Hn Hγ Hι".
   iLeft.
   iFrame.
@@ -194,7 +194,7 @@ Proof.
   - destruct (decide (o = t)) as [->|H].
     + iPoseProof (lookup_array _ _ _ (t `mod` cap) #true with "Ha") as "[Ht Ha]".
       {
-        apply list_lookup_insert.
+        apply list_lookup_insert_eq.
         rewrite length_replicate.
         apply Nat.mod_upper_bound.
         by apply Nat.lt_neq in Hcap.
@@ -366,7 +366,7 @@ Proof.
   iMod (own_update _ _ (● (Excl' o, GSet (set_seq o (S i))) ⋅ ◯ (None, GSet {[o + i]})) with "Hγ") as "[Hγ Hγ']".
   {
     apply auth_update_alloc, prod_local_update_2.
-    rewrite -(right_id ε (⋅) (GSet {[_]})).
+    rewrite -(right_id _ _ (GSet {[_]})).
     rewrite set_seq_S_end_union_L -gset_disj_union.
     - apply op_local_update_discrete.
       intros _.
@@ -423,7 +423,7 @@ Proof.
   subst o'.
   iPoseProof (update_array _ _ _ (o `mod` cap) #true with "Ha") as "[Ht Ha]".
   {
-    apply list_lookup_insert.
+    apply list_lookup_insert_eq.
     rewrite length_replicate.
     apply Nat.mod_upper_bound.
     by apply Nat.lt_neq in Hcap.
@@ -434,11 +434,14 @@ Proof.
   iSplitL "Hn Hι Hγ Hr Ha Hγ''".
   {
     iNext.
-    rewrite list_insert_insert insert_replicate.
+    rewrite list_insert_insert.
     iExists o, i, _.
     iFrame "Hn Ha Hι Hγ".
     iRight; iLeft.
-    by iFrame.
+    iFrame.
+    iPureIntro.
+    rewrite decide_True //.
+    apply insert_replicate.
   }
   clear i.
   wp_pures.

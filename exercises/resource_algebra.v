@@ -587,7 +587,7 @@ Context {A : ofe}.
 (**
   The carrier of the exclusive RA, [excl], is the same as the carrier of
   the underlying resource algebra with the addition of a bottom element,
-  denoted [ExclBot].
+  denoted [ExclInvalid].
 *)
 
 Print excl.
@@ -600,33 +600,33 @@ Lemma excl_core (ea : excl A) : pcore ea ≡ None.
 Proof. constructor. Qed.
 
 (**
-  Crucially, all elements except [ExclBot] are valid.
+  Crucially, all elements except [ExclInvalid] are valid.
 *)
 
 Lemma excl_valid (a : A) : ✓ (Excl a).
 Proof. constructor. Qed.
 
-Lemma excl_bot_invalid : ¬ (✓ (ExclBot : excl A)).
+Lemma excl_bot_invalid : ¬ (✓ (ExclInvalid : excl A)).
 Proof.
   intros contra.
   inversion contra.
 Qed.
 
 (**
-  And the combination of any two elements gives the invalid [ExclBot].
+  And the combination of any two elements gives the invalid [ExclInvalid].
 *)
 
-Lemma excl_op (ea eb : excl A) : ea ⋅ eb ≡ ExclBot.
+Lemma excl_op (ea eb : excl A) : ea ⋅ eb ≡ ExclInvalid.
 Proof. constructor. Qed.
 
 (**
   Let us return to our beloved dfrac. While the operation for dfrac adds
   two dfrac fractions together, the operation for two _exclusive_ dfrac
-  fractions simply results in [ExclBot].
+  fractions simply results in [ExclInvalid].
 *)
 
 Example excl_op_dfrac :
-  (Excl (DfracOwn (1/4))) ⋅ (Excl (DfracOwn (2/4))) ≡ ExclBot.
+  (Excl (DfracOwn (1/4))) ⋅ (Excl (DfracOwn (2/4))) ≡ ExclInvalid.
 Proof. constructor. Qed.
 
 End exclusive.
@@ -651,7 +651,7 @@ Lemma token_valid : ✓ tok.
 Proof. apply excl_valid. Qed.
 
 (** ... but having the token twice gives the bottom element... *)
-Lemma token_token_bot : tok ⋅ tok ≡ ExclBot.
+Lemma token_token_bot : tok ⋅ tok ≡ ExclInvalid.
 Proof. apply excl_op. Qed.
 
 (* ... which is invalid. *)

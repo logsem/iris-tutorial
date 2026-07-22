@@ -1,4 +1,4 @@
-From iris.bi Require Export fixpoint.
+From iris.bi.lib Require Export fixpoint_mono.
 From iris.heap_lang Require Import lang proofmode notation.
 
 (* ################################################################# *)

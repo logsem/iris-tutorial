@@ -62,7 +62,7 @@ Global Instance state_equiv_equivalence : Equivalence (≡@{state}) := _.
   To help convert between equivalence and equality, we can tell Iris
   that they coincide, which in this case is trivial.
 *)
-Global Instance state_leibniz_equiv : LeibnizEquiv state := _.
+Global Instance state_leibniz_equiv : LeibnizEquiv state. Proof. by intros ? ?. Qed.
 
 (**
   Recall that resource algebras are discrete cameras and that cameras

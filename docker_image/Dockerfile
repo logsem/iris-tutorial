@@ -19,14 +19,14 @@ RUN opam repo add --set-default iris-dev https://gitlab.mpi-sws.org/iris/opam.gi
 RUN opam switch create stable ocaml.5.2.0
 RUN eval $(opam env)
 RUN opam update
-RUN opam install coq.8.20.1 vscoq-language-server
-RUN opam install coq-iris.4.3.0 coq-iris-heap-lang
+RUN opam install rocq-core.9.1.1 vsrocq-language-server
+RUN opam install rocq-iris.4.5.0 rocq-iris-heap-lang
 
 RUN opam switch create unstable ocaml.5.2.0
 RUN eval $(opam env)
 RUN opam update
-RUN opam install coq.8.20.1 vscoq-language-server
-RUN opam install coq-iris coq-iris-heap-lang coq-iris-unstable
+RUN opam install rocq-core vsrocq-language-server
+RUN opam install rocq-iris rocq-iris-heap-lang rocq-iris-unstable
 
 RUN opam switch stable
 RUN eval $(opam env)

@@ -1,6 +1,6 @@
 {
 	"name": "iris-tutorial x86-64 container",
-	"image": "ghcr.io/logsem/iris-tutorial/docker-x86-64",
+	"image": "ghcr.io/logsem/iris-tutorial/debian-ocaml-5.5-x86-64",
 	"customizations": {
 		"vscode": {
 		  "extensions": ["rocq-prover.vsrocq"]
@@ -14,5 +14,6 @@
 			},
 			"terminal.integrated.defaultProfile.linux": "bash"
 		}
-	}
+	},
+	"remoteUser": "opam"
 }

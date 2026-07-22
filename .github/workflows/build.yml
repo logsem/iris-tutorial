@@ -12,11 +12,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/logsem/iris-tutorial/docker-x86-64:latest
-      options: --user root
+      image: ghcr.io/logsem/iris-tutorial/debian-ocaml-5.5-x86-64
+      options: --user opam
 
     steps:
       - uses: actions/checkout@v4
-      - name: make-ci
+
+      - name: Build project
         shell: bash -l {0}
-        run: export HOME=/root; eval $(opam env); make ci -j2
+        run: |
+          # Fix for git ownership issues in containers
+          git config --global --add safe.directory /__w/iris-tutorial/iris-tutorial
+
+          # No need to export HOME=/root, we are opam
+          eval $(opam env)
+          make ci -j2

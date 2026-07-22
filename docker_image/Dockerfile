@@ -1,35 +1,36 @@
-FROM debian:bookworm
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
 
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get -y install make gcc patch git unzip bubblewrap curl libgmp-dev bzip2 pkg-config gawk
+# We need to be root to install system dependencies
+USER root
+RUN apt-get update && apt-get install -y gawk git && rm -rf /var/lib/apt/lists/*
+
+# We need to be root to install system dependencies,
+# but opam usually runs as a user. Assuming the base image
+# has a user 'opam', we switch to it.
+USER opam
+WORKDIR /home/opam/iris-tutorial
 
 ARG OPAMYES=true
 ENV OPAMROOTISOK=true
+ARG MODE
 
-RUN curl -sL https://github.com/ocaml/opam/releases/download/2.2.1/opam-2.2.1-x86_64-linux -o opam
-RUN install opam /usr/local/bin/opam
-RUN rm -rf opam
+# 1. Initialize repos
+# With || true in case they already exist in the base image
+RUN opam repo add --set-default rocq-released https://rocq-prover.org/opam/released || true
+RUN opam repo add --set-default iris-dev https://gitlab.mpi-sws.org/iris/opam.git || true
 
-RUN opam init
-RUN eval $(opam env)
-RUN opam repo add --set-default rocq-released https://rocq-prover.org/opam/released
-RUN opam repo add --set-default iris-dev https://gitlab.mpi-sws.org/iris/opam.git
+# 2. Copy the opam file from the project root (context is ..)
+COPY --chown=opam:opam iris-tutorial.opam .
 
-RUN opam switch create stable ocaml.5.2.0
-RUN eval $(opam env)
-RUN opam update
-RUN opam install rocq-core.9.1.1 vsrocq-language-server
-RUN opam install rocq-iris.4.5.0 rocq-iris-heap-lang
+# 3. Update and Install dependencies from the .opam file
+RUN opam update && \
+    opam install . --deps-only -y && \
+    opam install -y vsrocq-language-server
 
-RUN opam switch create unstable ocaml.5.2.0
-RUN eval $(opam env)
-RUN opam update
-RUN opam install rocq-core vsrocq-language-server
-RUN opam install rocq-iris rocq-iris-heap-lang rocq-iris-unstable
+# 4. If mode is unstable, install the extra unstable package
+RUN if [ "$MODE" = "unstable" ]; then \
+    opam install -y rocq-iris-unstable; \
+    fi
 
-RUN opam switch stable
-RUN eval $(opam env)
-RUN opam update
-
-RUN echo 'eval $(opam env)' >> ~/.bashrc
+RUN echo "eval \$(opam env)" >> ~/.bashrc

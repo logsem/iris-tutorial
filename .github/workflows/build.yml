@@ -11,19 +11,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/logsem/iris-tutorial/debian-ocaml-5.5-x86-64
-      options: --user opam
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Build project
-        shell: bash -l {0}
-        run: |
-          # Fix for git ownership issues in containers
-          git config --global --add safe.directory /__w/iris-tutorial/iris-tutorial
-
-          # No need to export HOME=/root, we are opam
-          eval $(opam env)
-          make ci -j2
+      - uses: rocq-prover/docker-opam-action@v1
+        with:
+          rocq_version: '9.1'
+          ocaml_version: '5.5'
+          before_install: |
+            opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git --all --set-default
+          script: |
+            git config --global --add safe.directory "*"
+            make ci -j$(nproc)

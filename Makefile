@@ -34,7 +34,7 @@ $(EXERCISES): exercises/%.v: theories/%.v gen-exercises.awk
 	  echo "Exercise file $@ has been changed; skipping exercise generation"; \
 	else \
 	  echo "Generating exercise file $@ from $<"; \
-	  gawk -f gen-exercises.awk < $< > $@; \
+	  awk -f gen-exercises.awk < $< > $@; \
 	fi
 
 ci: all

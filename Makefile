@@ -41,3 +41,12 @@ ci: all
 	+@make -B exercises # force make (in case exercise files have been edited directly)
 	if [ -n "$$(git status --porcelain)" ]; then echo 'ERROR: Exercise files are not up-to-date with solutions. `git diff` and `git status` after re-making them:'; git diff; git status; exit 1; fi
 .PHONY: ci
+
+pdf: html
+	@if ! command -v wkhtmltopdf >/dev/null 2>&1; then \
+		echo "wkhtmltopdf not found. Running inside nix-shell..."; \
+		nix-shell -p wkhtmltopdf --run "bash ./generate_pdf.sh"; \
+	else \
+		bash ./generate_pdf.sh; \
+	fi
+.PHONY: pdf

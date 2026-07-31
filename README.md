@@ -235,7 +235,7 @@ Below is a list of people who have contributed to the tutorial, sorted by last n
 Aarhus University\
 <birkedal@cs.au.dk>
 
-**Simon Oddrshede Gregersen**\
+**Simon Oddershede Gregersen**\
 CISPA Helmholtz Center for Information Security\
 <gregersen@cispa.de>
 

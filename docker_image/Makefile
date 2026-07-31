@@ -1,60 +1,27 @@
 REGISTRY := ghcr.io/logsem/iris-tutorial
-OCAML_VER := 5.5
-MODE ?= stable
-
-# Logic for Base Image and Tags
-ifeq ($(MODE),unstable)
-    BASE_IMAGE := ocaml/opam:debian-unstable-ocaml-5.5
-    IMAGE_NAME := debian-unstable-ocaml-$(OCAML_VER)
-else
-    BASE_IMAGE := ocaml/opam:debian-ocaml-5.5
-    IMAGE_NAME := debian-ocaml-$(OCAML_VER)
-endif
+BASE_IMAGE := ocaml/opam:debian-12-ocaml-5.4
 
 default:
-	@echo 'Usage: make [stable-x86-64 | unstable-x86-64 | stable-arm64 | unstable-arm64]'
+	@echo 'Usage: make [x86-64 | arm64 | push-x86-64 | push-arm64]'
 
-# Internal build logic
-build-%:
-	$(eval ARCH_RAW := $*)
-	$(eval PLATFORM := $(if $(filter x86-64,$(ARCH_RAW)),linux/amd64,linux/arm64))
-	$(eval OPAM_ARCH := $(if $(filter x86-64,$(ARCH_RAW)),x86_64-linux,arm64-linux))
-
-	# We use -f to point to the Dockerfile because the context is now ".."
+x86-64:
 	docker build \
-		--platform $(PLATFORM) \
+		--platform linux/amd64 \
+		--build-context repo=.. \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
-		--build-arg MODE=$(MODE) \
-		-f Dockerfile \
-		-t $(REGISTRY)/$(IMAGE_NAME)-$(ARCH_RAW) \
-		..
+		-t $(REGISTRY)/docker-x86-64 .
 
-# Public targets
-stable-x86-64:
-	$(MAKE) build-x86-64 MODE=stable
+arm64:
+	docker build \
+		--platform linux/arm64 \
+		--build-context repo=.. \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
+		-t $(REGISTRY)/docker-arm64 .
 
-unstable-x86-64:
-	$(MAKE) build-x86-64 MODE=unstable
+push-x86-64: x86-64
+	docker push $(REGISTRY)/docker-x86-64
 
-stable-arm64:
-	$(MAKE) build-arm64 MODE=stable
+push-arm64: arm64
+	docker push $(REGISTRY)/docker-arm64
 
-unstable-arm64:
-	$(MAKE) build-arm64 MODE=unstable
-
-# Push targets
-push-stable-x86-64: stable-x86-64
-	docker push $(REGISTRY)/debian-ocaml-$(OCAML_VER)-x86-64
-
-push-unstable-x86-64: unstable-x86-64
-	docker push $(REGISTRY)/debian-unstable-ocaml-$(OCAML_VER)-x86-64
-
-push-stable-arm64: stable-arm64
-	docker push $(REGISTRY)/debian-ocaml-$(OCAML_VER)-arm64
-
-push-unstable-arm64: unstable-arm64
-	docker push $(REGISTRY)/debian-unstable-ocaml-$(OCAML_VER)-arm64
-
-.PHONY: stable-x86-64 unstable-x86-64 stable-arm64 unstable-arm64 \
-	push-stable-x86-64 push-unstable-x86-64 push-stable-arm64 push-unstable-arm64 \
-	default
+.PHONY: x86-64 arm64 push-x86-64 push-arm64 default

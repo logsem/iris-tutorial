@@ -1,24 +1,54 @@
-name: CI
+name: Build Development
 
 on:
   push:
-    branches:
-      - master
+    branches: [ "main", "master" ]
   pull_request:
-    branches:
-      - '**'
+    branches: [ "main", "master" ]
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: rocq-prover/docker-opam-action@v1
-        with:
-          rocq_version: '9.1'
-          ocaml_version: '5.5'
-          before_install: |
-            opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git --all --set-default
-          script: |
-            git config --global --add safe.directory "*"
-            make ci -j$(nproc)
+    - uses: actions/checkout@v5
+
+    - uses: ocaml/setup-ocaml@v3
+      with:
+        ocaml-compiler: 5.4.0
+        dune-cache: true
+
+    - name: Load cache
+      id: cache-opam-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: _opam
+        key: ${{ runner.os }}-opam-5.4.0-${{ hashFiles('*.opam') }}
+
+    - name: Add opam repositories
+      if: steps.cache-opam-restore.outputs.cache-hit != 'true'
+      run: |
+        opam repo add rocq-released https://rocq-prover.github.io/opam/released/
+        opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam.git
+        opam update
+
+    - name: Install dependencies
+      if: steps.cache-opam-restore.outputs.cache-hit != 'true'
+      run: opam install . --deps-only
+
+    - name: Cache dependencies
+      if: steps.cache-opam-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v5
+      with:
+        path: _opam
+        key: ${{ runner.os }}-opam-5.4.0-${{ hashFiles('*.opam') }}
+
+    - name: Compile & Test
+      run: |
+        eval $(opam env)
+        make ci

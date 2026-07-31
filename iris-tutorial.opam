@@ -10,7 +10,7 @@ bug-reports: "https://github.com/logsem/iris-tutorial/issues"
 build: [make "-j%{jobs}%"]
 install: []
 depends: [
-  "rocq-core" { (>= "9.1.0") }
-  "rocq-iris" { (>= "4.5.0") }
-  "rocq-iris-heap-lang" { (>= "4.5.0") }
+  "rocq-core" { (= "9.2.0") }
+  "rocq-iris" { (= "4.5.0") }
+  "rocq-iris-heap-lang" { (= "4.5.0") }
 ]
